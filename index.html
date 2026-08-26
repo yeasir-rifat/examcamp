@@ -2,15 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>MCQ Exam — Generate a custom exam with AI</title>
   <meta name="description" content="Configure an AI-generated MCQ exam, or jump back into your exams, history, and statistics." />
 
-  <!-- Google Fonts: English + Bengali typeface choices available in Settings -->
+  <!-- Google Fonts: the two fixed site-wide root typefaces (Inter for
+       English, Noto Serif Bengali for Bengali) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Calibri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Kalpurush is not on Google Fonts; fall back gracefully if not installed locally -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- PDF/Download-preview typography offers Times New Roman, Cambria,
+       Kalpurush, and NikoshBAN in addition to Noto Serif Bengali — these
+       four are not on Google Fonts (Times New Roman/Cambria ship with
+       Windows/Office, Kalpurush/NikoshBAN are common local Bengali fonts
+       on Bangladeshi systems), so they fall back gracefully to the
+       browser's serif default if not installed locally. -->
 
   <!-- PDF export: rasterizes each paginated .paper-page and assembles a
        real, downloadable .pdf (see downloadExam()) instead of routing the
@@ -34,7 +40,7 @@
        because .paper-page already supplies its own visual margin via
        padding. -->
   <style id="dynamic-page-size"></style>
-  <!-- Apply stored theme + typography before paint to avoid a flash of wrong styling -->
+  <!-- Apply stored theme before paint to avoid a flash of wrong styling -->
   <script>
     (function () {
       var stored = localStorage.getItem("mcq-exam-theme") || "system";
@@ -43,17 +49,6 @@
         : stored;
       document.documentElement.setAttribute("data-theme", resolved);
       document.documentElement.setAttribute("data-theme-preference", stored);
-
-      try {
-        var typography = JSON.parse(localStorage.getItem("mcq-exam-typography") || "null");
-        if (typography) {
-          var root = document.documentElement.style;
-          if (typography.fontEn) root.setProperty("--font-family-en-user", typography.fontEn);
-          if (typography.fontBn) root.setProperty("--font-family-bn-user", typography.fontBn);
-          if (typography.fontSize) root.setProperty("--font-size-base", typography.fontSize + "px");
-          if (typography.lineHeight) root.setProperty("--line-height-base", typography.lineHeight);
-        }
-      } catch (e) {}
     })();
   </script>
   <style>
@@ -75,6 +70,14 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Belt-and-braces for the "no pinch-zoom" requirement above: the
+     viewport meta tag (user-scalable=no, maximum-scale=1.0) is the
+     primary control, but some mobile browsers still allow gestures
+     (double-tap zoom, pinch) to fire regardless of that meta tag, so
+     touch-action also blocks pinch-zoom/double-tap-zoom at the CSS
+     level as a fallback. pan-x/pan-y are kept so normal scrolling
+     still works everywhere (page body, exam question list, etc.). */
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -82,6 +85,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: pan-x pan-y;
 }
 
 img,
@@ -192,24 +196,20 @@ fieldset {
   --color-focus-ring: rgba(99, 102, 241, 0.35);
 
   /* ---------- Typography ---------- */
-  /* Two primary typefaces: Inter for English (sans), Hind Siliguri for
-     Bengali (sans) by default. Settings > Typography lets the user swap
-     either face; the chosen face is injected via --font-family-en-user /
-     --font-family-bn-user (set inline on <html> by JS) and always falls
-     back to these defaults when unset. */
-  --font-family-en-user: "Inter";
-  --font-family-bn-user: "Hind Siliguri";
-
-  --font-family-en: var(--font-family-en-user), -apple-system,
+  /* Site-wide root typefaces are fixed: Inter for English (sans), Noto
+     Serif Bengali for Bengali — not user-configurable. Typography is
+     only customizable in the Download/Print Preview page's PDF settings
+     panel (see --pdf-font-en / --pdf-font-bn), which is a separate,
+     independent font stack used only for the printed/exported paper. */
+  --font-family-en: "Inter", -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji";
-  --font-family-bn: var(--font-family-bn-user), "Inter", -apple-system,
+  --font-family-bn: "Noto Serif Bengali", "Inter", -apple-system,
     BlinkMacSystemFont, "Segoe UI", serif;
 
-  /* Mixed-content stack: the user's English face leads for Latin glyphs,
-     the user's Bengali face covers Bengali glyphs the browser falls
-     through to automatically. */
-  --font-family-base: var(--font-family-en-user), var(--font-family-bn-user),
+  /* Mixed-content stack: Inter leads for Latin glyphs, Noto Serif Bengali
+     covers Bengali glyphs the browser falls through to automatically. */
+  --font-family-base: "Inter", "Noto Serif Bengali",
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
@@ -325,9 +325,10 @@ body {
 
 /* ---------- Exam Mode + Results & Analytics: fixed content typography ----------
    Question / option / explanation text on these two pages always uses
-   Cambria (EN) + Noto Serif Bengali (BN), regardless of the user's root
-   Typography setting (Inter/Hind Siliguri) or the PDF export typeface
-   (Times New Roman/Kalpurush) — this pairing is not user-configurable. */
+   Cambria (EN) + Noto Serif Bengali (BN), regardless of the site's root
+   typography (Inter/Noto Serif Bengali) or the PDF export typeface
+   (Times New Roman/Cambria/Kalpurush/Noto Serif Bengali/NikoshBAN) — this
+   pairing is fixed and not user-configurable. */
 body[data-page="exam"] .question-text,
 body[data-page="exam"] .option__text,
 body[data-page="stats"] .review-question__text,
@@ -1583,6 +1584,34 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 /* ==========================================================================
+   TOAST CONTAINER — sits below every fixed/sticky header (home header,
+   .subpage-header, .stats-navbar, .print-toolbar all share
+   --header-height) at every screen size. A flat top:24px used to land
+   inside that header band on desktop and tablet too — not just mobile —
+   since the download/print icon buttons in .paper-controls /
+   .stats-navbar__actions also sit top-right, so the toast covered them
+   there as well.
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  top: calc(var(--header-height) + 16px);
+  right: 24px;
+  z-index: 300;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 640px) {
+  .toast-container {
+    top: calc(var(--header-height) + 12px);
+    right: 12px;
+    left: 12px;
+  }
+  .toast-container .alert { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
+}
+
+/* ==========================================================================
    ICON BUTTON (settings/filter icon in header)
    ========================================================================== */
 .icon-btn {
@@ -1826,37 +1855,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   height: 18px;
 }
 
-.settings-preview {
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  background-color: var(--color-surface-alt);
-}
-
-.settings-preview__label {
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  margin-bottom: var(--space-3);
-}
-
-.settings-preview__en {
-  font-family: var(--font-family-en);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.settings-preview__bn {
-  font-family: var(--font-family-bn);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-  color: var(--color-text-primary);
-}
-
 /* ==========================================================================
    SWATCH (design-system showcase helper)
    ========================================================================== */
@@ -1993,6 +1991,125 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 
 .capture-upload-row .btn:hover {
   background-color: var(--color-primary-light);
+}
+
+/* Attachment list: "icon + name" rows for captured/uploaded files,
+   followed by a trailing "+ Add More" action. */
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: calc(var(--space-3) * -1 + var(--space-2));
+  margin-bottom: var(--space-5);
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  animation: attachment-in 0.16s ease-out;
+}
+
+@keyframes attachment-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.attachment-item__icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  overflow: hidden;
+}
+
+.attachment-item__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.attachment-item__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.attachment-item__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.attachment-item__name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-item__meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.attachment-item__remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.attachment-item__remove:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.attachment-item__remove svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-add-more {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px dashed var(--color-primary-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-add-more:hover {
+  background-color: var(--color-primary-light);
+}
+
+.btn-add-more svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Configuration grid: 2 columns desktop, 1 column mobile */
@@ -2204,6 +2321,24 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   background-color: var(--color-primary-wash);
 }
 
+/* Now rendered as a <button>, so it needs its own reset + affordances that
+   a plain <div> got for free (font inherit is handled globally by the
+   reset.css button rule above). */
+.quick-stat-card--link {
+  width: 100%;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+.quick-stat-card--link:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+.quick-stat-card--link:active { transform: scale(0.98); }
+.quick-stat-card--link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .quick-stat-card__value {
   font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
@@ -2215,6 +2350,200 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   margin-top: var(--space-1);
+}
+
+/* ==========================================================================
+   SUB-PAGES — Exams / History / Statistics (reached from the dashboard's
+   3 vertical cards + 3 horizontal quick-stat cards). Share one sticky
+   sub-page header (icon-btn back + title) with .stats-navbar so they feel
+   like the same family as the existing Analytics/Print sub-pages.
+   ========================================================================== */
+.subpage-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.subpage-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--header-height);
+}
+.subpage-header__title {
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.subpage-main {
+  padding: var(--space-8) 0 var(--space-12);
+}
+
+/* ---------- Summary strip (reused across all 3 sub-pages) ---------- */
+.subpage-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+.subpage-summary__card {
+  text-align: center;
+  padding: var(--space-5) var(--space-3);
+}
+.subpage-summary__value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+.subpage-summary__label {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* ---------- List rows (Exams / History) ---------- */
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+.record-row__icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.record-row__icon svg { width: 20px; height: 20px; }
+.record-row__body { flex: 1; min-width: 0; }
+.record-row__title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.record-row__meta {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.record-row__meta-sep { opacity: 0.5; }
+.record-row__side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+.record-row__score {
+  text-align: right;
+  min-width: 56px;
+}
+.record-row__score-value {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.record-row__score-label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+.record-row__arrow {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .subpage-summary { grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+  .subpage-summary__card { padding: var(--space-3) var(--space-1); }
+  .subpage-summary__value { font-size: var(--font-size-h3); }
+  .record-row__meta { display: none; }
+  .record-row__score-label { display: none; }
+}
+
+/* ---------- Statistics overview page ---------- */
+.stats-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+.stats-overview-card {
+  padding: var(--space-5);
+}
+.stats-overview-card__label {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+.stats-overview-card__value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.stats-overview-card__trend {
+  font-size: var(--font-size-caption);
+  margin-top: var(--space-1);
+}
+.stats-overview-card__trend--up { color: var(--color-success); }
+.stats-overview-card__trend--down { color: var(--color-danger); }
+
+.subject-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.subject-breakdown-row:last-child { border-bottom: none; }
+.subject-breakdown-row__name {
+  width: 140px;
+  flex-shrink: 0;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subject-breakdown-row__bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-hover-bg);
+  overflow: hidden;
+}
+.subject-breakdown-row__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary);
+}
+.subject-breakdown-row__value {
+  width: 44px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 640px) {
+  .stats-overview-grid { grid-template-columns: 1fr; }
 }
 
 /* ==========================================================================
@@ -2933,6 +3262,20 @@ body[data-page="exam"] {
    modeled on a classic printed exam paper header rather than a two-column
    layout. No rule lines above/below the header — the table's own border
    is the only separator needed. */
+/* The header stays on the site-wide root font (Inter / Noto Serif Bengali)
+   at all times — it does NOT follow --pdf-font-en/--pdf-font-bn, so
+   changing the English/Bengali font in the PDF Settings panel (which only
+   affects question/option/explanation text) never changes this block.
+   font-family is repeated on each child below (not just .paper-header)
+   so it wins over the more specific .paper-canvas[lang="bn"] /
+   .paper-canvas .lang-bn selectors that set --pdf-font-bn on descendants. */
+.paper-header,
+.paper-header__subject,
+.paper-header__topic,
+.paper-header__row,
+.paper-header__stats-line {
+  font-family: var(--font-family-base);
+}
 .paper-header { margin-bottom: 6mm; text-align: center; box-shadow: none; }
 .paper-header__subject { font-size: 15pt; font-weight: 700; }
 .paper-header__topic { font-size: 10.5pt; opacity: 0.75; margin-top: 1mm; margin-bottom: 3mm; }
@@ -2954,6 +3297,7 @@ body[data-page="exam"] {
   width: 100%;
   margin-top: 3mm;
   padding-bottom: 3mm;
+  border-bottom: 1px solid var(--color-border, #dcdcdc);
 }
 .paper-header__stats-line {
   width: 100%;
@@ -2991,17 +3335,19 @@ body[data-page="exam"] {
 .paper-opt { display: flex; justify-content: space-between; gap: 4mm; }
 .paper-opt.pq-correct { color: #0a7d43; font-weight: 600; }
 .paper-opt.pq-wrong { color: #c62828; font-weight: 600; }
-.paper-explanation { font-size: 8.5pt; opacity: 0.8; margin-top: 1mm; }
+.paper-explanation { font-size: 10pt; opacity: 0.8; margin-top: 1mm; }
 .paper-explanation b { color: inherit; opacity: 1; }
 
 /* ---------- Option layout variants (per-question A/B/C/D arrangement) ----------
    Each question gets one of these three arrangements automatically —
-   detectOptionLayout() picks it from that question's own option text, and
-   applyOptionLayoutToWrap() applies it as inline styles directly on that
-   question's .paper-question__opts wrap. This makes it fully per-question:
-   two questions on the same page can use different arrangements. There is
-   no canvas-wide/global layout attribute — inline styles are the only
-   mechanism, set independently per question at build time. */
+   chooseBestOptionLayout() measures real rendered text wrap at that
+   question's true column width and picks the most compact layout that
+   doesn't wrap, and applyOptionLayoutToWrap() applies it as inline
+   styles directly on that question's .paper-question__opts wrap. This
+   makes it fully per-question: two questions on the same page can use
+   different arrangements. There is no canvas-wide/global layout
+   attribute — inline styles are the only mechanism, set independently
+   per question during pagination (see paginateExam()). */
 
 /* ---------- Modal summary rows (submit-exam confirmation) ---------- */
 .modal-summary { display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-small); }
@@ -3074,9 +3420,10 @@ body[data-page="exam"] {
 
 /* ---------- Layout picker: 3 read-only "auto layout" example cards ----------
    These are informational only (no click handlers, nothing forced) — each
-   question decides its own layout automatically at render time based on its
-   own option text (see detectOptionLayout() in JS). The cards just show the
-   three arrangements the auto-detection can produce. */
+   question decides its own layout automatically during pagination based
+   on real measured text wrap at its true column width (see
+   chooseBestOptionLayout() in JS). The cards just show the three
+   arrangements the auto-detection can produce. */
 .layout-picker {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3279,13 +3626,6 @@ body[data-page="exam"] {
           <span data-i18n="brand.name">MCQ Exam</span>
         </a>
 
-        <nav class="site-header__nav" aria-label="Primary">
-          <a href="index.html" class="site-header__nav-link" data-nav="home" data-i18n="nav.home">Home</a>
-          <a href="exams.html" class="site-header__nav-link" data-nav="exams" data-i18n="nav.exams">Exams</a>
-          <a href="history.html" class="site-header__nav-link" data-nav="history" data-i18n="nav.history">History</a>
-          <a href="statistics.html" class="site-header__nav-link" data-nav="statistics" data-i18n="nav.statistics">Statistics</a>
-        </nav>
-
         <div class="site-header__actions">
           <!-- Theme toggle: icon-only, cycles Light -> Dark -> System -->
           <div class="segmented" role="group" aria-label="Theme">
@@ -3362,8 +3702,18 @@ body[data-page="exam"] {
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                   <span data-i18n="home.aiMode.upload">Upload</span>
                 </button>
-                <input type="file" data-file-input class="visually-hidden" accept="image/*,application/pdf,.doc,.docx" aria-hidden="true" tabindex="-1" />
+                <!-- Capture: camera-only via the `capture` attribute so mobile browsers
+                     open the device camera directly instead of a general picker. -->
+                <input type="file" data-capture-input class="visually-hidden" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />
+                <!-- Upload: general file picker, multi-select, restricted to the
+                     accepted study-material types. -->
+                <input type="file" data-file-input class="visually-hidden" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" multiple aria-hidden="true" tabindex="-1" />
               </div>
+
+              <!-- Captured / uploaded attachments: rendered as an "icon + name"
+                   list, each removable, with a trailing "+ Add More" action that
+                   re-opens the upload picker. Hidden entirely while empty. -->
+              <div class="attachment-list" data-attachment-list hidden></div>
 
               <div class="config-grid">
                 <div class="form-group" style="margin-bottom: 0;">
@@ -3458,7 +3808,10 @@ body[data-page="exam"] {
               <div class="ai-mode-card__spacer" aria-hidden="true"></div>
 
               <button type="submit" class="btn btn-primary btn-lg btn-block btn-generate" id="generate-btn">
-                <svg class="btn-generate__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5v14l11-7-11-7Z" fill="currentColor"/></svg>
+                <svg class="btn-generate__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2.5c.35 3.2 1.1 5.36 2.62 6.88 1.52 1.52 3.68 2.27 6.88 2.62-3.2.35-5.36 1.1-6.88 2.62-1.52 1.52-2.27 3.68-2.62 6.88-.35-3.2-1.1-5.36-2.62-6.88C7.86 13.1 5.7 12.35 2.5 12c3.2-.35 5.36-1.1 6.88-2.62C10.9 7.86 11.65 5.7 12 2.5Z" fill="currentColor"/>
+                  <path d="M19 3.4c.16 1.3.5 2.15 1.16 2.81.66.66 1.51 1 2.81 1.16-1.3.16-2.15.5-2.81 1.16-.66.66-1 1.51-1.16 2.81-.16-1.3-.5-2.15-1.16-2.81-.66-.66-1.51-1-2.81-1.16 1.3-.16 2.15-.5 2.81-1.16.66-.66 1-1.51 1.16-2.81Z" fill="currentColor"/>
+                </svg>
                 <span class="btn-generate__label" data-i18n="home.aiMode.generate">Generate Exam</span>
                 <span class="btn-generate__spinner spinner" style="border-color: rgba(255,255,255,0.35); border-top-color: #fff;" aria-hidden="true"></span>
               </button>
@@ -3481,7 +3834,7 @@ body[data-page="exam"] {
               </div>
 
               <div class="dashboard-list">
-                <a href="exams.html" class="dashboard-item dashboard-item--exams">
+                <a href="#" class="dashboard-item dashboard-item--exams" data-spa-nav="exams">
                   <span class="dashboard-item__icon">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
                   </span>
@@ -3492,7 +3845,7 @@ body[data-page="exam"] {
                   <svg class="dashboard-item__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
 
-                <a href="history.html" class="dashboard-item dashboard-item--history">
+                <a href="#" class="dashboard-item dashboard-item--history" data-spa-nav="history">
                   <span class="dashboard-item__icon">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   </span>
@@ -3503,7 +3856,7 @@ body[data-page="exam"] {
                   <svg class="dashboard-item__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
 
-                <a href="statistics.html" class="dashboard-item dashboard-item--stats">
+                <a href="#" class="dashboard-item dashboard-item--stats" data-spa-nav="statistics">
                   <span class="dashboard-item__icon">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19V10M12 19V5M19 19v-7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
                   </span>
@@ -3515,20 +3868,22 @@ body[data-page="exam"] {
                 </a>
               </div>
 
-              <!-- Quick stats — 3 individual cards, secondary, compact, never competing with AI Mode -->
+              <!-- Quick stats — 3 individual cards, secondary, compact, never competing with AI Mode.
+                   Clickable: each routes to the relevant deep-dive page (Exams total -> Exams list,
+                   Avg. Score / Questions -> Statistics overview). -->
               <div class="quick-stats-grid">
-                <div class="quick-stat-card">
+                <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="exams">
                   <div class="quick-stat-card__value">12</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickExams">Exams</div>
-                </div>
-                <div class="quick-stat-card">
+                </button>
+                <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="statistics">
                   <div class="quick-stat-card__value">78%</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickAvgScore">Avg. Score</div>
-                </div>
-                <div class="quick-stat-card">
+                </button>
+                <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="statistics">
                   <div class="quick-stat-card__value">1,240</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickQuestions">Questions</div>
-                </div>
+                </button>
               </div>
             </section>
 
@@ -3579,6 +3934,156 @@ body[data-page="exam"] {
        ========================================================== -->
   </div><!-- /view-home -->
 
+  <!-- ==========================================================
+       VIEW: EXAMS — reached from the "Exams" vertical dashboard
+       card and the "Exams" horizontal quick-stat card.
+       ========================================================== -->
+  <div class="view" id="view-exams" hidden>
+    <header class="subpage-header">
+      <div class="container subpage-header__inner">
+        <button type="button" class="icon-btn icon-btn--home" data-spa-nav="home" aria-label="Back to Home" title="Back to Home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+          </svg>
+        </button>
+        <span class="subpage-header__title">Exams</span>
+      </div>
+    </header>
+
+    <main class="subpage-main">
+      <div class="container">
+        <div class="subpage-summary">
+          <div class="card card--tint-info subpage-summary__card">
+            <div class="subpage-summary__value">12</div>
+            <div class="subpage-summary__label">Total Exams</div>
+          </div>
+          <div class="card card--tint-success subpage-summary__card">
+            <div class="subpage-summary__value">9</div>
+            <div class="subpage-summary__label">Completed</div>
+          </div>
+          <div class="card card--tint-warning subpage-summary__card">
+            <div class="subpage-summary__value">3</div>
+            <div class="subpage-summary__label">In Progress</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="record-list" id="exams-list">
+            <!-- populated by renderExamsPage() -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div><!-- /view-exams -->
+
+  <!-- ==========================================================
+       VIEW: HISTORY — reached from the "History" vertical
+       dashboard card.
+       ========================================================== -->
+  <div class="view" id="view-history" hidden>
+    <header class="subpage-header">
+      <div class="container subpage-header__inner">
+        <button type="button" class="icon-btn icon-btn--home" data-spa-nav="home" aria-label="Back to Home" title="Back to Home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+          </svg>
+        </button>
+        <span class="subpage-header__title">History</span>
+      </div>
+    </header>
+
+    <main class="subpage-main">
+      <div class="container">
+        <div class="subpage-summary">
+          <div class="card card--tint-primary subpage-summary__card">
+            <div class="subpage-summary__value">9</div>
+            <div class="subpage-summary__label">Exams Taken</div>
+          </div>
+          <div class="card card--tint-success subpage-summary__card">
+            <div class="subpage-summary__value">78%</div>
+            <div class="subpage-summary__label">Avg. Score</div>
+          </div>
+          <div class="card card--tint-info subpage-summary__card">
+            <div class="subpage-summary__value">1,240</div>
+            <div class="subpage-summary__label">Questions</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="record-list" id="history-list">
+            <!-- populated by renderHistoryPage() -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div><!-- /view-history -->
+
+  <!-- ==========================================================
+       VIEW: STATISTICS OVERVIEW — reached from the "Statistics"
+       vertical dashboard card and the "Avg. Score" / "Questions"
+       horizontal quick-stat cards. This is the all-time analytics
+       summary; it's distinct from #view-stats, which shows the
+       review/breakdown for one single completed exam.
+       ========================================================== -->
+  <div class="view" id="view-statistics" hidden>
+    <header class="subpage-header">
+      <div class="container subpage-header__inner">
+        <button type="button" class="icon-btn icon-btn--home" data-spa-nav="home" aria-label="Back to Home" title="Back to Home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+          </svg>
+        </button>
+        <span class="subpage-header__title">Statistics</span>
+      </div>
+    </header>
+
+    <main class="subpage-main">
+      <div class="container">
+        <div class="stats-overview-grid">
+          <div class="card stats-overview-card">
+            <div class="stats-overview-card__label">Exams Taken</div>
+            <div class="stats-overview-card__value">12</div>
+            <div class="stats-overview-card__trend stats-overview-card__trend--up">↑ 3 this month</div>
+          </div>
+          <div class="card stats-overview-card">
+            <div class="stats-overview-card__label">Average Score</div>
+            <div class="stats-overview-card__value">78%</div>
+            <div class="stats-overview-card__trend stats-overview-card__trend--up">↑ 4% vs last month</div>
+          </div>
+          <div class="card stats-overview-card">
+            <div class="stats-overview-card__label">Questions Attempted</div>
+            <div class="stats-overview-card__value">1,240</div>
+            <div class="stats-overview-card__trend">Across all exams</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: var(--space-6);">
+          <div class="card__header">
+            <h2 class="text-h4">Performance by Subject</h2>
+          </div>
+          <div id="subject-breakdown-list">
+            <!-- populated by renderStatisticsPage() -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <h2 class="text-h4">Recent Results</h2>
+          </div>
+          <div class="record-list" id="stats-recent-list">
+            <!-- populated by renderStatisticsPage() -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div><!-- /view-statistics -->
+
   <div class="modal-overlay" id="settings-modal" aria-hidden="true">
     <div class="modal modal--lg" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
       <div class="modal__header">
@@ -3591,7 +4096,6 @@ body[data-page="exam"] {
       <div class="settings-modal__tabs-wrap" data-tabs-wrapper>
         <div class="tabs settings-modal__tabs" data-tabs role="tablist" aria-label="Settings sections">
           <button type="button" class="tab is-active" data-tab="appearance" role="tab" aria-selected="true" tabindex="0" data-i18n="settings.tab.appearance">Appearance</button>
-          <button type="button" class="tab" data-tab="typography" role="tab" aria-selected="false" tabindex="-1" data-i18n="settings.tab.typography">Typography</button>
           <button type="button" class="tab" data-tab="ai-config" role="tab" aria-selected="false" tabindex="-1" data-i18n="settings.tab.aiConfig">AI Configuration</button>
           <button type="button" class="tab" data-tab="exam-prefs" role="tab" aria-selected="false" tabindex="-1" data-i18n="settings.tab.examPrefs">Exam Preferences</button>
         </div>
@@ -3626,51 +4130,6 @@ body[data-page="exam"] {
                 <button type="button" class="segmented__option" data-lang-option="en" aria-pressed="false">EN</button>
                 <button type="button" class="segmented__option" data-lang-option="bn" aria-pressed="false" lang="bn">বাংলা</button>
               </div>
-            </div>
-          </div>
-
-          <!-- ============ TYPOGRAPHY ============ -->
-          <div data-tab-panel="typography" hidden>
-            <div class="settings-field">
-              <label class="form-label" for="font-en-select" data-i18n="settings.typography.fontEn">English font</label>
-              <select class="form-control" id="font-en-select">
-                <option value="Inter">Inter</option>
-                <option value="Poppins">Poppins</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Calibri">Calibri</option>
-                <option value="Cambria">Cambria</option>
-              </select>
-            </div>
-
-            <div class="settings-field">
-              <label class="form-label" for="font-bn-select" data-i18n="settings.typography.fontBn">Bengali font</label>
-              <select class="form-control" id="font-bn-select">
-                <option value="Kalpurush">Kalpurush</option>
-                <option value="Noto Serif Bengali">Noto Serif Bengali</option>
-                <option value="Hind Siliguri">Hind Siliguri</option>
-              </select>
-            </div>
-
-            <div class="settings-field">
-              <div class="settings-field__label-row">
-                <label class="form-label" for="font-size-range" data-i18n="settings.typography.fontSize">Font size</label>
-                <span class="settings-field__value" id="font-size-value">16px</span>
-              </div>
-              <input type="range" class="form-range" id="font-size-range" min="14" max="20" step="1" value="16" />
-            </div>
-
-            <div class="settings-field">
-              <div class="settings-field__label-row">
-                <label class="form-label" for="line-height-range" data-i18n="settings.typography.lineHeight">Line height</label>
-                <span class="settings-field__value" id="line-height-value">1.6</span>
-              </div>
-              <input type="range" class="form-range" id="line-height-range" min="1.2" max="2" step="0.1" value="1.6" />
-            </div>
-
-            <div class="settings-preview" id="typography-preview">
-              <p class="settings-preview__label" data-i18n="settings.typography.preview">Preview</p>
-              <p class="settings-preview__en">The quick brown fox jumps over the lazy dog.</p>
-              <p class="settings-preview__bn" lang="bn">দ্রুত বাদামি শিয়াল অলস কুকুরের উপর দিয়ে লাফ দেয়।</p>
             </div>
           </div>
 
@@ -4042,11 +4501,7 @@ body[data-page="exam"] {
             <label class="form-label" for="pdf-font-en-select">English font</label>
             <select class="form-control" id="pdf-font-en-select">
               <option value="Times New Roman" selected>Times New Roman</option>
-              <option value="Georgia">Georgia</option>
               <option value="Cambria">Cambria</option>
-              <option value="Inter">Inter</option>
-              <option value="Calibri">Calibri</option>
-              <option value="Poppins">Poppins</option>
             </select>
           </div>
 
@@ -4055,7 +4510,7 @@ body[data-page="exam"] {
             <select class="form-control" id="pdf-font-bn-select">
               <option value="Kalpurush" selected>Kalpurush</option>
               <option value="Noto Serif Bengali">Noto Serif Bengali</option>
-              <option value="Hind Siliguri">Hind Siliguri</option>
+              <option value="NikoshBAN">NikoshBAN</option>
             </select>
           </div>
 
@@ -4329,6 +4784,11 @@ const I18N_STRINGS = {
     "home.aiMode.promptError": "Please enter a prompt describing the exam you want.",
     "home.aiMode.capture": "Capture",
     "home.aiMode.upload": "Upload",
+    "home.aiMode.addMore": "Add More",
+    "home.aiMode.removeAttachment": "Remove",
+    "home.aiMode.attachmentAdded": "Added",
+    "home.aiMode.attachmentUnsupported": "Unsupported file type",
+    "home.aiMode.attachmentTooLarge": "File is too large (max 15 MB)",
     "home.aiMode.questionsLabel": "Questions",
     "home.aiMode.questionsPlaceholder": "Enter number of questions",
     "home.aiMode.questionsError": "Enter a number between 1 and 200.",
@@ -4363,18 +4823,12 @@ const I18N_STRINGS = {
 
     "settings.title": "Settings",
     "settings.tab.appearance": "Appearance",
-    "settings.tab.typography": "Typography",
     "settings.tab.aiConfig": "AI Configuration",
     "settings.tab.examPrefs": "Exam Preferences",
     "settings.appearance.theme": "Theme",
     "settings.appearance.themeHint": "Choose how MCQ Exam looks. \"System\" follows your device setting.",
     "settings.appearance.language": "Language",
     "settings.appearance.languageHint": "Interface language. Exam content language is set separately in AI Mode.",
-    "settings.typography.fontEn": "English font",
-    "settings.typography.fontBn": "Bengali font",
-    "settings.typography.fontSize": "Font size",
-    "settings.typography.lineHeight": "Line height",
-    "settings.typography.preview": "Preview",
     "settings.ai.apiKey": "Gemini API Key",
     "settings.ai.apiKeyPlaceholder": "Enter your Gemini API key",
     "settings.ai.apiKeyHint": "Stored locally in your browser only. Used in a later phase to generate exams.",
@@ -4415,6 +4869,11 @@ const I18N_STRINGS = {
     "home.aiMode.promptError": "অনুগ্রহ করে আপনার পরীক্ষার বর্ণনা দিয়ে একটি প্রম্পট লিখুন।",
     "home.aiMode.capture": "ছবি তুলুন",
     "home.aiMode.upload": "আপলোড করুন",
+    "home.aiMode.addMore": "আরও যুক্ত করুন",
+    "home.aiMode.removeAttachment": "মুছুন",
+    "home.aiMode.attachmentAdded": "যুক্ত হয়েছে",
+    "home.aiMode.attachmentUnsupported": "অসমর্থিত ফাইল ধরন",
+    "home.aiMode.attachmentTooLarge": "ফাইলটি অনেক বড় (সর্বোচ্চ ১৫ এমবি)",
     "home.aiMode.questionsLabel": "প্রশ্ন সংখ্যা",
     "home.aiMode.questionsPlaceholder": "প্রশ্নের সংখ্যা লিখুন",
     "home.aiMode.questionsError": "১ থেকে ২০০ এর মধ্যে একটি সংখ্যা লিখুন।",
@@ -4449,18 +4908,12 @@ const I18N_STRINGS = {
 
     "settings.title": "সেটিংস",
     "settings.tab.appearance": "চেহারা",
-    "settings.tab.typography": "টাইপোগ্রাফি",
     "settings.tab.aiConfig": "এআই কনফিগারেশন",
     "settings.tab.examPrefs": "পরীক্ষার পছন্দসমূহ",
     "settings.appearance.theme": "থিম",
     "settings.appearance.themeHint": "এমসিকিউ পরীক্ষা কেমন দেখাবে তা বেছে নিন। \"সিস্টেম\" আপনার ডিভাইসের সেটিং অনুসরণ করে।",
     "settings.appearance.language": "ভাষা",
     "settings.appearance.languageHint": "ইন্টারফেসের ভাষা। পরীক্ষার বিষয়বস্তুর ভাষা এআই মোডে আলাদাভাবে নির্ধারণ করা হয়।",
-    "settings.typography.fontEn": "ইংরেজি ফন্ট",
-    "settings.typography.fontBn": "বাংলা ফন্ট",
-    "settings.typography.fontSize": "ফন্ট সাইজ",
-    "settings.typography.lineHeight": "লাইন হাইট",
-    "settings.typography.preview": "প্রিভিউ",
     "settings.ai.apiKey": "জেমিনি এপিআই কী",
     "settings.ai.apiKeyPlaceholder": "আপনার জেমিনি এপিআই কী লিখুন",
     "settings.ai.apiKeyHint": "শুধুমাত্র আপনার ব্রাউজারে সংরক্ষিত। পরবর্তী ধাপে পরীক্ষা তৈরিতে ব্যবহৃত হবে।",
@@ -4486,6 +4939,15 @@ const I18N_STRINGS = {
     the current DOM to the given language. Falls back to the English string
     (or leaves existing text alone) if a key is somehow missing, so a typo
     in the dictionary never blanks out the UI. */
+/** Looks up a single i18n string for the current language (falling back
+    to English), for dynamically-created elements that data-i18n can't
+    reach because they don't exist yet at applyI18nStrings() time. */
+function t(key) {
+  const lang = localStorage.getItem(LANG_STORAGE_KEY) || "en";
+  const dict = I18N_STRINGS[lang] || I18N_STRINGS.en;
+  return dict[key] ?? I18N_STRINGS.en[key];
+}
+
 function applyI18nStrings(lang) {
   const dict = I18N_STRINGS[lang] || I18N_STRINGS.en;
   const fallback = I18N_STRINGS.en;
@@ -4657,14 +5119,7 @@ function showToast(message, variant = "info") {
   if (!container) {
     container = document.createElement("div");
     container.id = "toast-container";
-    container.style.position = "fixed";
-    container.style.top = "24px";
-    container.style.right = "24px";
-    container.style.zIndex = "300";
-    container.style.pointerEvents = "none";
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "8px";
+    container.className = "toast-container";
     document.body.appendChild(container);
   }
   const toast = document.createElement("div");
@@ -4691,15 +5146,169 @@ document.addEventListener("DOMContentLoaded", () => {
    Nothing here calls a real API — Phase 2 is UI-only per the brief.
    ========================================================================== */
 
-/* ---------- Capture / Upload demo actions ---------- */
+/* ---------- Capture / Upload: attached study material ---------- */
+/**
+ * Attachments captured via camera or picked via the file dialog. Each
+ * entry: { id, file, name, size, mimeType, kind ("image"|"pdf"|"doc"|
+ * "other"), previewUrl (image thumbnails only), base64 (lazily filled
+ * in right before generation, once we know we actually need to upload
+ * it to Gemini). Lives only in memory — never persisted — since File
+ * objects can't survive localStorage/JSON serialization.
+ */
+const aiModeAttachments = [];
+const ATTACHMENT_MAX_BYTES = 15 * 1024 * 1024; // 15 MB — keeps inline base64 payloads reasonable
+const ATTACHMENT_ACCEPTED_EXT = /\.(png|jpe?g|webp|heic|heif|pdf|docx?|pptx?)$/i;
+
+function attachmentKindFor(file) {
+  const type = (file.type || "").toLowerCase();
+  const name = (file.name || "").toLowerCase();
+  if (type.startsWith("image/")) return "image";
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "pdf";
+  if (name.endsWith(".doc") || name.endsWith(".docx")) return "doc";
+  if (name.endsWith(".ppt") || name.endsWith(".pptx")) return "ppt";
+  return "other";
+}
+
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/* One icon per attachment kind — image thumbnails get a real <img>
+   preview instead, wired up in renderAttachmentList(). */
+const ATTACHMENT_KIND_ICON = {
+  image: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M21 16l-5.5-5.5L6 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13.5h1.4a1.3 1.3 0 1 1 0 2.6H9V13.5Zm0 2.6V18m3.5-4.5V18m0-4.5h1.2a1.1 1.1 0 0 1 1.1 1.1v2.3a1.1 1.1 0 0 1-1.1 1.1H12.5m3.3-4.5V18m0-2.4h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16h6M9 19h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  ppt: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="5.2" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>',
+  other: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+
+function renderAttachmentList() {
+  const list = qs("[data-attachment-list]");
+  if (!list) return;
+
+  list.innerHTML = "";
+  list.hidden = aiModeAttachments.length === 0;
+
+  aiModeAttachments.forEach((att) => {
+    const row = document.createElement("div");
+    row.className = "attachment-item";
+    row.dataset.attachmentId = att.id;
+
+    const icon = document.createElement("div");
+    icon.className = "attachment-item__icon";
+    if (att.kind === "image" && att.previewUrl) {
+      const img = document.createElement("img");
+      img.src = att.previewUrl;
+      img.alt = "";
+      icon.appendChild(img);
+    } else {
+      icon.innerHTML = ATTACHMENT_KIND_ICON[att.kind] || ATTACHMENT_KIND_ICON.other;
+    }
+
+    const body = document.createElement("div");
+    body.className = "attachment-item__body";
+    const nameEl = document.createElement("div");
+    nameEl.className = "attachment-item__name";
+    nameEl.textContent = att.name;
+    const metaEl = document.createElement("div");
+    metaEl.className = "attachment-item__meta";
+    metaEl.textContent = formatFileSize(att.size);
+    body.appendChild(nameEl);
+    body.appendChild(metaEl);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "attachment-item__remove";
+    removeBtn.setAttribute("aria-label", t("home.aiMode.removeAttachment") || "Remove");
+    removeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    removeBtn.addEventListener("click", () => removeAttachment(att.id));
+
+    row.appendChild(icon);
+    row.appendChild(body);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+
+  renderAddMoreButton(list);
+}
+
+function renderAddMoreButton(list) {
+  if (aiModeAttachments.length === 0) return; // only shown once something is attached
+  const addMoreBtn = document.createElement("button");
+  addMoreBtn.type = "button";
+  addMoreBtn.className = "btn-add-more";
+  addMoreBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>' + (t("home.aiMode.addMore") || "Add More") + "</span>";
+  addMoreBtn.addEventListener("click", () => qs("[data-file-input]")?.click());
+  list.appendChild(addMoreBtn);
+}
+
+function addAttachments(fileList) {
+  const files = Array.from(fileList || []);
+  let addedCount = 0;
+  files.forEach((file) => {
+    if (!ATTACHMENT_ACCEPTED_EXT.test(file.name) && !(file.type || "").startsWith("image/") && file.type !== "application/pdf") {
+      showToast(`"${file.name}" — ${t("home.aiMode.attachmentUnsupported") || "Unsupported file type"}.`, "danger");
+      return;
+    }
+    if (file.size > ATTACHMENT_MAX_BYTES) {
+      showToast(`"${file.name}" — ${t("home.aiMode.attachmentTooLarge") || "File is too large (max 15 MB)"}.`, "danger");
+      return;
+    }
+    const att = {
+      id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      file,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type || "",
+      kind: attachmentKindFor(file),
+      previewUrl: null,
+      base64: null,
+    };
+    if (att.kind === "image") {
+      att.previewUrl = URL.createObjectURL(file);
+    }
+    aiModeAttachments.push(att);
+    addedCount += 1;
+  });
+  if (addedCount > 0) renderAttachmentList();
+}
+
+function removeAttachment(id) {
+  const idx = aiModeAttachments.findIndex((a) => a.id === id);
+  if (idx === -1) return;
+  const [removed] = aiModeAttachments.splice(idx, 1);
+  if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+  renderAttachmentList();
+}
+
+/** Clears all attachments after a successful exam generation, so the
+    Home form starts fresh next time. Revokes image preview object URLs
+    to avoid leaking memory. */
+function clearAiModeAttachments() {
+  aiModeAttachments.forEach((att) => {
+    if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+  });
+  aiModeAttachments.length = 0;
+  renderAttachmentList();
+}
+
 function initCaptureUpload() {
   const captureBtn = qs("[data-action='capture']");
   const uploadBtn = qs("[data-action='upload']");
+  const captureInput = qs("[data-capture-input]");
   const fileInput = qs("[data-file-input]");
 
-  if (captureBtn) {
-    captureBtn.addEventListener("click", () => {
-      showToast("Camera capture will be available once this is opened on a device with camera access.", "info");
+  if (captureBtn && captureInput) {
+    captureBtn.addEventListener("click", () => captureInput.click());
+    captureInput.addEventListener("change", () => {
+      if (captureInput.files && captureInput.files.length > 0) {
+        addAttachments(captureInput.files);
+      }
+      captureInput.value = ""; // allow capturing the same shot again back-to-back
     });
   }
 
@@ -4707,8 +5316,9 @@ function initCaptureUpload() {
     uploadBtn.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", () => {
       if (fileInput.files && fileInput.files.length > 0) {
-        showToast(`Selected "${fileInput.files[0].name}" — file processing arrives in a later phase.`, "info");
+        addAttachments(fileInput.files);
       }
+      fileInput.value = ""; // allow re-selecting the same file later
     });
   }
 }
@@ -4800,6 +5410,11 @@ function readAiModeFormConfig(form) {
     difficulty: qs("#difficulty-select", form)?.value || "medium",
     language: qs("#language-select", form)?.value || "en",
     duration: Number(qs("#time-select", form)?.value) || 60,
+    // File objects can't survive JSON.stringify/localStorage, so only a
+    // count is persisted here (used by buildGeminiPrompt's prompt text).
+    // The actual File objects stay in the in-memory aiModeAttachments
+    // array and are re-attached in runGeneration()/retry below.
+    attachmentCount: aiModeAttachments.length,
     createdAt: new Date().toISOString(),
   };
 }
@@ -4896,21 +5511,13 @@ document.addEventListener("DOMContentLoaded", () => {
   initRecentExamState();
 });
 /* ==========================================================================
-   SETTINGS.JS — Settings panel: Appearance, Typography, AI Configuration,
-   and Exam Preferences. Persists everything to localStorage. No network
-   calls are made here — Gemini connectivity is wired up in a later phase.
+   SETTINGS.JS — Settings panel: Appearance, AI Configuration, and Exam
+   Preferences. Persists everything to localStorage. No network calls are
+   made here — Gemini connectivity is wired up in a later phase.
    ========================================================================== */
 
-const TYPOGRAPHY_STORAGE_KEY = "mcq-exam-typography";
 const AI_CONFIG_STORAGE_KEY = "mcq-exam-ai-config";
 const EXAM_PREFS_STORAGE_KEY = "mcq-exam-preferences";
-
-const TYPOGRAPHY_DEFAULTS = {
-  fontEn: "Inter",
-  fontBn: "Hind Siliguri",
-  fontSize: 16,
-  lineHeight: 1.6,
-};
 
 const GEMINI_MODEL_OPTIONS = [
   { value: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite (Recommended)" },
@@ -4920,100 +5527,6 @@ const GEMINI_MODEL_OPTIONS = [
   { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
   { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
 ];
-
-/* ---------- Typography ---------- */
-function getStoredTypography() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(TYPOGRAPHY_STORAGE_KEY) || "null");
-    return Object.assign({}, TYPOGRAPHY_DEFAULTS, stored || {});
-  } catch (e) {
-    return Object.assign({}, TYPOGRAPHY_DEFAULTS);
-  }
-}
-
-function applyTypography(typography) {
-  const root = document.documentElement.style;
-  root.setProperty("--font-family-en-user", `"${typography.fontEn}"`);
-  root.setProperty("--font-family-bn-user", `"${typography.fontBn}"`);
-  root.setProperty("--font-size-base", typography.fontSize + "px");
-  root.setProperty("--line-height-base", String(typography.lineHeight));
-}
-
-function saveTypography(typography) {
-  localStorage.setItem(TYPOGRAPHY_STORAGE_KEY, JSON.stringify(typography));
-  applyTypography(typography);
-}
-
-function readTypographyFormValues() {
-  return {
-    fontEn: qs("#font-en-select")?.value || TYPOGRAPHY_DEFAULTS.fontEn,
-    fontBn: qs("#font-bn-select")?.value || TYPOGRAPHY_DEFAULTS.fontBn,
-    fontSize: Number(qs("#font-size-range")?.value) || TYPOGRAPHY_DEFAULTS.fontSize,
-    lineHeight: Number(qs("#line-height-range")?.value) || TYPOGRAPHY_DEFAULTS.lineHeight,
-  };
-}
-
-function populateTypographyForm(typography) {
-  const fontEnSelect = qs("#font-en-select");
-  const fontBnSelect = qs("#font-bn-select");
-  const fontSizeRange = qs("#font-size-range");
-  const lineHeightRange = qs("#line-height-range");
-  const fontSizeValue = qs("#font-size-value");
-  const lineHeightValue = qs("#line-height-value");
-
-  if (fontEnSelect) fontEnSelect.value = typography.fontEn;
-  if (fontBnSelect) fontBnSelect.value = typography.fontBn;
-  if (fontSizeRange) fontSizeRange.value = typography.fontSize;
-  if (lineHeightRange) lineHeightRange.value = typography.lineHeight;
-  if (fontSizeValue) fontSizeValue.textContent = typography.fontSize + "px";
-  if (lineHeightValue) lineHeightValue.textContent = String(typography.lineHeight);
-
-  updateTypographyPreview();
-}
-
-function updateTypographyPreview() {
-  const preview = qs("#typography-preview");
-  if (!preview) return;
-  const values = readTypographyFormValues();
-  const enEl = qs(".settings-preview__en", preview);
-  const bnEl = qs(".settings-preview__bn", preview);
-  if (enEl) {
-    enEl.style.fontFamily = `"${values.fontEn}", sans-serif`;
-    enEl.style.fontSize = values.fontSize + "px";
-    enEl.style.lineHeight = String(values.lineHeight);
-  }
-  if (bnEl) {
-    bnEl.style.fontFamily = `"${values.fontBn}", serif`;
-    bnEl.style.fontSize = values.fontSize + "px";
-    bnEl.style.lineHeight = String(values.lineHeight);
-  }
-}
-
-function initTypographySettings() {
-  applyTypography(getStoredTypography());
-
-  const fontEnSelect = qs("#font-en-select");
-  const fontBnSelect = qs("#font-bn-select");
-  const fontSizeRange = qs("#font-size-range");
-  const lineHeightRange = qs("#line-height-range");
-  const fontSizeValue = qs("#font-size-value");
-  const lineHeightValue = qs("#line-height-value");
-
-  if (fontEnSelect) fontEnSelect.addEventListener("change", updateTypographyPreview);
-  if (fontBnSelect) fontBnSelect.addEventListener("change", updateTypographyPreview);
-  if (fontSizeRange) {
-    fontSizeRange.addEventListener("input", () => {
-      if (fontSizeValue) fontSizeValue.textContent = fontSizeRange.value + "px";
-      updateTypographyPreview();
-    });
-  }
-  if (lineHeightRange) {
-    lineHeightRange.addEventListener("input", () => {
-      if (lineHeightValue) lineHeightValue.textContent = lineHeightRange.value;
-      updateTypographyPreview();
-    });
-  }
-}
 
 /* ---------- AI Configuration (Gemini) ---------- */
 function getStoredAiConfig() {
@@ -5176,7 +5689,6 @@ function initSettingsModal() {
   const settingsTriggers = qsa('[data-modal-open="settings-modal"]');
   settingsTriggers.forEach((trigger) => {
     trigger.addEventListener("click", () => {
-      populateTypographyForm(getStoredTypography());
       populateExamPrefsForm(getStoredExamPrefs());
       if (saveNote) saveNote.textContent = "";
     });
@@ -5184,7 +5696,6 @@ function initSettingsModal() {
 
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
-      saveTypography(readTypographyFormValues());
       saveAiConfig();
       saveExamPrefs();
       if (saveNote) saveNote.textContent = "Settings saved.";
@@ -5194,7 +5705,6 @@ function initSettingsModal() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  initTypographySettings();
   initAiConfigSettings();
   initSettingsModal();
 });
@@ -5414,18 +5924,128 @@ Formatting math and chemistry:
   "$2H_2 + O_2 \\rightarrow 2H_2O$", "$\\sqrt{16} = 4$".
 - Do not use plain-text approximations for these (e.g. "x^2", "H2SO4",
   "->") — always use the $...$ / $$...$$ LaTeX form instead.
-- Text with no math or chemistry content should NOT contain any $ signs.`;
+- Text with no math or chemistry content should NOT contain any $ signs.${
+    config.attachmentCount > 0
+      ? `\n\nAttached source material: ${config.attachmentCount} file(s) (captured photo(s) and/or uploaded document(s)/image(s)) are attached to this request. Base the exam questions on the content of those files — the text, diagrams, tables, or problems shown in them — combined with the subject/topic/prompt above. If a file is unreadable or irrelevant, fall back to the subject/topic/prompt instead.`
+      : ""
+  }`;
 }
+/**
+ * Best-effort repair for a JSON string that failed to parse as-is.
+ * Gemini is asked to return raw JSON, but in practice it can still:
+ *  - wrap the array in ```json ... ``` markdown fences
+ *  - leave a trailing comma before a closing ] or }
+ *  - emit a raw backslash inside a string that isn't a valid JSON
+ *    escape (e.g. "\frac{1}{x}" — \f IS a valid JSON escape but means
+ *    form-feed, so it silently corrupts the string instead of failing;
+ *    "\r" and "\right" have the same problem) — this doubles any
+ *    backslash that isn't followed by a recognized JSON escape char
+ *  - get cut off mid-array if the response hit the token limit, in
+ *    which case we salvage every complete "{...}" question object up
+ *    to the truncation point instead of discarding the whole batch
+ * Each fix is tried in order; the function returns the first variant
+ * that parses successfully, or null if nothing works.
+ */
+function repairAndParseGeminiJson(rawText) {
+  let text = rawText.trim();
+
+  // Strip ```json ... ``` or ``` ... ``` fences if present.
+  const fenceMatch = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  const attempts = [text];
+
+  // Escape stray backslashes that aren't a valid JSON escape sequence
+  // (\" \\ \/ \b \f \n \r \t \uXXXX) — turns "\frac" into "\\frac" so
+  // the string content itself still reads as literal LaTeX.
+  attempts.push(
+    text.replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
+  );
+
+  // Drop trailing commas before a closing bracket/brace.
+  attempts.push(attempts[attempts.length - 1].replace(/,(\s*[\]}])/g, "$1"));
+
+  for (const candidate of attempts) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {
+      // try the next repair strategy
+    }
+  }
+
+  // Last resort: the array may have been cut off mid-question by a
+  // token limit. Pull out every syntactically-complete {...} object
+  // from the (possibly backslash-fixed) text and parse those
+  // individually, discarding only the incomplete tail object.
+  const salvageSource = attempts[1];
+  const objectMatches = salvageSource.match(/\{[^{}]*\}/g) || [];
+  const salvaged = [];
+  for (const objText of objectMatches) {
+    try {
+      const obj = JSON.parse(objText);
+      if (obj && typeof obj === "object" && obj.question) salvaged.push(obj);
+    } catch (e) {
+      // skip this malformed/incomplete object
+    }
+  }
+  return salvaged.length > 0 ? salvaged : null;
+}
+/** Reads a File as a base64 string (no "data:...;base64," prefix),
+    caching the result on the attachment object so re-generation
+    (retry) doesn't need to re-read the file. */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(reader.error || new Error("FILE_READ_ERROR"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Gemini's inline-data endpoint only understands a fixed set of mime
+    types. Word/PowerPoint files aren't among them (Gemini has no
+    native .docx/.pptx parser the way it does for PDF/images), so those
+    are best-effort: sent as a text/plain fallback (which Gemini simply
+    ignores if the bytes aren't actually text) alongside a note in the
+    prompt to rely on the subject/topic instead when a file can't be read. */
+const GEMINI_SUPPORTED_MIME_TYPES = new Set([
+  "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
+  "application/pdf",
+]);
+function resolveGeminiMimeType(attachment) {
+  if (GEMINI_SUPPORTED_MIME_TYPES.has(attachment.mimeType)) return attachment.mimeType;
+  if (attachment.kind === "image") return "image/jpeg"; // safe default for camera captures without a set MIME type
+  return null; // .doc/.docx/.ppt/.pptx — not natively parseable by Gemini's file API
+}
+
+/** Builds the extra `inlineData` parts for every attachment Gemini can
+    actually read. Word/PowerPoint attachments are skipped here (see
+    resolveGeminiMimeType) — buildGeminiPrompt() already tells the model
+    to fall back to the subject/topic/prompt when source files can't be
+    used, so this failing open is safe rather than silently wrong. */
+async function buildAttachmentParts(attachments) {
+  const parts = [];
+  for (const att of attachments) {
+    const mimeType = resolveGeminiMimeType(att);
+    if (!mimeType) continue;
+    if (!att.base64) att.base64 = await fileToBase64(att.file);
+    parts.push({ inlineData: { mimeType, data: att.base64 } });
+  }
+  return parts;
+}
+
 async function generateQuestionsWithGemini(config) {
   const aiConfig = getStoredAiConfig();
   if (!aiConfig.apiKey) throw new Error("NO_API_KEY");
   const model = aiConfig.model || "gemini-3.1-flash-lite";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(aiConfig.apiKey)}`;
+  const attachmentParts = await buildAttachmentParts(config.attachments || []);
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: buildGeminiPrompt(config) }] }],
+      contents: [{ role: "user", parts: [{ text: buildGeminiPrompt(config) }, ...attachmentParts] }],
       generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
     }),
   });
@@ -5434,9 +6054,23 @@ async function generateQuestionsWithGemini(config) {
     throw new Error(`GEMINI_HTTP_${response.status}: ${errText.slice(0, 200)}`);
   }
   const data = await response.json();
+  const finishReason = data?.candidates?.[0]?.finishReason;
   const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
   let parsed;
-  try { parsed = JSON.parse(text); } catch (e) { throw new Error("GEMINI_BAD_JSON"); }
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    parsed = repairAndParseGeminiJson(text);
+    if (!parsed) {
+      // Logged (not shown to the user) so a bad response can actually be
+      // diagnosed instead of just surfacing as an opaque GEMINI_BAD_JSON.
+      console.error("Gemini returned unparseable JSON.", {
+        finishReason, textPreview: text.slice(0, 500),
+      });
+      const reasonSuffix = finishReason && finishReason !== "STOP" ? `_${finishReason}` : "";
+      throw new Error(`GEMINI_BAD_JSON${reasonSuffix}`);
+    }
+  }
   if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("GEMINI_EMPTY");
   return parsed;
 }
@@ -5455,12 +6089,109 @@ function generateSampleQuestions(config) {
   }
   return out;
 }
+/**
+ * Defensive fix-up for AI-emitted math/chemistry text. The prompt asks
+ * Gemini to always wrap LaTeX in $...$ / $$...$$, but models sometimes
+ * emit raw LaTeX commands (e.g. "x + \frac{1}{x} = 3") with no dollar
+ * delimiters at all — KaTeX's auto-render only looks inside $...$, so
+ * un-wrapped LaTeX like this would otherwise show up as literal
+ * backslash-command text in the exam instead of typeset notation.
+ * This scans for common LaTeX command patterns outside of any existing
+ * $...$/$$...$$ segment and wraps just that stray command (plus its
+ * argument braces) in $...$ so renderMathIn() can pick it up. Text with
+ * no LaTeX commands, or that's already correctly delimited, is returned
+ * untouched.
+ */
+const LATEX_COMMAND_RE = /\\(?:frac|sqrt|sum|int|lim|prod|left|right|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|sim|propto|infty|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Delta|Gamma|Theta|Lambda|Sigma|Phi|Psi|Omega|rightarrow|leftarrow|Rightarrow|Leftarrow|leftrightarrow|Leftrightarrow|longrightarrow|to|implies|iff|circ|degree|text|mathrm|mathbb|mathcal|mathbf|overline|underline|vec|hat|dot|partial|in|notin|ni|subset|subseteq|supset|supseteq|cup|cap|setminus|emptyset|varnothing|forall|exists|nexists|neg|lnot|wedge|vee|land|lor|mid|nmid|parallel|perp|angle|triangle|square|therefore|because|dfrac|binom|nabla|oplus|otimes|langle|rangle)\b(?:\{[^{}]*\}|\[[^\[\]]*\])*/g;
+// Matches one LaTeX command (as above) OR a bare backslash-escaped
+// brace/symbol (e.g. "\{", "\}", "\," ) that commonly appears glued to
+// real commands in set-builder notation like "\{x : x \in \mathbb{N}\}".
+const LATEX_TOKEN_RE = new RegExp(LATEX_COMMAND_RE.source + "|\\\\[{}(),.]", "g");
+function autoWrapStrayLatex(text) {
+  if (typeof text !== "string" || text.indexOf("\\") === -1) return text;
+
+  // Walk the string, tracking whether we're inside an existing $...$ or
+  // $$...$$ segment; only touch \-commands found OUTSIDE those segments
+  // (anything already inside dollar signs is left exactly as the model
+  // wrote it, since KaTeX will handle it directly).
+  const segments = text.split(/(\${1,2}[^$]*\${1,2})/);
+  return segments
+    .map((seg) => {
+      if (seg.startsWith("$")) return seg; // already-delimited math — leave alone
+      if (seg.indexOf("\\") === -1) return seg;
+
+      // Merge each RUN of LaTeX tokens (plus whatever plain characters —
+      // variable names, digits, colons, commas, spaces — sit between
+      // them) into a single $...$ span, instead of wrapping each \command
+      // in isolation. Wrapping commands individually breaks expressions
+      // like "\{x : x \in \mathbb{N}, x \text{...}\}" into fragments —
+      // only the isolated \text{...} became math, while the surrounding
+      // "\{x : x \in \mathbb{N}, x" and trailing "\}" were left as literal
+      // backslash text outside any $ delimiter, rendering as garbled
+      // characters instead of typeset set-builder notation. Grouping the
+      // whole run keeps the expression intact for KaTeX to parse as one
+      // unit.
+      const tokens = [];
+      let match;
+      LATEX_TOKEN_RE.lastIndex = 0;
+      while ((match = LATEX_TOKEN_RE.exec(seg)) !== null) {
+        tokens.push({ start: match.index, end: match.index + match[0].length });
+      }
+      if (tokens.length === 0) return seg;
+
+      // Merge tokens into runs, allowing short gaps of plain text
+      // (variable names, punctuation, single spaces) between consecutive
+      // commands to stay inside the same run. A gap is only treated as
+      // ending the run if it contains a newline or is unusually long
+      // (likely prose, not part of the same expression).
+      const MAX_GAP = 20; // e.g. ", x < 5" or "1, 2, 3" between braces
+      const runs = [];
+      let curStart = tokens[0].start;
+      let curEnd = tokens[0].end;
+      for (let i = 1; i < tokens.length; i++) {
+        const gap = tokens[i].start - curEnd;
+        const gapText = seg.slice(curEnd, tokens[i].start);
+        if (gap <= MAX_GAP && gapText.indexOf("\n") === -1) {
+          curEnd = tokens[i].end;
+        } else {
+          runs.push({ start: curStart, end: curEnd });
+          curStart = tokens[i].start;
+          curEnd = tokens[i].end;
+        }
+      }
+      runs.push({ start: curStart, end: curEnd });
+
+      let out = "";
+      let cursor = 0;
+      runs.forEach((run) => {
+        out += seg.slice(cursor, run.start);
+        out += `$${seg.slice(run.start, run.end)}$`;
+        cursor = run.end;
+      });
+      out += seg.slice(cursor);
+      return out;
+    })
+    .join("");
+}
+/** Applies autoWrapStrayLatex to every text field the AI can populate
+    on a single question object (question, each option, explanation). */
+function sanitizeQuestionMath(q) {
+  return {
+    ...q,
+    question: autoWrapStrayLatex(q.question),
+    options: Array.isArray(q.options) ? q.options.map(autoWrapStrayLatex) : q.options,
+    explanation: autoWrapStrayLatex(q.explanation),
+  };
+}
 function buildExamFromQuestions(config, rawQuestions) {
-  const questions = rawQuestions.slice(0, config.questionCount).map((q, i) => ({
-    id: `question-${i + 1}`,
-    question: q.question, options: q.options,
-    correctAnswer: q.correctAnswer, explanation: q.explanation,
-  }));
+  const questions = rawQuestions.slice(0, config.questionCount).map((q, i) => {
+    const clean = sanitizeQuestionMath(q);
+    return {
+      id: `question-${i + 1}`,
+      question: clean.question, options: clean.options,
+      correctAnswer: clean.correctAnswer, explanation: clean.explanation,
+    };
+  });
   return {
     examId: genId("exam"),
     subject: config.subject, topic: config.topic, prompt: config.prompt,
@@ -5489,7 +6220,16 @@ function showView(name) {
 
 /* ---------- Generating view ---------- */
 function withExamDefaults(config) {
-  return { ...config, marksPerQuestion: config.marksPerQuestion ?? 1, negativeMarking: config.negativeMarking ?? 0.25 };
+  return {
+    ...config,
+    marksPerQuestion: config.marksPerQuestion ?? 1,
+    negativeMarking: config.negativeMarking ?? 0.25,
+    // Re-attach the live File objects here (not persisted — see
+    // readAiModeFormConfig) so retry/sample from the Generating view
+    // still has access to whatever was captured/uploaded on Home.
+    attachments: aiModeAttachments,
+    attachmentCount: aiModeAttachments.length,
+  };
 }
 async function runGeneration(config, useSample) {
   const loading = qs("#generator-loading");
@@ -5502,6 +6242,7 @@ async function runGeneration(config, useSample) {
     const exam = buildExamFromQuestions(config, rawQuestions);
     createExamSession(exam);
     localStorage.removeItem(EXAM_CONFIG_STORAGE_KEY);
+    clearAiModeAttachments();
     enterLiveExam();
   } catch (err) {
     loading.classList.add("is-hidden");
@@ -5557,9 +6298,9 @@ const BENGALI_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", 
 function toBengaliDigits(n) {
   return String(n).replace(/[0-9]/g, (d) => BENGALI_DIGITS[Number(d)]);
 }
-/** Zero-padded question number, localized to Bengali numerals when the
-    exam language is Bengali (matches the "bn"-only check used elsewhere
-    for language-specific rendering, e.g. renderAnswerReview). */
+/** Zero-padded question number, localized to Bengali numerals when
+    passed true (i.e. exam language is "bn" or "en-bn" — see
+    usesLocalizedLabels below). */
 function formatQuestionNumber(index, isBn) {
   const padded = String(index + 1).padStart(2, "0");
   return (isBn ? toBengaliDigits(padded) : padded) + ".";
@@ -5571,12 +6312,13 @@ const OPTION_LETTERS_BN = ["ক", "খ", "গ", "ঘ"];
 function optionLetters(isBn) {
   return isBn ? OPTION_LETTERS_BN : OPTION_LETTERS_EN;
 }
-/* Whether option markers (ক/খ/গ/ঘ) and the "ব্যাখ্যা" label should be
-   used for a given exam language. Unlike isBn (which drives Bengali
-   font class + Bengali numerals and only applies to pure "bn" exams),
-   this also covers the mixed "en-bn" language so English+বাংলা exams
-   get localized option letters and explanation label too, while the
-   rest of the question/option text stays exactly as generated. */
+/* Whether option markers (ক/খ/গ/ঘ), question numbers (০১, ০২...), and
+   the "ব্যাখ্যাঃ" label should be used for a given exam language.
+   Unlike the strict isBn flag (which still separately drives the
+   Bengali font class and only applies to pure "bn" exams), this also
+   covers the mixed "en-bn" language so English+বাংলা exams get all
+   three of these localized too, while the rest of the question/option
+   text stays exactly as generated. */
 function usesLocalizedLabels(language) {
   return language === "bn" || language === "en-bn";
 }
@@ -5589,7 +6331,8 @@ function renderQuestionStream() {
   const stream = qs("#question-stream");
   stream.innerHTML = "";
   const isBn = s.exam.language === "bn";
-  const letters = optionLetters(usesLocalizedLabels(s.exam.language));
+  const useLocalized = usesLocalizedLabels(s.exam.language);
+  const letters = optionLetters(useLocalized);
 
   s.exam.questions.forEach((q, index) => {
     const card = document.createElement("div");
@@ -5607,7 +6350,7 @@ function renderQuestionStream() {
 
     const numBadge = document.createElement("span");
     numBadge.className = "question-card__num";
-    numBadge.textContent = formatQuestionNumber(index, isBn);
+    numBadge.textContent = formatQuestionNumber(index, useLocalized);
     heading.appendChild(numBadge);
     heading.appendChild(document.createTextNode(q.question));
 
@@ -5884,7 +6627,7 @@ function renderAnswerReview() {
     if (isBn) qText.classList.add("lang-bn");
     const numBadge = document.createElement("span");
     numBadge.className = "review-question__num";
-    numBadge.textContent = formatQuestionNumber(index, isBn);
+    numBadge.textContent = formatQuestionNumber(index, useLocalized);
     qText.appendChild(numBadge);
     qText.appendChild(document.createTextNode(q.question));
     head.appendChild(qText);
@@ -5931,7 +6674,7 @@ function renderAnswerReview() {
     if (q.explanation) {
       const explanation = document.createElement("div");
       explanation.className = "review-explanation";
-      explanation.innerHTML = `<div class="review-explanation__label">${useLocalized ? "ব্যাখ্যা" : "Explanation"}</div>`;
+      explanation.innerHTML = `<div class="review-explanation__label">${useLocalized ? "ব্যাখ্যাঃ" : "Explanation"}</div>`;
       const expText = document.createElement("div");
       if (isBn) expText.classList.add("lang-bn");
       expText.textContent = q.explanation;
@@ -5955,7 +6698,7 @@ function initStatisticsView() {
 const PDF_SETTINGS_KEY = "mcq-exam-pdf-settings";
 const PDF_SETTINGS_DEFAULTS = {
   // Option layout is no longer a stored/global setting — every question
-  // auto-detects its own layout at render time (see detectOptionLayout()).
+  // auto-detects its own layout during pagination (see chooseBestOptionLayout()).
   paperSize: "A4",       // "A4" | "Legal" | "Letter"
   pageColor: "#ffffff",
   fontEn: "Times New Roman",
@@ -6051,11 +6794,14 @@ function updatePdfTypographyPreview() {
 
 /** Applies stored/edited PDF settings to the live paper-canvas element.
     Option layout is intentionally not part of this — it's decided per
-    question at render time by detectOptionLayout(), not a global setting. */
+    question during pagination by chooseBestOptionLayout(), not a global
+    setting. */
 function applyPdfSettingsToCanvas(settings) {
   const canvas = qs("#paper-canvas");
   if (!canvas) return;
   canvas.setAttribute("data-size", settings.paperSize);
+  const activeLang = liveExamState.session?.exam?.language === "bn" ? "bn" : "en";
+  canvas.setAttribute("lang", activeLang);
   canvas.style.setProperty("--pdf-page-bg", settings.pageColor);
   canvas.style.setProperty("--pdf-font-color", settings.fontColor);
   canvas.style.setProperty("--pdf-font-en", `"${settings.fontEn}", serif`);
@@ -6073,43 +6819,36 @@ function applyPdfSettingsToCanvas(settings) {
   if (liveExamState.session) paginateExam();
 }
 
-/** Auto-detects the best option layout for ONE question, independently of
-    every other question, based on that question's own option text lengths.
-    This is what "smart layout" means: each MCQ picks whichever of the three
-    arrangements lets its four options fit the two print columns cleanly —
-    there is no single mode forced across the whole document.
-      - Short options  -> "horizontal": A B C D run left-to-right, since
-        they're compact enough to sit side by side in one line.
-      - Long options   -> "vertical": stacked one per line, since long text
-        would wrap awkwardly or overflow in a side-by-side arrangement.
-      - In-between     -> "rectangular": a balanced 2x2 grid (A/B on top,
-        C/D below), the best fit when options are too long for one row but
-        too short to need full vertical stacking. */
-function detectOptionLayout(options) {
-  const texts = (options || []).map((t) => String(t || ""));
-  const maxLen = texts.reduce((max, t) => Math.max(max, t.length), 0);
-  const totalLen = texts.reduce((sum, t) => sum + t.length, 0);
-  const hasLineBreak = texts.some((t) => /\n/.test(t));
-
-  if (hasLineBreak || maxLen > 28 || totalLen > 70) return "vertical";
-  if (maxLen <= 12 && totalLen <= 40) return "horizontal";
-  return "rectangular";
-}
-
 /** Applies inline styles for one of the three option layouts (horizontal /
     vertical / rectangular) directly to a single question's options wrap.
-    Called per-question with that question's own auto-detected layout, so
-    different questions on the same page can each use whichever of the
-    three arrangements fits their own option text best. */
+      - "horizontal": A B C D run left-to-right in one line — used when
+        every option's text actually fits on a single line at that width.
+      - "rectangular": a balanced 2x2 grid (A/B on top, C/D below) — used
+        when options are too long for one row but fit without wrapping
+        in a 2-column grid.
+      - "vertical": stacked one per line — the fallback when even the
+        2-column grid wraps an option onto multiple lines.
+    Called per-question via chooseBestOptionLayout(), which measures the
+    real rendered wrap of this exact block at its true column width (see
+    paginateExam()) rather than guessing from option text length — a
+    short-looking LaTeX expression and a long plain-text string of the
+    same character count can wrap completely differently once actually
+    typeset, so text length alone isn't a reliable signal. */
 function applyOptionLayoutToWrap(wrap, layoutMode) {
   if (layoutMode === "horizontal") {
     wrap.style.display = "flex";
     wrap.style.gridTemplateColumns = "";
-    wrap.style.flexWrap = "wrap";
+    wrap.style.flexWrap = "nowrap";
     wrap.style.gap = "2mm 6mm";
     qsa(".paper-opt", wrap).forEach((row) => {
-      row.style.flex = "1 1 auto";
-      row.style.minWidth = "40mm";
+      // Equal-width columns that share the row (flex-basis 0, so width
+      // comes purely from flex-grow, not from content or a min-width
+      // floor) — four short options like "ক. 10" then really do sit
+      // side by side in one row instead of being forced to wrap just
+      // because each one previously had to claim 40mm regardless of
+      // how little text it actually held.
+      row.style.flex = "1 1 0";
+      row.style.minWidth = "0";
       row.style.justifyContent = "flex-start";
       row.style.gap = "2mm";
     });
@@ -6140,12 +6879,13 @@ function applyOptionLayoutToWrap(wrap, layoutMode) {
 }
 
 function buildQuestionBlock(q, index, state, language) {
-  const letters = optionLetters(usesLocalizedLabels(language));
+  const useLocalized = usesLocalizedLabels(language);
+  const letters = optionLetters(useLocalized);
   const block = document.createElement("div");
-  block.className = "paper-question";
+  block.className = "paper-question" + (useLocalized ? " lang-bn" : "");
   const numLine = document.createElement("div");
   numLine.className = "paper-question__num";
-  numLine.textContent = `${String(index + 1).padStart(2, "0")}. ${q.question}`;
+  numLine.textContent = `${formatQuestionNumber(index, useLocalized)} ${q.question}`;
   block.appendChild(numLine);
 
   const opts = document.createElement("div");
@@ -6156,6 +6896,7 @@ function buildQuestionBlock(q, index, state, language) {
     const row = document.createElement("div");
     row.className = "paper-opt" + (isCorrectOpt ? " pq-correct" : isSelectedWrong ? " pq-wrong" : "");
     const left = document.createElement("span");
+    left.className = "paper-opt__text";
     left.textContent = `${letters[idx]}. ${optText}`;
     const right = document.createElement("span");
     right.textContent = isCorrectOpt ? "✓" : isSelectedWrong ? "✕" : "";
@@ -6167,25 +6908,105 @@ function buildQuestionBlock(q, index, state, language) {
 
   const exp = document.createElement("div");
   exp.className = "paper-explanation";
-  exp.innerHTML = usesLocalizedLabels(language) ? `<b>ব্যাখ্যা:</b> ` : `<b>Explanation:</b> `;
+  exp.innerHTML = useLocalized ? `<b>ব্যাখ্যাঃ</b> ` : `<b>Explanation:</b> `;
   exp.appendChild(document.createTextNode(q.explanation));
   block.appendChild(exp);
 
-  // Each question independently auto-detects its own best-fit layout from
-  // its own option text — one question can render horizontal while the
-  // next renders vertical or rectangular, whichever fits that question.
-  applyOptionLayoutToWrap(opts, detectOptionLayout(q.options));
+  // Layout (horizontal / rectangular / vertical) is NOT decided here —
+  // at this point the block isn't attached to the DOM at its real
+  // column width yet, so there's nothing accurate to measure against.
+  // A raw-text-length guess was tried here previously, but LaTeX markup
+  // (e.g. "$(a+b)(a^2+ab+b^2)$") measures long as a string while
+  // rendering short, and even a rendered-length estimate can't know
+  // whether a specific option actually wraps at the true printed column
+  // width. paginateExam() renders this block's KaTeX first, then
+  // measures real wrapping at the true column width via
+  // chooseBestOptionLayout() before pagination — see there.
   renderMathIn(block);
 
   return block;
 }
 
+/** Given one question's already-in-DOM .paper-question__opts wrap (at
+    its true rendered column width, with KaTeX already applied), tries
+    each layout from most-compact to least and keeps the first one where
+    no option's text wraps onto a second line within its own box.
+    Comparing scrollHeight to clientHeight does NOT reliably detect this:
+    with the default `overflow: visible`, a wrapped span's box just grows
+    to fit every line, so scrollHeight and clientHeight end up equal even
+    when the text wrapped — that comparison only works when the box's
+    height is constrained (e.g. overflow: hidden), which .paper-opt__text
+    is not. Instead this measures each option's actual rendered height
+    against a true one-line reference height (a clone of the same span
+    holding a short, definitely-one-line placeholder, laid out under the
+    exact same font/size/width) — if an option's real height comes out
+    taller than that one-line reference, its text wrapped, and this
+    layout doesn't fit. */
+function chooseBestOptionLayout(wrap) {
+  const layouts = ["horizontal", "rectangular", "vertical"];
+  for (const layout of layouts) {
+    if (layout === "vertical") return "vertical"; // always fits — nothing left to fall back to
+    applyOptionLayoutToWrap(wrap, layout);
+    const spans = qsa(".paper-opt__text", wrap);
+    const fits = spans.every((span) => !optionTextWraps(span));
+    if (fits) return layout;
+  }
+  return "vertical";
+}
+
+/** True if `span`'s content currently renders on more than one line.
+    Clones the span (same computed width, font, and content) with
+    `white-space: nowrap` forced on, so the clone always renders as
+    exactly one line — its height is the true single-line reference.
+    If the real span (which wraps normally) is taller than that
+    reference, its text broke onto 2+ lines at the current width. */
+function optionTextWraps(span) {
+  const clone = span.cloneNode(true);
+  clone.style.whiteSpace = "nowrap";
+  clone.style.position = "absolute";
+  clone.style.visibility = "hidden";
+  clone.style.width = "auto";
+  span.parentNode.appendChild(clone);
+  const oneLineHeight = clone.getBoundingClientRect().height;
+  span.parentNode.removeChild(clone);
+  const actualHeight = span.getBoundingClientRect().height;
+  return actualHeight > oneLineHeight + 1; // +1px rounding slack
+}
+
+/** Bengali labels for the PDF result-summary header, keyed to the same
+    English label used in the markup below. Falls back to the English
+    label itself for anything not listed. */
+const PDF_HEADER_LABELS_BN = {
+  "Total Points": "পূর্ণমানঃ",
+  "Time": "সময়ঃ",
+  "Obtained Marks": "প্রাপ্ত নম্বরঃ",
+  "Correct": "সঠিকঃ",
+  "Wrong": "ভুলঃ",
+  "Skipped": "বাদ দেওয়াঃ",
+  "Negative Marks": "নেগেটিভ নম্বরঃ",
+  "Percentage": "শতকরাঃ",
+};
+function pdfHeaderLabel(key, useLocalized) {
+  return useLocalized ? PDF_HEADER_LABELS_BN[key] : `${key}:`;
+}
+/** Localizes a duration string like "12:34" or "1:02:34" by converting
+    its digits to Bengali numerals when useLocalized is true; the H:MM:SS
+    structure itself is unchanged. */
+function localizeDuration(durationText, useLocalized) {
+  return useLocalized ? toBengaliDigits(durationText) : durationText;
+}
+/** Localizes any number/percentage for display: Bengali numerals when
+    useLocalized is true, left as-is (plain digits) otherwise. */
+function localizeNumber(value, useLocalized) {
+  return useLocalized ? toBengaliDigits(String(value)) : String(value);
+}
 /** Builds the first-page header (subject, topic, marks/time summary, and
     a result-stats table). Returns null for continuation pages (2nd page
     onward) — those no longer repeat the subject/topic line, so all of a
     continuation page's vertical space goes to questions instead. */
 function buildPageHeader(exam, result, { isFirstPage, pageNumber }) {
   if (!isFirstPage) return null;
+  const useLocalized = usesLocalizedLabels(exam.language);
   const header = document.createElement("div");
   header.className = "paper-header";
   const negativeMarksTotal = Math.round((exam.negativeMarking || 0) * result.wrong * 100) / 100;
@@ -6193,22 +7014,22 @@ function buildPageHeader(exam, result, { isFirstPage, pageNumber }) {
     <div class="paper-header__subject">${escapeHtml(exam.subject || "Exam")}</div>
     <div class="paper-header__topic">${escapeHtml(exam.topic || "")}</div>
     <div class="paper-header__row">
-      <span><b>Total Marks:</b> ${result.totalMarks}</span>
-      <span><b>Time:</b> ${formatDuration(result.timeAllowed)}</span>
+      <span><b>${pdfHeaderLabel("Total Points", useLocalized)}</b> ${localizeNumber(result.totalMarks, useLocalized)} ${useLocalized ? "নম্বর" : "Marks"}</span>
+      <span><b>${pdfHeaderLabel("Time", useLocalized)}</b> ${localizeDuration(formatDuration(result.timeAllowed), useLocalized)} ${useLocalized ? "মিনিট" : "Minutes"}</span>
     </div>
     <div class="paper-header__stats-wrap">
       <div class="paper-header__stats-line">
-        <span>Obtained Marks: ${result.obtainedMarks}</span>
+        <span>${pdfHeaderLabel("Obtained Marks", useLocalized)} ${localizeNumber(result.obtainedMarks, useLocalized)}</span>
         <span class="paper-header__stats-sep">|</span>
-        <span>Correct: ${result.correct}</span>
+        <span>${pdfHeaderLabel("Correct", useLocalized)} ${localizeNumber(result.correct, useLocalized)}</span>
         <span class="paper-header__stats-sep">|</span>
-        <span>Wrong: ${result.wrong}</span>
+        <span>${pdfHeaderLabel("Wrong", useLocalized)} ${localizeNumber(result.wrong, useLocalized)}</span>
         <span class="paper-header__stats-sep">|</span>
-        <span>Skipped: ${result.unanswered}</span>
+        <span>${pdfHeaderLabel("Skipped", useLocalized)} ${localizeNumber(result.unanswered, useLocalized)}</span>
         <span class="paper-header__stats-sep">|</span>
-        <span>Negative Marks: ${negativeMarksTotal}</span>
+        <span>${pdfHeaderLabel("Negative Marks", useLocalized)} ${localizeNumber(negativeMarksTotal, useLocalized)}</span>
         <span class="paper-header__stats-sep">|</span>
-        <span>Percentage: ${result.percentage}%</span>
+        <span>${pdfHeaderLabel("Percentage", useLocalized)} ${localizeNumber(result.percentage, useLocalized)}%</span>
       </div>
     </div>`;
   return header;
@@ -6243,9 +7064,10 @@ function paginateExam() {
 
   // Build every question block once, off-screen, so we can measure real
   // rendered heights (font, size, and line-height already applied via
-  // the CSS custom properties on #paper-canvas). Each block picks its own
-  // layout automatically from its own option text (see buildQuestionBlock),
-  // so different questions can use different arrangements.
+  // the CSS custom properties on #paper-canvas). Option layout
+  // (horizontal/rectangular/vertical) is decided per-question further
+  // below, once each block is actually placed at its true column width —
+  // see chooseBestOptionLayout().
   const blocks = exam.questions.map((q, index) => {
     const state = getQuestionReviewState(s, q);
     return buildQuestionBlock(q, index, state, exam.language);
@@ -6299,6 +7121,7 @@ function paginateExam() {
   const probe = document.createElement("div");
   probe.className = "paper-canvas";
   probe.setAttribute("data-size", settings.paperSize);
+  probe.setAttribute("lang", canvas.getAttribute("lang") || (exam.language === "bn" ? "bn" : "en"));
   probe.style.cssText = "position:absolute; visibility:hidden; pointer-events:none; left:-9999px; top:0; gap:0; padding:0;";
   Array.from(canvas.style).forEach((prop) => {
     if (prop.startsWith("--pdf-")) probe.style.setProperty(prop, canvas.style.getPropertyValue(prop));
@@ -6332,54 +7155,102 @@ function paginateExam() {
   // shortfall compounded across a full column of questions until the last
   // one on a page overran the reserved footer space (the footer-overlap
   // bug: explanation text landing on top of "Page N/M").
+  //
+  // Each block's OWN node (not a clone) is used here, because
+  // chooseBestOptionLayout() needs to try each candidate layout and
+  // measure real text wrap at this exact column width — that decision
+  // has to stick for the block that actually ends up on the page, not
+  // get thrown away with a disposable clone.
   probeColumns.style.display = "block";
   probeColumns.style.width = `${columnWidthMm}mm`;
   const heights = blocks.map((block) => {
-    probeColumns.appendChild(block.cloneNode(true));
-    const el = probeColumns.lastElementChild;
-    const rect = el.getBoundingClientRect();
-    const marginBottom = parseFloat(getComputedStyle(el).marginBottom) || 0;
+    probeColumns.appendChild(block);
+    const opts = qs(".paper-question__opts", block);
+    if (opts) applyOptionLayoutToWrap(opts, chooseBestOptionLayout(opts));
+    const rect = block.getBoundingClientRect();
+    const marginBottom = parseFloat(getComputedStyle(block).marginBottom) || 0;
     const h = rect.height + marginBottom;
-    probeColumns.removeChild(el);
+    probeColumns.removeChild(block);
     return h;
   });
   document.body.removeChild(probe);
 
-  // Greedily pack questions into 2 explicit columns per page. The header
-  // sits above BOTH columns (full page width), so its height reduces the
-  // available height for column 2 just as much as for column 1 — the
-  // previous version only subtracted it for column 1, which let column 2
-  // run past the bottom of the page (also part of the cut-off-text bug).
+  // Pack questions into 2-column pages. For each page, first find the
+  // longest run of consecutive blocks (starting at the current index)
+  // whose combined height can be split between the two columns without
+  // either column exceeding the page's usable capacity — this is what
+  // actually determines how many questions land on a page, unlike a
+  // naive single-pass column fill (fill col0, then col1, then bail to a
+  // new page the instant col1's NEXT block doesn't fit). That naive
+  // version abandons whatever space is still free in col1 as soon as one
+  // block is too tall for it, even when a later, shorter block in the
+  // list would have fit there — the visible "big empty gap before the
+  // footer, then the very next question already on page 2" bug. Instead:
+  // grow the run one block at a time, and after each addition re-check
+  // that SOME split of the run-so-far into an ordered col0-prefix / col1-
+  // suffix keeps both columns within capacity (col0 always gets the
+  // first blocks, col1 the rest, so reading order — left column top to
+  // bottom, then right column — never changes). The run stops growing
+  // the moment no such split exists, which is exactly when the page is
+  // truly full, not just when one particular column happens to be full.
   const pages = [];
-  let currentPage = null;
-  let colIndex = 0; // 0 = left column, 1 = right column
-  let colFill = 0;
-  let headerHeight = firstHeaderHeight;
 
-  const startNewPage = () => {
-    currentPage = { col0: [], col1: [] };
-    pages.push(currentPage);
-    colIndex = 0;
-    colFill = 0;
-    headerHeight = pages.length === 1 ? firstHeaderHeight : contHeaderHeight;
-  };
-  startNewPage();
-
-  blocks.forEach((block, i) => {
-    const h = heights[i];
-    const capacity = usableHeightPx - headerHeight;
-    const activeCol = colIndex === 0 ? currentPage.col0 : currentPage.col1;
-    if (colFill + h > capacity && activeCol.length > 0) {
-      if (colIndex === 0) {
-        colIndex = 1;
-        colFill = 0;
-      } else {
-        startNewPage();
+  // True if `runHeights` (in original order) can be split into a col0
+  // prefix and col1 suffix that each fit within `capacity`. Because
+  // column order must stay col0-then-col1 (not an arbitrary bin-packing
+  // assignment), the only free choice is WHERE the split point falls —
+  // so this just tries every split point and keeps the run balanced
+  // toward whichever split minimizes the taller column, which in
+  // practice also maximizes how much of the run fits.
+  const findBestSplit = (runHeights, capacity) => {
+    const n = runHeights.length;
+    const prefixSums = [0];
+    for (let i = 0; i < n; i++) prefixSums.push(prefixSums[i] + runHeights[i]);
+    const total = prefixSums[n];
+    let best = null; // { splitIndex, col0Height, col1Height }
+    for (let splitIndex = 0; splitIndex <= n; splitIndex++) {
+      const col0Height = prefixSums[splitIndex];
+      const col1Height = total - col0Height;
+      if (col0Height <= capacity && col1Height <= capacity) {
+        // Prefer the split that keeps both columns most evenly filled
+        // (minimizes the taller column) so pages read as visually
+        // balanced left/right rather than always cramming col0 full.
+        const tallest = Math.max(col0Height, col1Height);
+        if (!best || tallest < best.tallest) {
+          best = { splitIndex, tallest };
+        }
       }
     }
-    (colIndex === 0 ? currentPage.col0 : currentPage.col1).push(block);
-    colFill += h;
-  });
+    return best;
+  };
+
+  let cursor = 0;
+  let pageNumber = 0;
+  while (cursor < blocks.length) {
+    pageNumber += 1;
+    const headerHeight = pageNumber === 1 ? firstHeaderHeight : contHeaderHeight;
+    const capacity = usableHeightPx - headerHeight;
+
+    // Grow the run as long as some valid col0/col1 split still exists.
+    // Always keep at least one block on the page even if it alone
+    // exceeds capacity (matches prior behavior: never drop content).
+    let runEnd = cursor + 1;
+    let lastGoodSplit = findBestSplit(heights.slice(cursor, runEnd), capacity);
+    while (runEnd < blocks.length) {
+      const candidateSplit = findBestSplit(heights.slice(cursor, runEnd + 1), capacity);
+      if (!candidateSplit) break;
+      runEnd += 1;
+      lastGoodSplit = candidateSplit;
+    }
+
+    const runBlocks = blocks.slice(cursor, runEnd);
+    const splitIndex = lastGoodSplit ? lastGoodSplit.splitIndex : runBlocks.length;
+    pages.push({
+      col0: runBlocks.slice(0, splitIndex),
+      col1: runBlocks.slice(splitIndex),
+    });
+    cursor = runEnd;
+  }
 
   // Commit: render the real pages into #paper-canvas, each wrapped in a
   // .paper-page-frame so the on-screen scale-to-fit (applyPreviewScale)
@@ -6568,6 +7439,7 @@ function enterPrint() {
   const canvas = qs("#paper-canvas");
   if (canvas) {
     canvas.setAttribute("data-size", settings.paperSize);
+    canvas.setAttribute("lang", session.exam?.language === "bn" ? "bn" : "en");
     canvas.style.setProperty("--pdf-page-bg", settings.pageColor);
     canvas.style.setProperty("--pdf-font-color", settings.fontColor);
     canvas.style.setProperty("--pdf-font-en", `"${settings.fontEn}", serif`);
@@ -6617,8 +7489,32 @@ async function downloadExam() {
   // Render at true 100% size for capture — the on-screen preview may be
   // scaled down to fit the viewport (--pdf-preview-scale), which must not
   // leak into the exported file.
-  const prevScale = canvas.style.getPropertyValue("--pdf-preview-scale");
-  canvas.style.setProperty("--pdf-preview-scale", "1");
+  //
+  // IMPORTANT (mobile fix): earlier versions of this mutated the live,
+  // visible .paper-page/.paper-page-frame in place (removing the scale
+  // transform, then clipping the frame with overflow:hidden) so it could
+  // capture the page at true size. But the frame's reserved footprint is
+  // still the *scaled-down* size, so clipping it to that while the page
+  // inside is un-transformed just crops the visible on-screen preview
+  // into a broken, partially-cut view for the whole capture loop — which
+  // is exactly the corruption seen on mobile. The safe fix is to never
+  // touch the visible page at all: clone each page into an off-screen
+  // container (rendered, but positioned far outside the viewport so nothing
+  // shifts, reflows, or visibly clips on screen), capture the clone at
+  // true 100% size, then discard it.
+  // The container is appended inside #paper-canvas (not document.body) so
+  // the clone still inherits the live --pdf-font-en/--pdf-font-bn/
+  // --pdf-font-color/--pdf-font-size/--pdf-line-height/--pdf-page-bg
+  // custom properties set on #paper-canvas by the PDF Settings panel —
+  // position:fixed still takes it completely out of the visible layout
+  // regardless of where in the DOM it lives.
+  const offscreen = document.createElement("div");
+  offscreen.style.position = "fixed";
+  offscreen.style.top = "0";
+  offscreen.style.left = "-99999px";
+  offscreen.style.zIndex = "-1";
+  offscreen.style.pointerEvents = "none";
+  canvas.appendChild(offscreen);
 
   try {
     const { jsPDF } = window.jspdf;
@@ -6626,19 +7522,20 @@ async function downloadExam() {
 
     for (let i = 0; i < pageEls.length; i++) {
       const pageEl = pageEls[i];
-      // Force the shadow off directly (not just via the CSS variable) so
-      // this can't leak into the rasterized image regardless of theme —
-      // dark mode's --shadow-lg is a much heavier, more opaque shadow
-      // (rgba(0,0,0,0.4) vs light mode's 0.08) that can rasterize as a
-      // solid-looking dark border around the page at 3x capture scale.
-      const prevShadow = pageEl.style.boxShadow;
-      pageEl.style.setProperty("box-shadow", "none", "important");
-      const rendered = await window.html2canvas(pageEl, {
+      // Clone at true 100% size (no scale-down transform, no box-shadow —
+      // both are purely on-screen preview concerns) and capture the clone,
+      // not the live page, so the visible preview is never touched.
+      const clone = pageEl.cloneNode(true);
+      clone.style.setProperty("transform", "none", "important");
+      clone.style.setProperty("box-shadow", "none", "important");
+      offscreen.innerHTML = "";
+      offscreen.appendChild(clone);
+
+      const rendered = await window.html2canvas(clone, {
         scale: 3,
         useCORS: true,
         backgroundColor: settings.pageColor || "#ffffff",
       });
-      pageEl.style.boxShadow = prevShadow;
 
       const imgData = rendered.toDataURL("image/jpeg", 0.95);
       if (i > 0) doc.addPage([pageWmm, pageHmm], "portrait");
@@ -6653,8 +7550,7 @@ async function downloadExam() {
     console.error("PDF export failed:", err);
     showToast("Couldn't generate the PDF. Please try again.", "danger");
   } finally {
-    canvas.style.setProperty("--pdf-preview-scale", prevScale || "1");
-    applyPreviewScale();
+    offscreen.remove();
     if (btn) btn.removeAttribute("disabled");
   }
 }
@@ -6679,6 +7575,132 @@ function initPrintView() {
   }, 150));
 }
 
+/* ==========================================================================
+   SUB-PAGES — Exams / History / Statistics demo data + rendering.
+   No multi-exam history store exists yet (only one active session is
+   persisted), so these three pages render representative sample data that
+   matches the dashboard's summary numbers (12 exams, 78% avg, 1,240 qs).
+   ========================================================================== */
+const DEMO_EXAM_RECORDS = [
+  { subject: "Bangla Sahitya", topic: "Rabindranath Thakur", status: "in-progress", questions: 20, completed: 5, date: "26 Aug 2026" },
+  { subject: "Agriculture", topic: "Plant Pathology", status: "in-progress", questions: 50, completed: 32, date: "24 Aug 2026" },
+  { subject: "General Science", topic: "Human Physiology", status: "completed", questions: 40, score: 85, date: "21 Aug 2026" },
+  { subject: "Mathematics", topic: "Algebra & Trigonometry", status: "completed", questions: 30, score: 73, date: "18 Aug 2026" },
+  { subject: "English", topic: "Grammar & Vocabulary", status: "completed", questions: 25, score: 91, date: "14 Aug 2026" },
+  { subject: "Bangladesh Affairs", topic: "Liberation War", status: "completed", questions: 35, score: 68, date: "10 Aug 2026" },
+  { subject: "General Science", topic: "Physics — Motion & Force", status: "completed", questions: 30, score: 79, date: "05 Aug 2026" },
+  { subject: "ICT", topic: "Networking Basics", status: "in-progress", questions: 20, completed: 8, date: "02 Aug 2026" },
+  { subject: "Bangla Sahitya", topic: "Kazi Nazrul Islam", status: "completed", questions: 25, score: 82, date: "28 Jul 2026" },
+  { subject: "Mathematics", topic: "Geometry", status: "completed", questions: 30, score: 76, date: "22 Jul 2026" },
+  { subject: "General Knowledge", topic: "International Affairs", status: "completed", questions: 40, score: 70, date: "16 Jul 2026" },
+  { subject: "Agriculture", topic: "Soil Science", status: "completed", questions: 30, score: 88, date: "09 Jul 2026" },
+];
+
+const EXAM_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+const HISTORY_ARROW_SVG = '<svg class="record-row__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function scoreBadgeClass(score) {
+  if (score >= 80) return "badge-success";
+  if (score >= 60) return "badge-primary";
+  return "badge-danger";
+}
+
+/** Renders the "Exams" sub-page: every generated exam, in-progress or
+    completed, most recent first. */
+function renderExamsPage() {
+  const list = qs("#exams-list");
+  if (!list) return;
+  list.innerHTML = DEMO_EXAM_RECORDS.map((rec) => {
+    const statusBadge = rec.status === "completed"
+      ? `<span class="badge badge-success"><span class="badge__dot"></span>Completed</span>`
+      : `<span class="badge badge-warning"><span class="badge__dot"></span>In Progress</span>`;
+    const sideInfo = rec.status === "completed"
+      ? `<div class="record-row__score"><div class="record-row__score-value">${rec.score}%</div><div class="record-row__score-label">Score</div></div>`
+      : `<div class="record-row__score"><div class="record-row__score-value">${rec.completed}/${rec.questions}</div><div class="record-row__score-label">Progress</div></div>`;
+    return `
+      <div class="record-row">
+        <span class="record-row__icon">${EXAM_ICON_SVG}</span>
+        <div class="record-row__body">
+          <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
+          <div class="record-row__meta">
+            <span>${rec.questions} questions</span>
+            <span class="record-row__meta-sep">·</span>
+            <span>${rec.date}</span>
+            <span class="record-row__meta-sep">·</span>
+            ${statusBadge}
+          </div>
+        </div>
+        <div class="record-row__side">
+          ${sideInfo}
+          ${HISTORY_ARROW_SVG}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+/** Renders the "History" sub-page: completed exams only, i.e. everything
+    with a final result to review. */
+function renderHistoryPage() {
+  const list = qs("#history-list");
+  if (!list) return;
+  const completed = DEMO_EXAM_RECORDS.filter((rec) => rec.status === "completed");
+  list.innerHTML = completed.map((rec) => `
+    <div class="record-row">
+      <span class="record-row__icon">${EXAM_ICON_SVG}</span>
+      <div class="record-row__body">
+        <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
+        <div class="record-row__meta">
+          <span>${rec.questions} questions</span>
+          <span class="record-row__meta-sep">·</span>
+          <span>${rec.date}</span>
+        </div>
+      </div>
+      <div class="record-row__side">
+        <span class="badge ${scoreBadgeClass(rec.score)}">${rec.score}%</span>
+        ${HISTORY_ARROW_SVG}
+      </div>
+    </div>`).join("");
+}
+
+/** Renders the "Statistics" overview sub-page: per-subject average score
+    (derived from the same demo records) plus a short recent-results list. */
+function renderStatisticsPage() {
+  const bySubject = qs("#subject-breakdown-list");
+  const recent = qs("#stats-recent-list");
+  if (!bySubject || !recent) return;
+
+  const completed = DEMO_EXAM_RECORDS.filter((rec) => rec.status === "completed");
+  const grouped = {};
+  completed.forEach((rec) => {
+    if (!grouped[rec.subject]) grouped[rec.subject] = [];
+    grouped[rec.subject].push(rec.score);
+  });
+  const subjects = Object.keys(grouped).map((name) => {
+    const scores = grouped[name];
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    return { name, avg };
+  }).sort((a, b) => b.avg - a.avg);
+
+  bySubject.innerHTML = subjects.map((s) => `
+    <div class="subject-breakdown-row">
+      <span class="subject-breakdown-row__name">${escapeHtml(s.name)}</span>
+      <span class="subject-breakdown-row__bar-track"><span class="subject-breakdown-row__bar-fill" style="width:${s.avg}%;"></span></span>
+      <span class="subject-breakdown-row__value">${s.avg}%</span>
+    </div>`).join("");
+
+  recent.innerHTML = completed.slice(0, 5).map((rec) => `
+    <div class="record-row">
+      <span class="record-row__icon">${EXAM_ICON_SVG}</span>
+      <div class="record-row__body">
+        <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
+        <div class="record-row__meta"><span>${rec.date}</span></div>
+      </div>
+      <div class="record-row__side">
+        <span class="badge ${scoreBadgeClass(rec.score)}">${rec.score}%</span>
+      </div>
+    </div>`).join("");
+}
+
 /* ---------- Generic nav + wiring ---------- */
 function initSpaNav() {
   qsa("[data-spa-nav]").forEach((el) => {
@@ -6687,6 +7709,9 @@ function initSpaNav() {
       const target = el.getAttribute("data-spa-nav");
       if (target === "stats") enterStatistics();
       else showView(target);
+      if (target === "exams") renderExamsPage();
+      else if (target === "history") renderHistoryPage();
+      else if (target === "statistics") renderStatisticsPage();
     });
   });
 }
