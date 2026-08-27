@@ -1,15 +1,38 @@
 {
+  "id": "/exampedia/",
   "name": "Exampedia - AI Exam System",
   "short_name": "Exampedia",
   "description": "Configure an AI-generated MCQ exam, or jump back into your exams, history, and statistics.",
   "start_url": "/exampedia/",
   "scope": "/exampedia/",
+  "display_override": [
+    "standalone"
+  ],
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "webapp_icon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "webapp_icon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "webapp_icon/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "webapp_icon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "webapp_icon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "webapp_icon/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
