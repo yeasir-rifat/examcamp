@@ -3,16 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Exampedia — Generate a custom exam with AI</title>
+  <title>MCQ Exam — Generate a custom exam with AI</title>
   <meta name="description" content="Configure an AI-generated MCQ exam, or jump back into your exams, history, and statistics." />
-
-  <!-- Exampedia logo — used as favicon, iOS webclip (apple-touch-icon), and
-       the site header brand mark below. Embedded as base64 data URIs so
-       the app stays a single self-contained HTML file, matching every
-       other asset in this project (fonts aside). -->
-  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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" />
-  <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACrklEQVR4nHVTXUiTURh+zrdvbZN9/mxLCJ2OUtIaiFERFkyhG28quvFGqST7MesuykEdRxmM7CYsg4IihUQIfwokKrZB0I8XA9EWZkpk+f879y312/d2sR9n1nN3znme9z3nfZ4DbAIxBycRYIkdBgYPJ5FAbDM/GZyE5OXl6oDUUTtp3EDhfANnvSInAS6mlpR0SQbbobpsbWqFlQk7bYyQS8pQmrrU7ll40Xyl53SQcxJcLqauF4iJd1QO5Bk12zuz0wx287ISsTLVnwuClVC8z6jTBJdCA99Xho6XPtvzlTgJzMVUBhADAabKXilV7/hoSk0pSA8t3M/UTjS23yv8BQBPzvqzbGs59UUG04XppcUvnxcH9h/tPrgcbc9JBADLuQmn7TrR7oszD9bfSwJPmsvbk1Mts5eI3ldNXgUA4iQyEDEwhvT60KBBr7WlhX3WCt3hea/XK/h8ZQoAcIdHbCgtVZtH3mQU6Bw/lFVltPxpip1AsdLud5J0O7hqaVrsizq52a74TVpOhfsenlhZdVcHJAAQAQBmICLIUNRIVNgABiTKb8AYGAANiXpT7DzajemfBwLGl+PytqYeC4gEcI8YFzkcHhGchKqq1+aTNWtyZeXKYNRBYiK80ABQsGW6NZJvbZQj1htg7DwANR4sn4sp8AFjNXM3UwyiQV6eaQVADo7YEAGY2u5KIdveD5qt+YXaofEW48TcrZ9nysYAoMjpz1oL5Tj1gqlWmQ0H5CnvgeHe8iBYIkhcgMul6ro78igzt1OTscuuCcyq4pzeL84boF3QFesEnYBxeVATHj32rc0+HA9f8pgFADC73ZL+1ad6ffdIf8rj6d/SnVA445rcb6mbcpqPdEmJ5P4Tf30UPApIcEftWuf8TxwHEYPHI4IlR4HFErs5H38Ap4ogAFAhlHIAAAAASUVORK5CYII=" />
-  <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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" />
 
   <!-- Google Fonts: the two fixed site-wide root typefaces (Inter for
        English, Noto Serif Bengali for Bengali) -->
@@ -41,31 +33,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-
-  <!-- Firebase: Google Sign-In (Authentication) + Firestore (per-user cloud
-       storage for exam history, AI/API config, and preferences). Uses the
-       "compat" SDK build so it works with plain <script> tags, no bundler,
-       matching the rest of this single-file app. See auth.js / cloud-store.js
-       below for the actual sign-in flow and Firestore read/write logic. -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script>
-    // Public web config for the "Exampedia" Firebase project. This key is
-    // NOT a secret — Firebase's client config is meant to be embedded in
-    // the page; real access control lives in Firestore Security Rules
-    // (see the rules snippet shared alongside this file), not in hiding
-    // this object.
-    const firebaseConfig = {
-      apiKey: "AIzaSyDS5Dwzn9rlXiRR7XXqZwuA0DyYGFzrPQ",
-      authDomain: "exampedia-2962a.firebaseapp.com",
-      projectId: "exampedia-2962a",
-      storageBucket: "exampedia-2962a.firebasestorage.app",
-      messagingSenderId: "772575586144",
-      appId: "1:772575586144:web:d6610cb4a66052b6986005",
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
 
   <!-- Populated by enterPrint()/paginateExam() with the correct @page size
        for the selected paper size, so a manual browser print (Ctrl/Cmd+P)
@@ -119,11 +86,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: pan-x pan-y;
-  /* Safety net: no single element (long file name, long unbroken word,
-     etc.) should ever be able to widen the page and create horizontal
-     scroll/zoom-out. The real fixes are min-width:0 on the flex/grid
-     chain further down, but this catches anything missed. */
-  overflow-x: hidden;
 }
 
 img,
@@ -526,7 +488,7 @@ h4 {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   font-size: var(--font-size-h3);
   color: var(--color-text-primary);
   flex-shrink: 0;
@@ -535,9 +497,8 @@ h4 {
 .site-header__brand-icon {
   width: 36px;
   height: 36px;
+  color: var(--color-primary);
   flex-shrink: 0;
-  display: block;
-  object-fit: contain;
 }
 
 .site-header__nav {
@@ -1225,33 +1186,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .alert-danger .alert__icon { color: var(--color-danger); }
 
 /* ==========================================================================
-   TOAST VARIANTS — dedicated, opaque styling for popup toasts (as opposed
-   to inline .alert-* banners, which use low-opacity tints that read fine
-   sitting inside a card on --color-surface but look washed-out/near-
-   transparent when floating over arbitrary page content, especially in
-   dark mode where the tint sits on the near-black --color-bg). Solid
-   background + solid border + white icon/text keeps every toast clearly
-   legible regardless of what's behind it or which theme is active.
-   ========================================================================== */
-.toast {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  color: #ffffff;
-  box-shadow: var(--shadow-lg);
-  pointer-events: auto;
-}
-
-.toast-success { background-color: var(--color-success-hover); }
-.toast-danger  { background-color: var(--color-danger-hover); }
-.toast-warning { background-color: var(--color-warning-hover); color: #1f1300; }
-.toast-info    { background-color: var(--color-info-hover); }
-
-/* ==========================================================================
    TABS
    ========================================================================== */
 .tabs {
@@ -1674,7 +1608,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
     right: 12px;
     left: 12px;
   }
-  .toast-container .toast { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
+  .toast-container .alert { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
 }
 
 /* ==========================================================================
@@ -1706,122 +1640,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .icon-btn svg {
   width: 20px;
   height: 20px;
-}
-
-/* ==========================================================================
-   AUTH WIDGET (Google sign-in button / signed-in avatar + dropdown menu)
-   ========================================================================== */
-.auth-widget {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.auth-widget__signin { display: none; align-items: center; gap: 8px; white-space: nowrap; }
-.auth-widget.is-signed-out .auth-widget__signin { display: inline-flex; }
-.auth-widget__user {
-  display: none;
-  position: relative;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.auth-widget.is-signed-in .auth-widget__user { display: inline-flex; }
-.auth-widget__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid var(--color-border);
-  display: block;
-  object-fit: cover;
-  background-color: var(--color-surface-alt);
-}
-.auth-widget__user:hover .auth-widget__avatar { border-color: var(--color-primary-border); }
-.auth-widget__sync-dot {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background-color: var(--color-success);
-  border: 2px solid var(--color-surface);
-}
-.auth-widget__sync-dot.is-syncing { background-color: var(--color-warning); }
-.auth-widget__sync-dot.is-error { background-color: var(--color-danger); }
-.auth-widget__menu {
-  display: none;
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  min-width: 240px;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-  padding: 12px;
-  z-index: 60;
-}
-.auth-widget__menu.is-open { display: block; }
-.auth-widget__menu-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-}
-.auth-widget__avatar-lg {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: var(--color-surface-alt);
-}
-.auth-widget__menu-identity { display: flex; flex-direction: column; min-width: 0; }
-.auth-widget__menu-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.auth-widget__menu-email {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.auth-widget__menu-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  padding: 4px 2px 12px;
-}
-.auth-widget__menu-status .auth-widget__sync-dot {
-  position: static;
-  border: none;
-}
-.auth-widget__menu-signout {
-  width: 100%;
-  text-align: left;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm, 6px);
-  border: none;
-  background: none;
-  color: var(--color-danger);
-  font-size: 14px;
-  cursor: pointer;
-}
-.auth-widget__menu-signout:hover { background-color: var(--color-danger-light); }
-
-@media (max-width: 640px) {
-  .auth-widget__signin span { display: none; }
 }
 
 /* ==========================================================================
@@ -2085,20 +1903,12 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* This is a CSS Grid item (child of .homepage-grid). Grid/flex items
-     default to min-width: auto, so long unbreakable content (e.g. a long
-     captured/uploaded file name deep inside) can still force this card
-     wider than its grid track, overflowing the whole page horizontally —
-     even though the track itself is minmax(0, 1.4fr). min-width: 0 here
-     is what actually lets ellipsis/wrapping work further down the tree. */
-  min-width: 0;
 }
 
 .ai-mode-card form {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0;
 }
 
 /* Push the CTA + note to the bottom so the two columns' bottom edges align
@@ -2153,7 +1963,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   width: 20px;
   height: 20px;
   color: var(--color-primary);
-  flex-shrink: 0;
 }
 
 .ai-mode-card__heading h2 {
@@ -2192,8 +2001,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   gap: var(--space-2);
   margin-top: calc(var(--space-3) * -1 + var(--space-2));
   margin-bottom: var(--space-5);
-  min-width: 0;
-  max-width: 100%;
 }
 
 .attachment-item {
@@ -2205,13 +2012,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   border-radius: var(--radius-md);
   background: var(--color-surface-alt);
   animation: attachment-in 0.16s ease-out;
-  /* Without this, a flex item's default min-width is "auto", which lets
-     a long unbreakable file name push this row (and therefore the whole
-     card/page) wider than its container instead of eliding — this is
-     the root cause of the "screen suddenly gets bigger" overflow bug. */
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
 }
 
 @keyframes attachment-in {
@@ -2288,10 +2088,9 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 .btn-add-more {
-  align-self: stretch;
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   font-size: 0.8125rem;
@@ -2614,10 +2413,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  transition: background-color var(--transition-fast);
-}
-.record-row:hover {
-  background-color: var(--color-hover-bg);
 }
 .record-row__icon {
   width: 42px;
@@ -2792,7 +2587,8 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   display: none;
 }
 
-.btn-generate.is-loading .btn-generate__label {
+.btn-generate.is-loading .btn-generate__label,
+.btn-generate.is-loading .btn-generate__icon {
   visibility: hidden;
 }
 
@@ -3820,9 +3616,14 @@ body[data-page="exam"] {
          ========================================================== -->
     <header class="site-header">
       <div class="container site-header__inner">
-        <a href="index.html" class="site-header__brand" aria-label="Exampedia home">
-          <img class="site-header__brand-icon" src="data:image/png;base64,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" alt="" aria-hidden="true" width="36" height="36" />
-          <span data-i18n="brand.name">Exampedia</span>
+        <a href="index.html" class="site-header__brand" aria-label="MCQ Exam home">
+          <svg class="site-header__brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M14 2v6h5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8.5 13.5h7M8.5 17h4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="8" cy="13.5" r="0.9" fill="currentColor"/>
+          </svg>
+          <span data-i18n="brand.name">MCQ Exam</span>
         </a>
 
         <div class="site-header__actions">
@@ -3853,37 +3654,6 @@ body[data-page="exam"] {
               <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>
             </svg>
           </button>
-
-          <!-- Auth: signed-out shows "Sign in", signed-in shows avatar + name
-               with a dropdown containing Sync status and Sign out. Both
-               states live in the DOM; auth.js toggles visibility via the
-               is-signed-in / is-signed-out classes on #auth-widget. -->
-          <div id="auth-widget" class="auth-widget is-signed-out">
-            <button type="button" id="auth-signin-btn" class="btn btn-secondary btn-sm auth-widget__signin">
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.17.28-1.7V4.96H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.04l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.96l2.97 2.34C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
-              <span data-i18n="auth.signIn">Sign in with Google</span>
-            </button>
-            <button type="button" id="auth-user-btn" class="auth-widget__user" aria-haspopup="true" aria-expanded="false">
-              <img id="auth-user-avatar" class="auth-widget__avatar" src="" alt="" referrerpolicy="no-referrer" />
-              <span id="auth-sync-dot" class="auth-widget__sync-dot" title="Synced to cloud" aria-hidden="true"></span>
-            </button>
-            <div id="auth-user-menu" class="auth-widget__menu" role="menu" aria-hidden="true">
-              <div class="auth-widget__menu-header">
-                <img id="auth-user-avatar-lg" class="auth-widget__avatar-lg" src="" alt="" referrerpolicy="no-referrer" />
-                <div class="auth-widget__menu-identity">
-                  <span id="auth-user-name" class="auth-widget__menu-name"></span>
-                  <span id="auth-user-email" class="auth-widget__menu-email"></span>
-                </div>
-              </div>
-              <div id="auth-sync-status" class="auth-widget__menu-status">
-                <span class="auth-widget__sync-dot" aria-hidden="true"></span>
-                <span data-i18n="auth.synced">Synced to cloud</span>
-              </div>
-              <button type="button" id="auth-signout-btn" class="auth-widget__menu-signout" role="menuitem">
-                <span data-i18n="auth.signOut">Sign out</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </header>
@@ -4038,6 +3808,10 @@ body[data-page="exam"] {
               <div class="ai-mode-card__spacer" aria-hidden="true"></div>
 
               <button type="submit" class="btn btn-primary btn-lg btn-block btn-generate" id="generate-btn">
+                <svg class="btn-generate__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2.5c.35 3.2 1.1 5.36 2.62 6.88 1.52 1.52 3.68 2.27 6.88 2.62-3.2.35-5.36 1.1-6.88 2.62-1.52 1.52-2.27 3.68-2.62 6.88-.35-3.2-1.1-5.36-2.62-6.88C7.86 13.1 5.7 12.35 2.5 12c3.2-.35 5.36-1.1 6.88-2.62C10.9 7.86 11.65 5.7 12 2.5Z" fill="currentColor"/>
+                  <path d="M19 3.4c.16 1.3.5 2.15 1.16 2.81.66.66 1.51 1 2.81 1.16-1.3.16-2.15.5-2.81 1.16-.66.66-1 1.51-1.16 2.81-.16-1.3-.5-2.15-1.16-2.81-.66-.66-1.51-1-2.81-1.16 1.3-.16 2.15-.5 2.81-1.16.66-.66 1-1.51 1.16-2.81Z" fill="currentColor"/>
+                </svg>
                 <span class="btn-generate__label" data-i18n="home.aiMode.generate">Generate Exam</span>
                 <span class="btn-generate__spinner spinner" style="border-color: rgba(255,255,255,0.35); border-top-color: #fff;" aria-hidden="true"></span>
               </button>
@@ -4099,15 +3873,15 @@ body[data-page="exam"] {
                    Avg. Score / Questions -> Statistics overview). -->
               <div class="quick-stats-grid">
                 <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="exams">
-                  <div class="quick-stat-card__value" id="quick-stat-exams">0</div>
+                  <div class="quick-stat-card__value">12</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickExams">Exams</div>
                 </button>
                 <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="statistics">
-                  <div class="quick-stat-card__value" id="quick-stat-avg">0%</div>
+                  <div class="quick-stat-card__value">78%</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickAvgScore">Avg. Score</div>
                 </button>
                 <button type="button" class="quick-stat-card quick-stat-card--link" data-spa-nav="statistics">
-                  <div class="quick-stat-card__value" id="quick-stat-questions">0</div>
+                  <div class="quick-stat-card__value">1,240</div>
                   <div class="quick-stat-card__label" data-i18n="home.dashboard.quickQuestions">Questions</div>
                 </button>
               </div>
@@ -4151,7 +3925,7 @@ body[data-page="exam"] {
     </main>
 
     <footer class="site-footer">
-      <p class="text-caption" data-i18n="footer.copyright">© 2026 Exampedia</p>
+      <p class="text-caption" data-i18n="footer.copyright">© 2026 MCQ Exam</p>
     </footer>
   </div>
 
@@ -4182,15 +3956,15 @@ body[data-page="exam"] {
       <div class="container">
         <div class="subpage-summary">
           <div class="card card--tint-info subpage-summary__card">
-            <div class="subpage-summary__value" id="exams-summary-total">0</div>
+            <div class="subpage-summary__value">12</div>
             <div class="subpage-summary__label">Total Exams</div>
           </div>
           <div class="card card--tint-success subpage-summary__card">
-            <div class="subpage-summary__value" id="exams-summary-completed">0</div>
+            <div class="subpage-summary__value">9</div>
             <div class="subpage-summary__label">Completed</div>
           </div>
           <div class="card card--tint-warning subpage-summary__card">
-            <div class="subpage-summary__value" id="exams-summary-inprogress">0</div>
+            <div class="subpage-summary__value">3</div>
             <div class="subpage-summary__label">In Progress</div>
           </div>
         </div>
@@ -4226,15 +4000,15 @@ body[data-page="exam"] {
       <div class="container">
         <div class="subpage-summary">
           <div class="card card--tint-primary subpage-summary__card">
-            <div class="subpage-summary__value" id="history-summary-taken">0</div>
+            <div class="subpage-summary__value">9</div>
             <div class="subpage-summary__label">Exams Taken</div>
           </div>
           <div class="card card--tint-success subpage-summary__card">
-            <div class="subpage-summary__value" id="history-summary-avg">0%</div>
+            <div class="subpage-summary__value">78%</div>
             <div class="subpage-summary__label">Avg. Score</div>
           </div>
           <div class="card card--tint-info subpage-summary__card">
-            <div class="subpage-summary__value" id="history-summary-questions">0</div>
+            <div class="subpage-summary__value">1,240</div>
             <div class="subpage-summary__label">Questions</div>
           </div>
         </div>
@@ -4274,17 +4048,17 @@ body[data-page="exam"] {
         <div class="stats-overview-grid">
           <div class="card stats-overview-card">
             <div class="stats-overview-card__label">Exams Taken</div>
-            <div class="stats-overview-card__value" id="stats-overview-exams">0</div>
-            <div class="stats-overview-card__trend">All completed exams</div>
+            <div class="stats-overview-card__value">12</div>
+            <div class="stats-overview-card__trend stats-overview-card__trend--up">↑ 3 this month</div>
           </div>
           <div class="card stats-overview-card">
             <div class="stats-overview-card__label">Average Score</div>
-            <div class="stats-overview-card__value" id="stats-overview-avg">0%</div>
-            <div class="stats-overview-card__trend">Across all completed exams</div>
+            <div class="stats-overview-card__value">78%</div>
+            <div class="stats-overview-card__trend stats-overview-card__trend--up">↑ 4% vs last month</div>
           </div>
           <div class="card stats-overview-card">
             <div class="stats-overview-card__label">Questions Attempted</div>
-            <div class="stats-overview-card__value" id="stats-overview-questions">0</div>
+            <div class="stats-overview-card__value">1,240</div>
             <div class="stats-overview-card__trend">Across all exams</div>
           </div>
         </div>
@@ -4332,7 +4106,7 @@ body[data-page="exam"] {
           <div data-tab-panel="appearance">
             <div class="settings-field">
               <p class="form-label" data-i18n="settings.appearance.theme">Theme</p>
-              <p class="form-hint" style="margin-bottom: var(--space-3);" data-i18n="settings.appearance.themeHint">Choose how Exampedia looks. "System" follows your device setting.</p>
+              <p class="form-hint" style="margin-bottom: var(--space-3);" data-i18n="settings.appearance.themeHint">Choose how MCQ Exam looks. "System" follows your device setting.</p>
               <div class="settings-choice-row" role="group" aria-label="Theme preference">
                 <button type="button" class="settings-choice" data-theme-option="light">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -4990,12 +4764,12 @@ const LANG_STORAGE_KEY = "mcq-exam-lang";
 
 const I18N_STRINGS = {
   en: {
-    "brand.name": "Exampedia",
+    "brand.name": "MCQ Exam",
     "nav.home": "Home",
     "nav.exams": "Exams",
     "nav.history": "History",
     "nav.statistics": "Statistics",
-    "footer.copyright": "© 2026 Exampedia",
+    "footer.copyright": "© 2026 MCQ Exam",
 
     "common.easy": "Easy", "common.medium": "Medium", "common.hard": "Hard",
     "common.langEnglish": "English", "common.langBengali": "বাংলা", "common.langMixed": "English + বাংলা",
@@ -5052,7 +4826,7 @@ const I18N_STRINGS = {
     "settings.tab.aiConfig": "AI Configuration",
     "settings.tab.examPrefs": "Exam Preferences",
     "settings.appearance.theme": "Theme",
-    "settings.appearance.themeHint": "Choose how Exampedia looks. \"System\" follows your device setting.",
+    "settings.appearance.themeHint": "Choose how MCQ Exam looks. \"System\" follows your device setting.",
     "settings.appearance.language": "Language",
     "settings.appearance.languageHint": "Interface language. Exam content language is set separately in AI Mode.",
     "settings.ai.apiKey": "Gemini API Key",
@@ -5075,12 +4849,12 @@ const I18N_STRINGS = {
     "settings.save": "Save Settings",
   },
   bn: {
-    "brand.name": "Exampedia",
+    "brand.name": "এমসিকিউ পরীক্ষা",
     "nav.home": "হোম",
     "nav.exams": "পরীক্ষাসমূহ",
     "nav.history": "ইতিহাস",
     "nav.statistics": "পরিসংখ্যান",
-    "footer.copyright": "© ২০২৬ Exampedia",
+    "footer.copyright": "© ২০২৬ এমসিকিউ পরীক্ষা",
 
     "common.easy": "সহজ", "common.medium": "মধ্যম", "common.hard": "কঠিন",
     "common.langEnglish": "English", "common.langBengali": "বাংলা", "common.langMixed": "English + বাংলা",
@@ -5137,7 +4911,7 @@ const I18N_STRINGS = {
     "settings.tab.aiConfig": "এআই কনফিগারেশন",
     "settings.tab.examPrefs": "পরীক্ষার পছন্দসমূহ",
     "settings.appearance.theme": "থিম",
-    "settings.appearance.themeHint": "Exampedia কেমন দেখাবে তা বেছে নিন। \"সিস্টেম\" আপনার ডিভাইসের সেটিং অনুসরণ করে।",
+    "settings.appearance.themeHint": "এমসিকিউ পরীক্ষা কেমন দেখাবে তা বেছে নিন। \"সিস্টেম\" আপনার ডিভাইসের সেটিং অনুসরণ করে।",
     "settings.appearance.language": "ভাষা",
     "settings.appearance.languageHint": "ইন্টারফেসের ভাষা। পরীক্ষার বিষয়বস্তুর ভাষা এআই মোডে আলাদাভাবে নির্ধারণ করা হয়।",
     "settings.ai.apiKey": "জেমিনি এপিআই কী",
@@ -5349,8 +5123,9 @@ function showToast(message, variant = "info") {
     document.body.appendChild(container);
   }
   const toast = document.createElement("div");
-  toast.className = `toast toast-${variant}`;
+  toast.className = `alert alert-${variant}`;
   toast.style.minWidth = "260px";
+  toast.style.boxShadow = "var(--shadow-lg)";
   toast.setAttribute("role", "status");
   toast.textContent = message;
   container.appendChild(toast);
@@ -5729,252 +5504,12 @@ function initRecentExamState() {
   }
 }
 
-/** Home page dashboard quick-stat tiles (Exams / Avg. Score / Questions),
-    computed from real exam history — same source as the Exams/History/
-    Statistics sub-pages. */
-function renderHomeQuickStats() {
-  const completed = getAllExamRecords().filter((r) => r.status === "completed");
-  const examsEl = qs("#quick-stat-exams"), avgEl = qs("#quick-stat-avg"), qEl = qs("#quick-stat-questions");
-  const avgScore = completed.length ? Math.round(completed.reduce((a, r) => a + r.result.percentage, 0) / completed.length) : 0;
-  const totalQuestions = completed.reduce((a, r) => a + r.exam.questions.length, 0);
-  if (examsEl) examsEl.textContent = completed.length;
-  if (avgEl) avgEl.textContent = `${avgScore}%`;
-  if (qEl) qEl.textContent = totalQuestions.toLocaleString();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   initCaptureUpload();
   initInlineValidationClearing();
   initGenerateExam();
   initRecentExamState();
-  renderHomeQuickStats();
 });
-/* ==========================================================================
-   AUTH.JS — Google Sign-In (Firebase Authentication) + header widget.
-   ========================================================================== */
-
-const auth = firebase.auth();
-
-/** Current signed-in user, or null. Updated by the onAuthStateChanged
-    listener below; read synchronously anywhere in the app via
-    getCurrentUser(). */
-let currentUser = null;
-function getCurrentUser() { return currentUser; }
-function isSignedIn() { return !!currentUser; }
-
-function signInWithGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch((err) => {
-    console.error("Sign-in failed:", err);
-    if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
-      showToast("Sign-in failed. Please try again.", "danger");
-    }
-  });
-}
-
-function signOutUser() {
-  auth.signOut().catch((err) => console.error("Sign-out failed:", err));
-}
-
-function renderAuthWidget(user) {
-  const widget = qs("#auth-widget");
-  if (!widget) return;
-  if (user) {
-    widget.classList.remove("is-signed-out");
-    widget.classList.add("is-signed-in");
-    const photo = user.photoURL || "";
-    const name = user.displayName || user.email || "Signed in";
-    qs("#auth-user-avatar", widget).src = photo;
-    qs("#auth-user-avatar", widget).alt = name;
-    qs("#auth-user-avatar-lg", widget).src = photo;
-    qs("#auth-user-avatar-lg", widget).alt = name;
-    qs("#auth-user-name", widget).textContent = name;
-    qs("#auth-user-email", widget).textContent = user.email || "";
-  } else {
-    widget.classList.remove("is-signed-in");
-    widget.classList.add("is-signed-out");
-    closeAuthMenu();
-  }
-}
-
-function setSyncStatus(status) {
-  // status: "synced" | "syncing" | "error" | "offline"
-  const dots = qsa(".auth-widget__sync-dot");
-  const labelText = {
-    synced: "Synced to cloud",
-    syncing: "Syncing…",
-    error: "Sync failed — changes saved locally",
-    offline: "Offline — changes saved locally",
-  }[status] || "Synced to cloud";
-  dots.forEach((dot) => {
-    dot.classList.remove("is-syncing", "is-error");
-    if (status === "syncing") dot.classList.add("is-syncing");
-    if (status === "error" || status === "offline") dot.classList.add("is-error");
-    dot.title = labelText;
-  });
-  const statusText = qs("#auth-sync-status span:last-child");
-  if (statusText) statusText.textContent = labelText;
-}
-
-function closeAuthMenu() {
-  const menu = qs("#auth-user-menu");
-  const btn = qs("#auth-user-btn");
-  if (menu) { menu.classList.remove("is-open"); menu.setAttribute("aria-hidden", "true"); }
-  if (btn) btn.setAttribute("aria-expanded", "false");
-}
-
-function initAuthWidget() {
-  const signinBtn = qs("#auth-signin-btn");
-  const userBtn = qs("#auth-user-btn");
-  const signoutBtn = qs("#auth-signout-btn");
-  const menu = qs("#auth-user-menu");
-
-  if (signinBtn) signinBtn.addEventListener("click", signInWithGoogle);
-  if (signoutBtn) signoutBtn.addEventListener("click", () => { closeAuthMenu(); signOutUser(); });
-
-  if (userBtn && menu) {
-    userBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = menu.classList.toggle("is-open");
-      menu.setAttribute("aria-hidden", String(!isOpen));
-      userBtn.setAttribute("aria-expanded", String(isOpen));
-    });
-    document.addEventListener("click", (e) => {
-      if (!menu.contains(e.target) && e.target !== userBtn) closeAuthMenu();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeAuthMenu();
-    });
-  }
-
-  auth.onAuthStateChanged((user) => {
-    const previousUser = currentUser;
-    currentUser = user;
-    renderAuthWidget(user);
-    if (user) {
-      // Fresh sign-in (not just a page-refresh restoring the same session):
-      // pull this user's cloud data down and merge it with whatever is
-      // already sitting in localStorage from anonymous/local use.
-      cloudStoreOnSignIn(user, previousUser === null);
-    } else {
-      cloudStoreOnSignOut();
-    }
-  });
-}
-
-document.addEventListener("DOMContentLoaded", initAuthWidget);
-
-/* ==========================================================================
-   CLOUD-STORE.JS — Firestore-backed persistence for exam history, AI/API
-   config, and preferences, keyed per signed-in user (users/{uid}).
-
-   Design: every piece of data still has a synchronous localStorage-backed
-   getter (existing call sites like getStoredAiConfig()/loadExamHistory()
-   are untouched — the rest of the app keeps working exactly as before,
-   including while signed out). Every setter now ALSO queues a debounced
-   write to Firestore when signed in, so data survives across devices and
-   browsers instead of living only in this one browser's localStorage.
-   On sign-in, the user's Firestore document is fetched once and merged
-   into localStorage so history/config "permanently" follow the account.
-   ========================================================================== */
-
-const db = firebase.firestore();
-
-function userDocRef(uid) {
-  return db.collection("users").doc(uid);
-}
-
-/** Debounced multi-key Firestore writer so rapid local edits (e.g. typing
-    in the API key field, answering questions one after another) collapse
-    into a single write instead of hammering Firestore. */
-let pendingCloudWrite = null;
-let cloudWriteTimer = null;
-function queueCloudWrite(partialDoc) {
-  if (!isSignedIn()) return;
-  pendingCloudWrite = { ...(pendingCloudWrite || {}), ...partialDoc };
-  setSyncStatus("syncing");
-  clearTimeout(cloudWriteTimer);
-  cloudWriteTimer = setTimeout(flushCloudWrite, 600);
-}
-function flushCloudWrite() {
-  const user = getCurrentUser();
-  const payload = pendingCloudWrite;
-  pendingCloudWrite = null;
-  if (!user || !payload) return;
-  userDocRef(user.uid)
-    .set(payload, { merge: true })
-    .then(() => setSyncStatus("synced"))
-    .catch((err) => {
-      console.error("Cloud sync failed:", err);
-      setSyncStatus("error");
-    });
-}
-// Best-effort flush if the tab is closed with a pending debounce in flight.
-window.addEventListener("beforeunload", () => {
-  if (pendingCloudWrite) flushCloudWrite();
-});
-
-/** Called once per sign-in. Fetches the user's Firestore document and
-    merges it into localStorage. On a genuinely fresh sign-in (not a
-    page-refresh restoring an existing session) local exam history made
-    before signing in is merged in (by sessionId) rather than discarded,
-    then the merged result is pushed back up to Firestore. */
-function cloudStoreOnSignIn(user, isFreshSignIn) {
-  setSyncStatus("syncing");
-  userDocRef(user.uid)
-    .get()
-    .then((doc) => {
-      const cloud = doc.exists ? doc.data() : {};
-
-      if (cloud.aiConfig) localStorage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(cloud.aiConfig));
-      if (cloud.examPrefs) localStorage.setItem(EXAM_PREFS_STORAGE_KEY, JSON.stringify(cloud.examPrefs));
-
-      const localHistory = loadExamHistory();
-      const cloudHistory = Array.isArray(cloud.examHistory) ? cloud.examHistory : [];
-      const merged = mergeExamHistories(localHistory, cloudHistory);
-      saveExamHistory(merged); // local cache stays authoritative & synchronous
-
-      // Re-render anything already on screen using the old (pre-merge) data.
-      if (typeof renderHomeQuickStats === "function") renderHomeQuickStats();
-      if (typeof initAiConfigSettings === "function") initAiConfigSettings();
-
-      setSyncStatus("synced");
-
-      // Push the merged view back up so Firestore has the full picture too
-      // (covers both "first sign-in with local history" and "returning
-      // sign-in on a new device" cases).
-      queueCloudWrite({
-        aiConfig: getStoredAiConfig(),
-        examPrefs: getStoredExamPrefs(),
-        examHistory: merged,
-      });
-    })
-    .catch((err) => {
-      console.error("Could not load cloud data:", err);
-      setSyncStatus("error");
-    });
-}
-
-function cloudStoreOnSignOut() {
-  pendingCloudWrite = null;
-  clearTimeout(cloudWriteTimer);
-  setSyncStatus("synced");
-}
-
-/** Merges two exam-history arrays by sessionId, keeping whichever copy of
-    each session has the newer updatedAt, and sorts most-recent-first. */
-function mergeExamHistories(a, b) {
-  const bySession = new Map();
-  [...a, ...b].forEach((rec) => {
-    if (!rec || !rec.sessionId) return;
-    const existing = bySession.get(rec.sessionId);
-    if (!existing || (rec.updatedAt || 0) > (existing.updatedAt || 0)) {
-      bySession.set(rec.sessionId, rec);
-    }
-  });
-  return [...bySession.values()].sort((x, y) => (y.updatedAt || 0) - (x.updatedAt || 0));
-}
-
 /* ==========================================================================
    SETTINGS.JS — Settings panel: Appearance, AI Configuration, and Exam
    Preferences. Persists everything to localStorage. No network calls are
@@ -6100,7 +5635,6 @@ function saveAiConfig() {
     model: qs("#gemini-model-select")?.value || "",
   };
   localStorage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(config));
-  queueCloudWrite({ aiConfig: config });
 }
 
 /* ---------- Exam Preferences ---------- */
@@ -6141,7 +5675,6 @@ function saveExamPrefs() {
     showAnswerKey: !!qs("#answer-key-toggle")?.checked,
   };
   localStorage.setItem(EXAM_PREFS_STORAGE_KEY, JSON.stringify(prefs));
-  queueCloudWrite({ examPrefs: prefs });
 }
 
 /* ---------- Settings modal wiring ---------- */
@@ -6211,7 +5744,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const SESSION_STORAGE_KEY = "mcq-exam-active-session";
 const PRINT_PREFS_KEY = "mcq-exam-print-prefs";
-const EXAM_HISTORY_KEY = "mcq-exam-history";
 
 function genId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -6226,42 +5758,6 @@ function formatDuration(ms) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm.padStart(2, "0")}:${ss}`;
 }
 
-/* ---------- Exam history store — every exam the user has generated,
-   in-progress or completed, keyed by sessionId. This is separate from
-   SESSION_STORAGE_KEY (which only ever tracks the single "current" exam)
-   so the Exams/History/Statistics pages can show every past exam, not
-   just the most recent one. A session is upserted here every time it's
-   saved (see saveSession below), so it's always kept in sync. ---------- */
-function loadExamHistory() {
-  try {
-    const list = JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY) || "[]");
-    return Array.isArray(list) ? list : [];
-  } catch (e) { return []; }
-}
-function saveExamHistory(list) {
-  localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(list));
-  queueCloudWrite({ examHistory: list });
-}
-/** Inserts or updates this session's entry in the history store (matched
-    by sessionId), then re-saves the whole list, most-recently-updated
-    first. Called every time a session is saved, so in-progress exams
-    show up immediately and completed ones update in place instead of
-    appearing as a duplicate row. */
-function upsertExamHistory(session) {
-  if (!session || !session.exam) return;
-  const list = loadExamHistory();
-  const idx = list.findIndex((r) => r.sessionId === session.sessionId);
-  const entry = { ...session, updatedAt: Date.now() };
-  if (idx === -1) list.unshift(entry);
-  else list[idx] = entry;
-  list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  saveExamHistory(list);
-}
-function removeFromExamHistory(sessionId) {
-  const list = loadExamHistory().filter((r) => r.sessionId !== sessionId);
-  saveExamHistory(list);
-}
-
 /* ---------- Exam session model (one session, reused everywhere) ---------- */
 function loadSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || "null"); }
@@ -6269,7 +5765,6 @@ function loadSession() {
 }
 function saveSession(session) {
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-  upsertExamHistory(session);
   return session;
 }
 function createExamSession(exam) {
@@ -7068,13 +6563,13 @@ function initLiveExamView() {
     enterStatistics();
   });
   window.addEventListener("beforeunload", () => {
-    if (liveExamState.session && liveExamState.session.status === "active") saveSession(liveExamState.session);
+    if (liveExamState.session) saveSession(liveExamState.session);
   });
 }
 
 /* ---------- Statistics view ---------- */
-function enterStatistics(sessionOverride) {
-  const session = sessionOverride || restoreExamSession();
+function enterStatistics() {
+  const session = restoreExamSession();
   if (!session || session.status !== "completed" || !session.result) {
     showToast("No completed exam to show statistics for.", "danger");
     showView("home");
@@ -8086,13 +7581,20 @@ function initPrintView() {
    persisted), so these three pages render representative sample data that
    matches the dashboard's summary numbers (12 exams, 78% avg, 1,240 qs).
    ========================================================================== */
-/** Every exam the user has generated, in-progress or completed, read
-    straight from localStorage (see EXAM_HISTORY_KEY / upsertExamHistory).
-    No more demo/sample data — Exams, History, and Statistics below are
-    built entirely from real exam sessions. */
-function getAllExamRecords() {
-  return loadExamHistory();
-}
+const DEMO_EXAM_RECORDS = [
+  { subject: "Bangla Sahitya", topic: "Rabindranath Thakur", status: "in-progress", questions: 20, completed: 5, date: "26 Aug 2026" },
+  { subject: "Agriculture", topic: "Plant Pathology", status: "in-progress", questions: 50, completed: 32, date: "24 Aug 2026" },
+  { subject: "General Science", topic: "Human Physiology", status: "completed", questions: 40, score: 85, date: "21 Aug 2026" },
+  { subject: "Mathematics", topic: "Algebra & Trigonometry", status: "completed", questions: 30, score: 73, date: "18 Aug 2026" },
+  { subject: "English", topic: "Grammar & Vocabulary", status: "completed", questions: 25, score: 91, date: "14 Aug 2026" },
+  { subject: "Bangladesh Affairs", topic: "Liberation War", status: "completed", questions: 35, score: 68, date: "10 Aug 2026" },
+  { subject: "General Science", topic: "Physics — Motion & Force", status: "completed", questions: 30, score: 79, date: "05 Aug 2026" },
+  { subject: "ICT", topic: "Networking Basics", status: "in-progress", questions: 20, completed: 8, date: "02 Aug 2026" },
+  { subject: "Bangla Sahitya", topic: "Kazi Nazrul Islam", status: "completed", questions: 25, score: 82, date: "28 Jul 2026" },
+  { subject: "Mathematics", topic: "Geometry", status: "completed", questions: 30, score: 76, date: "22 Jul 2026" },
+  { subject: "General Knowledge", topic: "International Affairs", status: "completed", questions: 40, score: 70, date: "16 Jul 2026" },
+  { subject: "Agriculture", topic: "Soil Science", status: "completed", questions: 30, score: 88, date: "09 Jul 2026" },
+];
 
 const EXAM_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
 const HISTORY_ARROW_SVG = '<svg class="record-row__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -8103,83 +7605,27 @@ function scoreBadgeClass(score) {
   return "badge-danger";
 }
 
-/** Short "26 Aug 2026"-style date from a record's timestamp. */
-function formatRecordDate(rec) {
-  const ts = rec.result?.submittedAt || rec.updatedAt || rec.startedAt;
-  if (!ts) return "";
-  return new Date(ts).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
-}
-
-/** Empty-state row shown when a list has nothing to display yet. */
-function emptyStateRow(message) {
-  return `<div class="record-row-empty text-secondary text-small" style="padding: var(--space-6); text-align: center;">${escapeHtml(message)}</div>`;
-}
-
-/** Clicking a record row: resume an in-progress exam, or reopen a
-    completed exam's results/analytics — without disturbing whichever
-    exam is currently "active" in SESSION_STORAGE_KEY. */
-function openExamRecord(rec) {
-  if (rec.status === "completed" && rec.result) {
-    enterStatistics(rec);
-  } else {
-    // Only the single "active session" slot can actually be resumed
-    // question-by-question, so this only works when the record clicked
-    // is that same in-progress session; otherwise there's nothing live
-    // to resume.
-    const current = restoreExamSession();
-    if (current && current.sessionId === rec.sessionId) {
-      enterLiveExam();
-    } else {
-      showToast("This exam can no longer be resumed.", "info");
-    }
-  }
-}
-
-function wireRecordRowClicks(list, records) {
-  qsa(".record-row", list).forEach((row, i) => {
-    row.style.cursor = "pointer";
-    row.addEventListener("click", () => openExamRecord(records[i]));
-  });
-}
-
 /** Renders the "Exams" sub-page: every generated exam, in-progress or
     completed, most recent first. */
 function renderExamsPage() {
   const list = qs("#exams-list");
   if (!list) return;
-  const records = getAllExamRecords();
-
-  const total = records.length;
-  const completedCount = records.filter((r) => r.status === "completed").length;
-  const inProgressCount = total - completedCount;
-  const totalEl = qs("#exams-summary-total"), doneEl = qs("#exams-summary-completed"), progEl = qs("#exams-summary-inprogress");
-  if (totalEl) totalEl.textContent = total;
-  if (doneEl) doneEl.textContent = completedCount;
-  if (progEl) progEl.textContent = inProgressCount;
-
-  if (total === 0) {
-    list.innerHTML = emptyStateRow("No exams yet — generate one from the Home page to see it here.");
-    return;
-  }
-
-  list.innerHTML = records.map((rec) => {
-    const questionCount = rec.exam.questions.length;
+  list.innerHTML = DEMO_EXAM_RECORDS.map((rec) => {
     const statusBadge = rec.status === "completed"
       ? `<span class="badge badge-success"><span class="badge__dot"></span>Completed</span>`
       : `<span class="badge badge-warning"><span class="badge__dot"></span>In Progress</span>`;
-    const answered = Object.keys(rec.answers || {}).length;
     const sideInfo = rec.status === "completed"
-      ? `<div class="record-row__score"><div class="record-row__score-value">${rec.result.percentage}%</div><div class="record-row__score-label">Score</div></div>`
-      : `<div class="record-row__score"><div class="record-row__score-value">${answered}/${questionCount}</div><div class="record-row__score-label">Progress</div></div>`;
+      ? `<div class="record-row__score"><div class="record-row__score-value">${rec.score}%</div><div class="record-row__score-label">Score</div></div>`
+      : `<div class="record-row__score"><div class="record-row__score-value">${rec.completed}/${rec.questions}</div><div class="record-row__score-label">Progress</div></div>`;
     return `
       <div class="record-row">
         <span class="record-row__icon">${EXAM_ICON_SVG}</span>
         <div class="record-row__body">
-          <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")} — ${escapeHtml(rec.exam.topic || "")}</div>
+          <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
           <div class="record-row__meta">
-            <span>${questionCount} questions</span>
+            <span>${rec.questions} questions</span>
             <span class="record-row__meta-sep">·</span>
-            <span>${formatRecordDate(rec)}</span>
+            <span>${rec.date}</span>
             <span class="record-row__meta-sep">·</span>
             ${statusBadge}
           </div>
@@ -8190,7 +7636,6 @@ function renderExamsPage() {
         </div>
       </div>`;
   }).join("");
-  wireRecordRowClicks(list, records);
 }
 
 /** Renders the "History" sub-page: completed exams only, i.e. everything
@@ -8198,66 +7643,37 @@ function renderExamsPage() {
 function renderHistoryPage() {
   const list = qs("#history-list");
   if (!list) return;
-  const completed = getAllExamRecords().filter((rec) => rec.status === "completed");
-
-  const takenEl = qs("#history-summary-taken"), avgEl = qs("#history-summary-avg"), qEl = qs("#history-summary-questions");
-  const avgScore = completed.length ? Math.round(completed.reduce((a, r) => a + r.result.percentage, 0) / completed.length) : 0;
-  const totalQuestions = completed.reduce((a, r) => a + r.exam.questions.length, 0);
-  if (takenEl) takenEl.textContent = completed.length;
-  if (avgEl) avgEl.textContent = `${avgScore}%`;
-  if (qEl) qEl.textContent = totalQuestions.toLocaleString();
-
-  if (completed.length === 0) {
-    list.innerHTML = emptyStateRow("No completed exams yet — finish an exam to see your results here.");
-    return;
-  }
-
+  const completed = DEMO_EXAM_RECORDS.filter((rec) => rec.status === "completed");
   list.innerHTML = completed.map((rec) => `
     <div class="record-row">
       <span class="record-row__icon">${EXAM_ICON_SVG}</span>
       <div class="record-row__body">
-        <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")} — ${escapeHtml(rec.exam.topic || "")}</div>
+        <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
         <div class="record-row__meta">
-          <span>${rec.exam.questions.length} questions</span>
+          <span>${rec.questions} questions</span>
           <span class="record-row__meta-sep">·</span>
-          <span>${formatRecordDate(rec)}</span>
+          <span>${rec.date}</span>
         </div>
       </div>
       <div class="record-row__side">
-        <span class="badge ${scoreBadgeClass(rec.result.percentage)}">${rec.result.percentage}%</span>
+        <span class="badge ${scoreBadgeClass(rec.score)}">${rec.score}%</span>
         ${HISTORY_ARROW_SVG}
       </div>
     </div>`).join("");
-  wireRecordRowClicks(list, completed);
 }
 
 /** Renders the "Statistics" overview sub-page: per-subject average score
-    plus a short recent-results list, both from real completed exams. */
+    (derived from the same demo records) plus a short recent-results list. */
 function renderStatisticsPage() {
   const bySubject = qs("#subject-breakdown-list");
   const recent = qs("#stats-recent-list");
   if (!bySubject || !recent) return;
 
-  const completed = getAllExamRecords().filter((rec) => rec.status === "completed");
-
-  const examsTakenEl = qs("#stats-overview-exams"), avgScoreEl = qs("#stats-overview-avg"), questionsEl = qs("#stats-overview-questions");
-  const avgScore = completed.length ? Math.round(completed.reduce((a, r) => a + r.result.percentage, 0) / completed.length) : 0;
-  const totalQuestions = completed.reduce((a, r) => a + r.exam.questions.length, 0);
-  if (examsTakenEl) examsTakenEl.textContent = completed.length;
-  if (avgScoreEl) avgScoreEl.textContent = `${avgScore}%`;
-  if (questionsEl) questionsEl.textContent = totalQuestions.toLocaleString();
-
-  if (completed.length === 0) {
-    bySubject.innerHTML = emptyStateRow("No data yet — complete an exam to see your subject breakdown.");
-    recent.innerHTML = emptyStateRow("No completed exams yet.");
-    return;
-  }
-
+  const completed = DEMO_EXAM_RECORDS.filter((rec) => rec.status === "completed");
   const grouped = {};
   completed.forEach((rec) => {
-    const subject = rec.exam.subject || "General";
-    if (!grouped[subject]) grouped[subject] = [];
-    grouped[subject].push(rec.result.percentage);
+    if (!grouped[rec.subject]) grouped[rec.subject] = [];
+    grouped[rec.subject].push(rec.score);
   });
   const subjects = Object.keys(grouped).map((name) => {
     const scores = grouped[name];
@@ -8272,19 +7688,17 @@ function renderStatisticsPage() {
       <span class="subject-breakdown-row__value">${s.avg}%</span>
     </div>`).join("");
 
-  const recentRecords = completed.slice(0, 5);
-  recent.innerHTML = recentRecords.map((rec) => `
+  recent.innerHTML = completed.slice(0, 5).map((rec) => `
     <div class="record-row">
       <span class="record-row__icon">${EXAM_ICON_SVG}</span>
       <div class="record-row__body">
-        <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")} — ${escapeHtml(rec.exam.topic || "")}</div>
-        <div class="record-row__meta"><span>${formatRecordDate(rec)}</span></div>
+        <div class="record-row__title">${escapeHtml(rec.subject)} — ${escapeHtml(rec.topic)}</div>
+        <div class="record-row__meta"><span>${rec.date}</span></div>
       </div>
       <div class="record-row__side">
-        <span class="badge ${scoreBadgeClass(rec.result.percentage)}">${rec.result.percentage}%</span>
+        <span class="badge ${scoreBadgeClass(rec.score)}">${rec.score}%</span>
       </div>
     </div>`).join("");
-  wireRecordRowClicks(recent, recentRecords);
 }
 
 /* ---------- Generic nav + wiring ---------- */
