@@ -1,0 +1,22 @@
+{
+  "name": "Exampedia - AI Exam System",
+  "short_name": "Exampedia",
+  "description": "Configure an AI-generated MCQ exam, or jump back into your exams, history, and statistics.",
+  "start_url": "/exampedia/",
+  "scope": "/exampedia/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
