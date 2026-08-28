@@ -1,14 +1,18 @@
-/* Exampedia PWA registration
- * Add this script near the end of index(1).html, before </body>.
+/**
+ * Examcamp PWA Registration
+ * GitHub Pages project path:
+ * https://yeasir-rifat.github.io/examcamp/
  */
+
 (() => {
   "use strict";
 
-  const SW_URL = "/exampedia/sw.js";
-  const SW_SCOPE = "/exampedia/";
+  const SW_URL = "/examcamp/sw.js";
+  const SW_SCOPE = "/examcamp/";
 
+  // Check browser support
   if (!("serviceWorker" in navigator)) {
-    console.info("[Exampedia] Service Workers are not supported.");
+    console.info("[Examcamp PWA] Service Worker is not supported.");
     return;
   }
 
@@ -16,34 +20,55 @@
     try {
       const registration = await navigator.serviceWorker.register(SW_URL, {
         scope: SW_SCOPE,
-        updateViaCache: "none",
+        updateViaCache: "none"
       });
 
-      console.info("[Exampedia] Service Worker registered:", registration.scope);
+      console.info(
+        "[Examcamp PWA] Service Worker registered successfully:",
+        registration.scope
+      );
 
-      // Check for a new worker when the app is opened.
+      // Check for a new version
       registration.update().catch(() => {});
 
-      registration.addEventListener("updatefound", () => {
-        const worker = registration.installing;
-        if (!worker) return;
-
-        worker.addEventListener("statechange", () => {
-          if (worker.state === "installed" && navigator.serviceWorker.controller) {
-            console.info("[Exampedia] A new version is ready.");
-          }
-        });
-      });
     } catch (error) {
-      console.error("[Exampedia] Service Worker registration failed:", error);
+      console.error(
+        "[Examcamp PWA] Service Worker registration failed:",
+        error
+      );
     }
   });
 
-  // Useful for debugging the actual launch mode.
-  window.ExampediaPWA = {
+  /**
+   * Public helper for detecting standalone/PWA mode.
+   */
+  window.ExamcampPWA = {
     isStandalone() {
-      return window.matchMedia("(display-mode: standalone)").matches ||
-             window.navigator.standalone === true;
+      return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true
+      );
+    },
+
+    async update() {
+      try {
+        const registration =
+          await navigator.serviceWorker.getRegistration(SW_SCOPE);
+
+        if (registration) {
+          await registration.update();
+          return true;
+        }
+
+        return false;
+      } catch (error) {
+        console.error(
+          "[Examcamp PWA] Update check failed:",
+          error
+        );
+
+        return false;
+      }
     }
   };
 })();
