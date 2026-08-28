@@ -1,9 +1,9 @@
 {
-  "name": "Exampedia - AI Exam System",
-  "short_name": "Exampedia",
+  "name": "Examcamp - AI Exam System",
+  "short_name": "Examcamp",
   "description": "Configure an AI-generated MCQ exam, or jump back into your exams, history, and statistics.",
-  "start_url": "/exampedia/",
-  "scope": "/exampedia/",
+  "start_url": "/examcamp/",
+  "scope": "/examcamp/",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#0f1117",
