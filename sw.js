@@ -1,96 +1,224 @@
-/* Exampedia Service Worker
- * Scope: /exampedia/
+/**
+ * Examcamp Service Worker
  *
- * Strategy:
- * - Cache only the same-origin app shell.
- * - Navigation: network-first, cached index fallback.
- * - Same-origin static GETs: stale-while-revalidate.
- * - Cross-origin requests (Firebase, Gemini, CDN libraries, Google auth): pass through.
- *
- * This avoids caching API/auth responses and keeps the app updateable.
+ * GitHub Pages:
+ * https://yeasir-rifat.github.io/examcamp/
  */
 
-const CACHE_VERSION = "exampedia-v1";
+"use strict";
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+
+const CACHE_VERSION = "examcamp-v2";
+
 const APP_CACHE = `${CACHE_VERSION}-app`;
+const ASSET_CACHE = `${CACHE_VERSION}-assets`;
+
+/*
+ * Only cache files that are guaranteed to exist.
+ * Do not add external Firebase/Gemini/CDN URLs here.
+ */
 const APP_SHELL = [
-  "/exampedia/",
-  "/exampedia/index.html",
-  "/exampedia/manifest.json",
+  "/examcamp/",
+  "/examcamp/index.html",
+  "/examcamp/manifest.json"
 ];
+
+
+/* =========================================================
+   INSTALL
+   ========================================================= */
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(APP_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches
+      .open(APP_CACHE)
+      .then((cache) => {
+        return cache.addAll(APP_SHELL);
+      })
+      .then(() => {
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error(
+          "[Examcamp SW] Installation failed:",
+          error
+        );
+      })
   );
 });
 
+
+/* =========================================================
+   ACTIVATE
+   ========================================================= */
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== APP_CACHE)
-            .map((key) => caches.delete(key))
-        )
-      )
-      .then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((cacheName) => {
+              return (
+                cacheName.startsWith("examcamp-") &&
+                cacheName !== APP_CACHE &&
+                cacheName !== ASSET_CACHE
+              );
+            })
+            .map((cacheName) => {
+              return caches.delete(cacheName);
+            })
+        );
+      })
+      .then(() => {
+        return self.clients.claim();
+      })
   );
 });
+
+
+/* =========================================================
+   FETCH
+   ========================================================= */
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  if (request.method !== "GET") return;
+  // Only handle GET requests
+  if (request.method !== "GET") {
+    return;
+  }
 
   const url = new URL(request.url);
 
-  // Never intercept third-party requests such as Firebase, Gemini, CDN,
-  // Google Identity, etc.
-  if (url.origin !== self.location.origin) return;
+  // Only handle requests from the same origin
+  if (url.origin !== self.location.origin) {
+    return;
+  }
 
-  // Only control the Exampedia path.
-  if (!url.pathname.startsWith("/exampedia/")) return;
+  // Only handle the /examcamp/ application
+  if (!url.pathname.startsWith("/examcamp/")) {
+    return;
+  }
 
-  // HTML navigation: network first, then cached app shell.
+
+  /* -------------------------------------------------------
+     NAVIGATION REQUESTS
+     Network first → Offline fallback
+     ------------------------------------------------------- */
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(APP_CACHE).then((cache) => cache.put("/exampedia/index.html", copy));
+          if (response && response.ok) {
+            const responseClone = response.clone();
+
+            caches.open(APP_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+
           return response;
         })
-        .catch(() =>
-          caches.match("/exampedia/index.html").then(
-            (cached) =>
-              cached ||
-              new Response(
-                "<h1>Exampedia is offline</h1><p>Please reconnect and try again.</p>",
-                { headers: { "Content-Type": "text/html; charset=utf-8" } }
-              )
-          )
-        )
+        .catch(async () => {
+          const cachedPage = await caches.match(request);
+
+          if (cachedPage) {
+            return cachedPage;
+          }
+
+          const fallback = await caches.match(
+            "/examcamp/index.html"
+          );
+
+          if (fallback) {
+            return fallback;
+          }
+
+          return new Response(
+            "Examcamp is currently offline.",
+            {
+              status: 503,
+              headers: {
+                "Content-Type": "text/plain; charset=utf-8"
+              }
+            }
+          );
+        })
     );
+
     return;
   }
 
-  // Same-origin resources: stale-while-revalidate.
+
+  /* -------------------------------------------------------
+     STATIC ASSETS
+     Cache first → Network fallback
+     ------------------------------------------------------- */
+
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request)
         .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(APP_CACHE).then((cache) => cache.put(request, copy));
+          /*
+           * Only cache successful basic responses.
+           */
+          if (
+            response &&
+            response.status === 200 &&
+            response.type === "basic"
+          ) {
+            const responseClone = response.clone();
+
+            caches.open(ASSET_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
           }
+
           return response;
         })
-        .catch(() => cached);
-
-      return cached || network;
+        .catch(() => {
+          return new Response("", {
+            status: 503,
+            statusText: "Offline"
+          });
+        });
     })
   );
+});
+
+
+/* =========================================================
+   MESSAGE HANDLER
+   ========================================================= */
+
+self.addEventListener("message", (event) => {
+  if (!event.data) {
+    return;
+  }
+
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+
+  if (event.data.type === "CLEAR_CACHE") {
+    event.waitUntil(
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith("examcamp-"))
+            .map((name) => caches.delete(name))
+        );
+      })
+    );
+  }
 });
