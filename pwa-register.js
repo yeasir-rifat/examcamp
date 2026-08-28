@@ -1,16 +1,18 @@
 /**
  * Examcamp PWA Registration
- * GitHub Pages project path:
+ * Deployment-independent configuration.
+ *
+ * Works with:
+ * GitHub Pages:
  * https://yeasir-rifat.github.io/examcamp/
+ *
+ * Vercel:
+ * https://examcamp.vercel.app/
  */
 
 (() => {
   "use strict";
 
-  const SW_URL = "/examcamp/sw.js";
-  const SW_SCOPE = "/examcamp/";
-
-  // Check browser support
   if (!("serviceWorker" in navigator)) {
     console.info("[Examcamp PWA] Service Worker is not supported.");
     return;
@@ -18,18 +20,34 @@
 
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register(SW_URL, {
-        scope: SW_SCOPE,
-        updateViaCache: "none"
-      });
+      /*
+       * Relative path.
+       *
+       * GitHub Pages:
+       * /examcamp/sw.js
+       *
+       * Vercel:
+       * /sw.js
+       */
+      const swUrl = new URL("sw.js", window.location.href);
+
+      /*
+       * Scope = current application directory.
+       */
+      const scopeUrl = new URL("./", window.location.href);
+
+      const registration =
+        await navigator.serviceWorker.register(swUrl.pathname, {
+          scope: scopeUrl.pathname,
+          updateViaCache: "none"
+        });
 
       console.info(
-        "[Examcamp PWA] Service Worker registered successfully:",
+        "[Examcamp PWA] Service Worker registered:",
         registration.scope
       );
 
-      // Check for a new version
-      registration.update().catch(() => {});
+      await registration.update().catch(() => {});
 
     } catch (error) {
       console.error(
@@ -39,10 +57,8 @@
     }
   });
 
-  /**
-   * Public helper for detecting standalone/PWA mode.
-   */
   window.ExamcampPWA = {
+
     isStandalone() {
       return (
         window.matchMedia("(display-mode: standalone)").matches ||
@@ -53,7 +69,7 @@
     async update() {
       try {
         const registration =
-          await navigator.serviceWorker.getRegistration(SW_SCOPE);
+          await navigator.serviceWorker.getRegistration();
 
         if (registration) {
           await registration.update();
@@ -61,6 +77,7 @@
         }
 
         return false;
+
       } catch (error) {
         console.error(
           "[Examcamp PWA] Update check failed:",
@@ -71,4 +88,5 @@
       }
     }
   };
+
 })();
