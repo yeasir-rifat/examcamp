@@ -5420,10 +5420,10 @@ body[data-page="exam"] {
               </div>
               <div id="auth-sync-status" class="auth-widget__menu-status">
                 <span class="auth-widget__sync-dot" aria-hidden="true"></span>
-                <span data-i18n="auth.synced">Synced to cloud</span>
+                <span data-i18n="auth.synced">Synced to Cloud</span>
               </div>
               <button type="button" id="auth-signout-btn" class="auth-widget__menu-signout" role="menuitem">
-                <span data-i18n="auth.signOut">Sign out</span>
+                <span data-i18n="auth.signOut">Sign Out</span>
               </button>
             </div>
           </div>
@@ -11578,7 +11578,7 @@ function renderAdminMemberList() {
       : subjects.length === 0
         ? `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">No Subject Courses yet</span>`
         : mySubjects.length === 0
-          ? `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">🔒 Not enrolled in any subject</span>`
+          ? `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">Not Enrolled</span>`
           : mySubjects.map((name) => `<span class="live-member-row__subject-chip">${escapeHtml(name)}</span>`).join("");
     return `
     <div class="live-member-row" style="flex-wrap: wrap;">
