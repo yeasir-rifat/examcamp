@@ -11589,8 +11589,8 @@ function renderAdminMemberList() {
         <div class="live-member-row__subjects">${subjectChips}</div>
       </div>
       <div class="live-member-row__actions">
-        ${!isFullAccess && subjects.length > 0 ? `<button type="button" class="btn btn-outline btn-sm" data-admin-edit-subjects="${escapeHtml(m.email)}">Manage Subjects</button>` : ""}
-        ${m.role === "subscriber" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-promote-member="${escapeHtml(m.email)}">Make Assistant Admin</button>` : ""}
+        ${!isFullAccess && subjects.length > 0 ? `<button type="button" class="btn btn-outline btn-sm" data-admin-edit-subjects="${escapeHtml(m.email)}">Manage</button>` : ""}
+        ${m.role === "subscriber" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-promote-member="${escapeHtml(m.email)}">Add Admin</button>` : ""}
         ${m.role === "assistant" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-demote-member="${escapeHtml(m.email)}">Remove Assistant Admin</button>` : ""}
         ${m.role !== "admin" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-remove-member="${escapeHtml(m.email)}">Remove</button>` : ""}
       </div>
