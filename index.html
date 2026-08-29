@@ -5615,7 +5615,7 @@ body[data-page="exam"] {
                   </span>
                   <span class="dashboard-item__body">
                     <span class="dashboard-item__title"><span class="live-pulse-dot" aria-hidden="true"></span><span data-i18n="home.dashboard.liveTitle">Live Exam</span></span>
-                    <span class="dashboard-item__desc" data-i18n="home.dashboard.liveDesc">Central exam campaigns &amp; merit list</span>
+                    <span class="dashboard-item__desc" data-i18n="home.dashboard.liveDesc">Central exam and merit list</span>
                   </span>
                   <svg class="dashboard-item__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
@@ -5637,7 +5637,7 @@ body[data-page="exam"] {
                   </span>
                   <span class="dashboard-item__body">
                     <span class="dashboard-item__title" data-i18n="home.dashboard.statsTitle">Statistics</span>
-                    <span class="dashboard-item__desc" data-i18n="home.dashboard.statsDesc">Performance and analytics</span>
+                    <span class="dashboard-item__desc" data-i18n="home.dashboard.statsDesc">Performance & analytics</span>
                   </span>
                   <svg class="dashboard-item__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
@@ -5761,7 +5761,7 @@ body[data-page="exam"] {
         <div class="subpage-summary" style="margin-top: var(--space-6);">
           <div class="card card--tint-danger subpage-summary__card">
             <div class="subpage-summary__value" id="live-summary-rank">-</div>
-            <div class="subpage-summary__label">Central Merit Rank</div>
+            <div class="subpage-summary__label">Central Merit</div>
           </div>
           <div class="card card--tint-info subpage-summary__card">
             <div class="subpage-summary__value" id="live-summary-given">0</div>
@@ -5775,8 +5775,8 @@ body[data-page="exam"] {
 
         <!-- Tabs: Routine (schedule) / Enrolled Subjects / Central Merit -->
         <div class="tabs" style="margin-top: var(--space-8);" role="tablist">
-          <button type="button" class="tab is-active" data-live-tab="routine" role="tab" aria-selected="true">Routine</button>
-          <button type="button" class="tab" data-live-tab="subjects" role="tab" aria-selected="false">Enrolled Subjects</button>
+          <button type="button" class="tab is-active" data-live-tab="routine" role="tab" aria-selected="true">Routines</button>
+          <button type="button" class="tab" data-live-tab="subjects" role="tab" aria-selected="false">Courses</button>
           <button type="button" class="tab" data-live-tab="merit" role="tab" aria-selected="false">Central Merit</button>
         </div>
 
@@ -5798,8 +5798,8 @@ body[data-page="exam"] {
         <section class="live-tab-panel" id="live-panel-merit" style="margin-top: var(--space-6); display: none;">
           <div class="card" id="live-merit-card">
             <div class="card__header">
-              <h2 class="text-h4">Central merit list</h2>
-              <span class="badge badge-neutral" id="live-merit-updated">Updated after each exam</span>
+              <h2 class="text-h4">Merit List</h2>
+              <span class="badge badge-neutral" id="live-merit-updated">Updated after ach exam</span>
             </div>
             <div class="live-merit-list" id="live-merit-list">
               <!-- populated by renderLiveMerit() -->
@@ -5861,7 +5861,7 @@ body[data-page="exam"] {
           <!-- ---- Subjects (Campaigns) ---- -->
           <div class="admin-section-header">
             <div>
-              <h2 class="text-h4">Subjects / courses</h2>
+              <h2 class="text-h4">Exam Courses</h2>
                           </div>
             <button type="button" class="btn btn-primary" id="admin-new-subject-btn">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -5974,7 +5974,7 @@ body[data-page="exam"] {
         <section class="admin-tab-panel mcqp" id="admin-panel-questions" style="margin-top: var(--space-6); display: none;">
           <div class="admin-section-header">
             <div>
-              <h2 class="text-h4">Question builder</h2>
+              <h2 class="text-h4">Question Builder</h2>
             </div>
             <select class="form-control" id="mcqp-exam-select" style="width: auto; min-width: 220px;">
               <!-- populated: which live exam these questions belong to -->
@@ -6027,7 +6027,7 @@ body[data-page="exam"] {
         <section class="admin-tab-panel" id="admin-panel-results" style="margin-top: var(--space-6); display: none;">
           <div class="admin-section-header">
             <div>
-              <h2 class="text-h4">Publish results</h2>
+              <h2 class="text-h4">Publish Results</h2>
                           </div>
           </div>
 
@@ -11511,8 +11511,8 @@ function renderAdminResultsList() {
         </div>
         <span class="badge ${exam.published ? "badge-success" : "badge-warning"}">${exam.published ? "Published" : "Draft"}</span>
         <div class="live-admin-exam-row__actions">
-          <button type="button" class="btn btn-outline btn-sm" data-admin-download-answers="${exam.id}">Download Answer Sheet</button>
-          <button type="button" class="btn ${exam.published ? "btn-outline" : "btn-primary"} btn-sm" data-admin-toggle-publish="${exam.id}">${exam.published ? "Unpublish" : "Publish Result"}</button>
+          <button type="button" class="btn btn-outline btn-sm" data-admin-download-answers="${exam.id}">Download</button>
+          <button type="button" class="btn ${exam.published ? "btn-outline" : "btn-primary"} btn-sm" data-admin-toggle-publish="${exam.id}">${exam.published ? "Unpublish" : "Publish"}</button>
         </div>
       </div>`).join("");
     return `
