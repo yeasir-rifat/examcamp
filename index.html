@@ -11911,7 +11911,7 @@ function formatExamStatus(exam) {
   const now = Date.now();
   const end = exam.start + exam.duration * 60 * 1000;
   if (now >= exam.start && now < end) return { text: liveBadgeHTML(), cls: "badge-danger" };
-  if (now >= end) return { text: exam.published ? "Published" : "Ended · awaiting publish", cls: exam.published ? "badge-success" : "badge-warning" };
+  if (now >= end) return { text: exam.published ? "Published" : "Ended", cls: exam.published ? "badge-success" : "badge-warning" };
   return { text: "Scheduled", cls: "badge-info" };
 }
 
