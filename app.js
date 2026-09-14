@@ -1,1 +1,8870 @@
-function qs(e,t=document){return t.querySelector(e)}function qsa(e,t=document){return Array.from(t.querySelectorAll(e))}function renderMathIn(e){if(e&&"function"==typeof window.renderMathInElement)try{window.renderMathInElement(e,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}],throwOnError:!1,errorColor:"inherit"})}catch(e){}}function trapFocus(e,t){const n=qsa('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',e);if(0===n.length)return;const a=n[0],s=n[n.length-1];"Tab"===t.key&&(t.shiftKey&&document.activeElement===a?(t.preventDefault(),s.focus()):t.shiftKey||document.activeElement!==s||(t.preventDefault(),a.focus()))}function debounce(e,t=200){let n;return(...a)=>{clearTimeout(n),n=setTimeout(()=>e(...a),t)}}function clamp(e,t,n){return Math.min(Math.max(e,t),n)}const THEME_STORAGE_KEY="mcq-exam-theme",THEME_LIGHT="light",THEME_DARK="dark",THEME_SYSTEM="system";function resolveSystemTheme(){return window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}function applyTheme(e){const t="system"===e?resolveSystemTheme():e;document.documentElement.setAttribute("data-theme",t),document.documentElement.setAttribute("data-theme-preference",e),updateThemeToggleUI(e)}function setTheme(e){localStorage.setItem("mcq-exam-theme",e),applyTheme(e)}function getStoredTheme(){return localStorage.getItem("mcq-exam-theme")||"system"}function updateThemeToggleUI(e){document.querySelectorAll("[data-theme-option]").forEach(t=>{const n=t.getAttribute("data-theme-option")===e;t.classList.toggle("is-active",n),t.setAttribute("aria-pressed",String(n))})}function cycleTheme(){const e=getStoredTheme(),t=["light","dark","system"];setTheme(t[(t.indexOf(e)+1)%t.length])}function initTheme(){applyTheme(getStoredTheme()),document.querySelectorAll("[data-theme-option]").forEach(e=>{e.addEventListener("click",()=>{setTheme(e.getAttribute("data-theme-option"))})}),document.querySelectorAll("[data-theme-cycle]").forEach(e=>{e.addEventListener("click",cycleTheme)}),window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{"system"===getStoredTheme()&&applyTheme("system")})}document.addEventListener("DOMContentLoaded",initTheme);const LANG_STORAGE_KEY="mcq-exam-lang",I18N_STRINGS={en:{"brand.name":"Examcamp","nav.home":"Home","nav.exams":"Exams","nav.history":"History","nav.statistics":"Statistics","footer.copyright":"© 2026 Examcamp","auth.signIn":"Sign in with Google","auth.signOut":"Sign out","auth.synced":"Synced to cloud","stats.pendingPublish.title":"Waiting for Result Publish","stats.pendingPublish.desc":"Your exam has been submitted. The admin hasn't published results for this live exam yet — check back here once they do.","common.easy":"Easy","common.medium":"Medium","common.hard":"Hard","common.langEnglish":"English","common.langBengali":"বাংলা","common.langMixed":"English + বাংলা","common.min10":"10 minutes","common.min20":"20 minutes","common.min30":"30 minutes","common.min60":"60 minutes","common.min90":"90 minutes","common.min120":"120 minutes","common.light":"Light","common.dark":"Dark","common.system":"System","common.close":"Close","home.aiMode.title":"AI Mode","home.aiMode.promptLabel":"Prompt","home.aiMode.promptPlaceholder":"Type what you want to create an exam about…","home.aiMode.promptError":"Please enter a prompt describing the exam you want.","home.aiMode.capture":"Capture","home.aiMode.upload":"Upload","home.aiMode.addMore":"Add More","home.aiMode.removeAttachment":"Remove","home.aiMode.attachmentAdded":"Added","home.aiMode.attachmentUnsupported":"Unsupported file type","home.aiMode.attachmentTooLarge":"File is too large (max 15 MB)","home.aiMode.questionsLabel":"Questions","home.aiMode.questionsPlaceholder":"Enter number of questions","home.aiMode.questionsError":"Enter a number between 1 and 200.","home.aiMode.difficultyLabel":"Difficulty","home.aiMode.languageLabel":"Language","home.aiMode.timeLabel":"Time","home.aiMode.subjectLabel":"Subject","home.aiMode.subjectPlaceholder":"Enter subject","home.aiMode.subjectError":"Please enter a subject.","home.aiMode.topicLabel":"Topic","home.aiMode.topicPlaceholder":"Enter topic or chapter","home.aiMode.topicError":"Please enter a topic.","home.aiMode.negativeMarkLabel":"Negative Mark","home.aiMode.negativeMarkHint":"Deduct marks for wrong answers.","home.aiMode.negativeMark025":"0.25","home.aiMode.negativeMark050":"0.50","home.aiMode.generate":"Generate Exam","home.dashboard.title":"Dashboard","home.dashboard.examsTitle":"Exams","home.dashboard.examsDesc":"View and manage your exams","home.dashboard.historyTitle":"History","home.dashboard.historyDesc":"View your past exams and results","home.dashboard.statsTitle":"Statistics","home.dashboard.statsDesc":"See your performance analytics","home.dashboard.quickExams":"Exams","home.dashboard.quickAvgScore":"Avg. Score","home.dashboard.quickQuestions":"Questions","home.dashboard.liveTitle":"Live Exam","home.dashboard.liveDesc":"Central exam campaigns & merit list","home.continue.title":"Continue Exam","home.continue.titleLive":"Continue Live Exam","home.continue.titlePractice":"Continue Practice Exam","home.continue.continueBtn":"Continue","home.continue.emptyTitle":"Recent Exams","home.continue.emptyDesc":"No recent exams yet.","home.continue.emptyCta":"Create Your First Exam","settings.title":"Settings","settings.tab.appearance":"Appearance","settings.tab.aiConfig":"AI Configuration","settings.tab.examPrefs":"Exam Preferences","settings.exam.negativeMarkValue":"Negative mark per wrong answer","settings.exam.negativeMarkValueHint":"Marks deducted for each wrong answer when Negative Mark is enabled.","settings.appearance.theme":"Theme","settings.appearance.themeHint":'Choose how Examcamp looks. "System" follows your device setting.',"settings.appearance.language":"Language","settings.appearance.languageHint":"Interface language. Exam content language is set separately in AI Mode.","settings.ai.apiKey":"Gemini API Key","settings.ai.apiKeyPlaceholder":"Enter your Gemini API key","settings.ai.getApiKeyLink":"Get free Gemini API key","settings.ai.model":"Model","settings.ai.modelPlaceholder":"Select a model…","settings.exam.defaultDifficulty":"Default difficulty","settings.exam.defaultLanguage":"Default exam language","settings.exam.defaultDuration":"Default duration","settings.exam.autosave":"Auto-save progress","settings.exam.autosaveHint":"Save answers automatically while taking an exam.","settings.exam.answerKey":"Show answer key after submit","settings.exam.answerKeyHint":"Reveal correct answers once an exam is finished.","settings.save":"Save Settings"},bn:{"brand.name":"Examcamp","nav.home":"হোম","nav.exams":"পরীক্ষাসমূহ","nav.history":"ইতিহাস","nav.statistics":"পরিসংখ্যান","footer.copyright":"© ২০২৬ Examcamp","auth.signIn":"গুগল দিয়ে সাইন ইন করুন","auth.signOut":"সাইন আউট","auth.synced":"ক্লাউডে সিঙ্ক হয়েছে","stats.pendingPublish.title":"রেজাল্ট পাবলিশের অপেক্ষায়","stats.pendingPublish.desc":"আপনার পরীক্ষা জমা দেওয়া হয়েছে। এই লাইভ পরীক্ষার রেজাল্ট এখনো অ্যাডমিন পাবলিশ করেননি — অ্যাডমিন পাবলিশ করলে এখানেই দেখতে পাবেন।","common.easy":"সহজ","common.medium":"মধ্যম","common.hard":"কঠিন","common.langEnglish":"English","common.langBengali":"বাংলা","common.langMixed":"English + বাংলা","common.min10":"১০ মিনিট","common.min20":"২০ মিনিট","common.min30":"৩০ মিনিট","common.min60":"৬০ মিনিট","common.min90":"৯০ মিনিট","common.min120":"১২০ মিনিট","common.light":"লাইট","common.dark":"ডার্ক","common.system":"সিস্টেম","common.close":"বন্ধ করুন","home.aiMode.title":"এআই মোড","home.aiMode.promptLabel":"প্রম্পট","home.aiMode.promptPlaceholder":"আপনি কী বিষয়ে পরীক্ষা তৈরি করতে চান তা লিখুন…","home.aiMode.promptError":"অনুগ্রহ করে আপনার পরীক্ষার বর্ণনা দিয়ে একটি প্রম্পট লিখুন।","home.aiMode.capture":"ছবি তুলুন","home.aiMode.upload":"আপলোড করুন","home.aiMode.addMore":"আরও যুক্ত করুন","home.aiMode.removeAttachment":"মুছুন","home.aiMode.attachmentAdded":"যুক্ত হয়েছে","home.aiMode.attachmentUnsupported":"অসমর্থিত ফাইল ধরন","home.aiMode.attachmentTooLarge":"ফাইলটি অনেক বড় (সর্বোচ্চ ১৫ এমবি)","home.aiMode.questionsLabel":"প্রশ্ন সংখ্যা","home.aiMode.questionsPlaceholder":"প্রশ্নের সংখ্যা লিখুন","home.aiMode.questionsError":"১ থেকে ২০০ এর মধ্যে একটি সংখ্যা লিখুন।","home.aiMode.difficultyLabel":"কঠিনতা","home.aiMode.languageLabel":"ভাষা","home.aiMode.timeLabel":"সময়","home.aiMode.subjectLabel":"বিষয়","home.aiMode.subjectPlaceholder":"বিষয় লিখুন","home.aiMode.subjectError":"অনুগ্রহ করে একটি বিষয় লিখুন।","home.aiMode.topicLabel":"টপিক","home.aiMode.topicPlaceholder":"টপিক বা অধ্যায় লিখুন","home.aiMode.topicError":"অনুগ্রহ করে একটি টপিক লিখুন।","home.aiMode.negativeMarkLabel":"নেগেটিভ মার্ক","home.aiMode.negativeMarkHint":"ভুল উত্তরের জন্য মার্ক কাটা হবে।","home.aiMode.negativeMark025":"০.২৫","home.aiMode.negativeMark050":"০.৫০","home.aiMode.generate":"পরীক্ষা তৈরি করুন","home.dashboard.title":"ড্যাশবোর্ড","home.dashboard.examsTitle":"পরীক্ষাসমূহ","home.dashboard.examsDesc":"আপনার পরীক্ষাগুলো দেখুন ও পরিচালনা করুন","home.dashboard.historyTitle":"ইতিহাস","home.dashboard.historyDesc":"আপনার পূর্ববর্তী পরীক্ষা ও ফলাফল দেখুন","home.dashboard.statsTitle":"পরিসংখ্যান","home.dashboard.statsDesc":"আপনার পারফরম্যান্স বিশ্লেষণ দেখুন","home.dashboard.quickExams":"পরীক্ষা","home.dashboard.quickAvgScore":"গড় স্কোর","home.dashboard.quickQuestions":"প্রশ্ন","home.dashboard.liveTitle":"লাইভ পরীক্ষা","home.dashboard.liveDesc":"কেন্দ্রীয় পরীক্ষা ও মেধা তালিকা","home.continue.title":"পরীক্ষা চালিয়ে যান","home.continue.titleLive":"লাইভ পরীক্ষা চালিয়ে যান","home.continue.titlePractice":"প্র্যাকটিস পরীক্ষা চালিয়ে যান","home.continue.continueBtn":"চালিয়ে যান","home.continue.emptyTitle":"সাম্প্রতিক পরীক্ষা","home.continue.emptyDesc":"এখনো কোনো সাম্প্রতিক পরীক্ষা নেই।","home.continue.emptyCta":"আপনার প্রথম পরীক্ষা তৈরি করুন","settings.title":"সেটিংস","settings.tab.appearance":"চেহারা","settings.tab.aiConfig":"এআই কনফিগারেশন","settings.tab.examPrefs":"পরীক্ষার পছন্দসমূহ","settings.exam.negativeMarkValue":"প্রতিটি ভুল উত্তরের জন্য নেগেটিভ মার্ক","settings.exam.negativeMarkValueHint":"নেগেটিভ মার্ক চালু থাকলে প্রতিটি ভুল উত্তরের জন্য এই পরিমাণ মার্ক কাটা হবে।","settings.appearance.theme":"থিম","settings.appearance.themeHint":'Examcamp কেমন দেখাবে তা বেছে নিন। "সিস্টেম" আপনার ডিভাইসের সেটিং অনুসরণ করে।',"settings.appearance.language":"ভাষা","settings.appearance.languageHint":"ইন্টারফেসের ভাষা। পরীক্ষার বিষয়বস্তুর ভাষা এআই মোডে আলাদাভাবে নির্ধারণ করা হয়।","settings.ai.apiKey":"জেমিনি এপিআই কী","settings.ai.apiKeyPlaceholder":"আপনার জেমিনি এপিআই কী লিখুন","settings.ai.getApiKeyLink":"ফ্রি জেমিনি এপিআই কী নিন","settings.ai.model":"মডেল","settings.ai.modelPlaceholder":"একটি মডেল নির্বাচন করুন…","settings.exam.defaultDifficulty":"ডিফল্ট কঠিনতা","settings.exam.defaultLanguage":"ডিফল্ট পরীক্ষার ভাষা","settings.exam.defaultDuration":"ডিফল্ট সময়কাল","settings.exam.autosave":"স্বয়ংক্রিয়ভাবে অগ্রগতি সংরক্ষণ","settings.exam.autosaveHint":"পরীক্ষা দেওয়ার সময় স্বয়ংক্রিয়ভাবে উত্তর সংরক্ষণ করুন।","settings.exam.answerKey":"জমা দেওয়ার পর উত্তরপত্র দেখান","settings.exam.answerKeyHint":"পরীক্ষা শেষ হলে সঠিক উত্তর প্রদর্শন করুন।","settings.save":"সেটিংস সংরক্ষণ করুন"}};function t(e){const t=localStorage.getItem("mcq-exam-lang")||"en";return(I18N_STRINGS[t]||I18N_STRINGS.en)[e]??I18N_STRINGS.en[e]}function applyI18nStrings(e){const t=I18N_STRINGS[e]||I18N_STRINGS.en,n=I18N_STRINGS.en;qsa("[data-i18n]").forEach(e=>{const a=e.getAttribute("data-i18n"),s=t[a]??n[a];void 0!==s&&(e.textContent=s)}),qsa("[data-i18n-placeholder]").forEach(e=>{const a=e.getAttribute("data-i18n-placeholder"),s=t[a]??n[a];void 0!==s&&e.setAttribute("placeholder",s)})}function setLanguage(e){localStorage.setItem("mcq-exam-lang",e),qsa("[data-lang-option]").forEach(t=>{const n=t.getAttribute("data-lang-option")===e;t.classList.toggle("is-active",n),t.setAttribute("aria-pressed",String(n))}),document.documentElement.setAttribute("lang","bn"===e?"bn":"en"),applyI18nStrings(e),"function"==typeof initRecentExamState&&initRecentExamState()}function initLanguageToggle(){setLanguage(localStorage.getItem("mcq-exam-lang")||"en"),qsa("[data-lang-option]").forEach(e=>{e.addEventListener("click",()=>{setLanguage(e.getAttribute("data-lang-option"))})})}function initDropdowns(){qsa("[data-dropdown]").forEach(e=>{const t=qs("[data-dropdown-trigger]",e),n=qs("[data-dropdown-menu]",e);t&&n&&(t.addEventListener("click",e=>{e.stopPropagation();const a=n.classList.contains("is-open");closeAllDropdowns(),a||(n.classList.add("is-open"),t.setAttribute("aria-expanded","true"))}),n.addEventListener("keydown",e=>{"Escape"===e.key&&(closeAllDropdowns(),t.focus())}))}),document.addEventListener("click",closeAllDropdowns)}function closeAllDropdowns(){qsa("[data-dropdown-menu].is-open").forEach(e=>{e.classList.remove("is-open");const t=qs("[data-dropdown-trigger]",e.closest("[data-dropdown]"));t&&t.setAttribute("aria-expanded","false")})}function initTabs(){qsa("[data-tabs]").forEach(e=>{const t=qsa("[data-tab]",e),n=qsa("[data-tab-panel]",e.closest("[data-tabs-wrapper]")||document);t.forEach(e=>{e.addEventListener("click",()=>activateTab(e,t,n)),e.addEventListener("keydown",a=>{const s=t.indexOf(e);if("ArrowRight"===a.key){a.preventDefault();const e=t[(s+1)%t.length];e.focus(),activateTab(e,t,n)}else if("ArrowLeft"===a.key){a.preventDefault();const e=t[(s-1+t.length)%t.length];e.focus(),activateTab(e,t,n)}})})})}function activateTab(e,t,n){t.forEach(e=>{e.classList.remove("is-active"),e.setAttribute("aria-selected","false"),e.setAttribute("tabindex","-1")}),e.classList.add("is-active"),e.setAttribute("aria-selected","true"),e.setAttribute("tabindex","0");const a=e.getAttribute("data-tab");n.forEach(e=>{const t=e.getAttribute("data-tab-panel")===a;e.hidden=!t})}let isModalPopping=!1,justClosedModalViaHistoryBack=!1;function openModal(e){const t=document.getElementById(e);if(!t)return;t.classList.add("is-open"),t.setAttribute("aria-hidden","false"),document.body.style.overflow="hidden";const n=qs(".modal",t),a=qs("a[href], button:not([disabled]), textarea, input, select",n);a&&a.focus(),t.__keydownHandler=t=>{"Escape"===t.key&&closeModal(e),trapFocus(n,t)},document.addEventListener("keydown",t.__keydownHandler),isModalPopping||history.pushState({modal:e},"",location.href)}function closeModal(e){const t=document.getElementById(e);t&&(t.classList.remove("is-open"),t.setAttribute("aria-hidden","true"),document.body.style.overflow="",t.__keydownHandler&&document.removeEventListener("keydown",t.__keydownHandler),isModalPopping||(justClosedModalViaHistoryBack=!0,history.back()))}function initModals(){qsa("[data-modal-open]").forEach(e=>{e.addEventListener("click",()=>openModal(e.getAttribute("data-modal-open")))}),qsa("[data-modal-close]").forEach(e=>{e.addEventListener("click",()=>closeModal(e.closest(".modal-overlay").id))}),qsa(".modal-overlay").forEach(e=>{e.addEventListener("click",t=>{t.target===e&&closeModal(e.id)})})}function showToast(e,t="info"){let n=qs("#toast-container");n||(n=document.createElement("div"),n.id="toast-container",n.className="toast-container",document.body.appendChild(n));const a=document.createElement("div");a.className=`toast toast-${t}`,a.style.minWidth="260px",a.setAttribute("role","status"),a.textContent=e,n.appendChild(a),setTimeout(()=>a.remove(),3200)}document.addEventListener("DOMContentLoaded",()=>{initLanguageToggle(),initDropdowns(),initTabs(),initModals()});const aiModeAttachments=[],ATTACHMENT_MAX_BYTES=15728640,ATTACHMENT_ACCEPTED_EXT=/\.(png|jpe?g|webp|heic|heif|pdf|docx?|pptx?)$/i;function attachmentKindFor(e){const t=(e.type||"").toLowerCase(),n=(e.name||"").toLowerCase();return t.startsWith("image/")?"image":"application/pdf"===t||n.endsWith(".pdf")?"pdf":n.endsWith(".doc")||n.endsWith(".docx")?"doc":n.endsWith(".ppt")||n.endsWith(".pptx")?"ppt":"other"}function formatFileSize(e){return e||0===e?e<1024?`${e} B`:e<1048576?`${(e/1024).toFixed(0)} KB`:`${(e/1048576).toFixed(1)} MB`:""}const ATTACHMENT_KIND_ICON={image:'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M21 16l-5.5-5.5L6 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',pdf:'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13.5h1.4a1.3 1.3 0 1 1 0 2.6H9V13.5Zm0 2.6V18m3.5-4.5V18m0-4.5h1.2a1.1 1.1 0 0 1 1.1 1.1v2.3a1.1 1.1 0 0 1-1.1 1.1H12.5m3.3-4.5V18m0-2.4h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',doc:'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16h6M9 19h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',ppt:'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="5.2" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>',other:'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'};function renderAttachmentList(){const e=qs("[data-attachment-list]");e&&(e.innerHTML="",e.hidden=0===aiModeAttachments.length,aiModeAttachments.forEach(n=>{const a=document.createElement("div");a.className="attachment-item",a.dataset.attachmentId=n.id;const s=document.createElement("div");if(s.className="attachment-item__icon","image"===n.kind&&n.previewUrl){const e=document.createElement("img");e.src=n.previewUrl,e.alt="",s.appendChild(e)}else s.innerHTML=ATTACHMENT_KIND_ICON[n.kind]||ATTACHMENT_KIND_ICON.other;const i=document.createElement("div");i.className="attachment-item__body";const o=document.createElement("div");o.className="attachment-item__name",o.textContent=n.name;const r=document.createElement("div");r.className="attachment-item__meta",r.textContent=formatFileSize(n.size),i.appendChild(o),i.appendChild(r);const l=document.createElement("button");l.type="button",l.className="attachment-item__remove",l.setAttribute("aria-label",t("home.aiMode.removeAttachment")||"Remove"),l.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',l.addEventListener("click",()=>removeAttachment(n.id)),a.appendChild(s),a.appendChild(i),a.appendChild(l),e.appendChild(a)}),renderAddMoreButton(e))}function renderAddMoreButton(e){if(0===aiModeAttachments.length)return;const n=document.createElement("button");n.type="button",n.className="btn-add-more",n.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>'+(t("home.aiMode.addMore")||"Add More")+"</span>",n.addEventListener("click",()=>qs("[data-file-input]")?.click()),e.appendChild(n)}function addAttachments(e){const n=Array.from(e||[]);let a=0;n.forEach(e=>{if(!ATTACHMENT_ACCEPTED_EXT.test(e.name)&&!(e.type||"").startsWith("image/")&&"application/pdf"!==e.type)return void showToast(`"${e.name}" - ${t("home.aiMode.attachmentUnsupported")||"Unsupported file type"}.`,"danger");if(e.size>15728640)return void showToast(`"${e.name}" - ${t("home.aiMode.attachmentTooLarge")||"File is too large (max 15 MB)"}.`,"danger");const n={id:`att_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,file:e,name:e.name,size:e.size,mimeType:e.type||"",kind:attachmentKindFor(e),previewUrl:null,base64:null};"image"===n.kind&&(n.previewUrl=URL.createObjectURL(e)),aiModeAttachments.push(n),a+=1}),a>0&&renderAttachmentList()}function removeAttachment(e){const t=aiModeAttachments.findIndex(t=>t.id===e);if(-1===t)return;const[n]=aiModeAttachments.splice(t,1);n.previewUrl&&URL.revokeObjectURL(n.previewUrl),renderAttachmentList()}function clearAiModeAttachments(){aiModeAttachments.forEach(e=>{e.previewUrl&&URL.revokeObjectURL(e.previewUrl)}),aiModeAttachments.length=0,renderAttachmentList()}function initCaptureUpload(){const e=qs("[data-action='capture']"),t=qs("[data-action='upload']"),n=qs("[data-capture-input]"),a=qs("[data-file-input]");e&&n&&(e.addEventListener("click",()=>n.click()),n.addEventListener("change",()=>{n.files&&n.files.length>0&&addAttachments(n.files),n.value=""})),t&&a&&(t.addEventListener("click",()=>a.click()),a.addEventListener("change",()=>{a.files&&a.files.length>0&&addAttachments(a.files),a.value=""}))}function validateAiModeForm(){let e=!0;const t=qs("#prompt-input"),n=qs("#prompt-error");if(t&&n){const a=0===t.value.trim().length;t.classList.toggle("is-invalid",a),t.setAttribute("aria-invalid",String(a)),n.classList.toggle("is-visible",a),a&&(e=!1)}const a=qs("#subject-input"),s=qs("#subject-error");if(a&&s){const t=0===a.value.trim().length;a.classList.toggle("is-invalid",t),a.setAttribute("aria-invalid",String(t)),s.classList.toggle("is-visible",t),t&&(e=!1)}const i=qs("#topic-input"),o=qs("#topic-error");if(i&&o){const t=0===i.value.trim().length;i.classList.toggle("is-invalid",t),i.setAttribute("aria-invalid",String(t)),o.classList.toggle("is-visible",t),t&&(e=!1)}const r=qs("#questions-input"),l=qs("#questions-error");if(r&&l){const t=Number(r.value),n=!t||t<1||t>200;r.classList.toggle("is-invalid",n),r.setAttribute("aria-invalid",String(n)),l.classList.toggle("is-visible",n),n&&(e=!1)}return e}function initInlineValidationClearing(){[["#prompt-input","#prompt-error"],["#subject-input","#subject-error"],["#topic-input","#topic-error"],["#questions-input","#questions-error"]].forEach(([e,t])=>{const n=qs(e),a=qs(t);if(!n||!a)return;const s="SELECT"===n.tagName?"change":"input";n.addEventListener(s,()=>{n.classList.contains("is-invalid")&&(n.classList.remove("is-invalid"),n.setAttribute("aria-invalid","false"),a.classList.remove("is-visible"))})})}const EXAM_CONFIG_STORAGE_KEY="mcq-exam-pending-config";function readAiModeFormConfig(e){const t=qs("#negative-mark-toggle",e)?.checked||!1,n=getStoredExamPrefs().negativeMarkValue;return{prompt:qs("#prompt-input",e)?.value.trim()||"",subject:qs("#subject-input",e)?.value.trim()||"",topic:qs("#topic-input",e)?.value.trim()||"",questionCount:Number(qs("#questions-input",e)?.value)||0,difficulty:qs("#difficulty-select",e)?.value||"medium",language:qs("#language-select",e)?.value||"en",duration:Number(qs("#time-select",e)?.value)||60,negativeMarking:t?Number(n||.25):0,attachmentCount:aiModeAttachments.length,createdAt:(new Date).toISOString()}}function initGenerateExam(){const e=qs("#ai-mode-form"),t=qs("#generate-btn");if(!e||!t)return;const n=qs(".btn-generate__label",t),a=n?n.textContent:"Generate Exam";e.addEventListener("submit",s=>{if(s.preventDefault(),t.classList.contains("is-loading"))return;if(!validateAiModeForm()){showToast("Please fill in the required fields before generating an exam.","danger");const t=qs(".is-invalid",e);return void(t&&t.focus())}const i=readAiModeFormConfig(e);try{localStorage.setItem(EXAM_CONFIG_STORAGE_KEY,JSON.stringify(i))}catch(e){return void showToast("Could not save exam configuration locally. Please try again.","danger")}t.classList.add("is-loading"),t.disabled=!0,n&&(n.textContent="Generating…"),t.setAttribute("aria-busy","true"),runGeneration(withExamDefaults(i),!1).finally(()=>{t.classList.remove("is-loading"),t.disabled=!1,n&&(n.textContent=a),t.setAttribute("aria-busy","false")})})}function initRecentExamState(){const e=qs("[data-recent-exam]");if(!e)return;const n=restoreExamSession(),a=qs("[data-recent-continue]",e),s=qs("[data-recent-empty]",e),i=!!n;if(a&&(a.hidden=!i),s&&(s.hidden=i),n){const e=qs("#recent-title",a);if(e){const a=!!n.exam.liveExamId;e.textContent=t(a?"home.continue.titleLive":"home.continue.titlePractice")}const s=qs(".continue-card__title",a);s&&(s.textContent=n.exam.subject||"Exam");const i=qs(".continue-card__topic",a);i&&(i.textContent=n.exam.topic||"");const o=n.exam.questions.length,r=Object.keys(n.answers).length,l=o?Math.round(r/o*100):0,c=qs(".continue-card__progress-label",a);c&&(c.innerHTML=`<span>${r} / ${o} questions completed</span><span>${l}%</span>`);const d=qs(".progress__fill",a);d&&(d.style.width=`${l}%`);const m=qs(".progress",a);m&&m.setAttribute("aria-valuenow",String(l));const u=qs("#continue-exam-link",a);if(u){u.textContent="";const e=document.createElement("span"),t="completed"===n.status;e.textContent=t?"View Results":"Continue",u.appendChild(e),u.classList.toggle("btn-outline",t),u.classList.toggle("btn-secondary",!t),u.onclick=e=>{e.preventDefault(),"completed"===n.status?enterStatistics():enterLiveExam()}}}}function renderHomeQuickStats(){const e=getAllExamRecords().filter(e=>"completed"===e.status),t=qs("#quick-stat-exams"),n=qs("#quick-stat-avg"),a=qs("#quick-stat-questions"),s=e.length?Math.round(e.reduce((e,t)=>e+t.result.percentage,0)/e.length):0,i=e.reduce((e,t)=>e+t.exam.questions.length,0);t&&(t.textContent=e.length),n&&(n.textContent=`${s}%`),a&&(a.textContent=i.toLocaleString())}document.addEventListener("DOMContentLoaded",()=>{initCaptureUpload(),initInlineValidationClearing(),initGenerateExam(),initRecentExamState(),renderHomeQuickStats()});const auth=firebase.auth();let currentUser=null;function getCurrentUser(){return currentUser}function isSignedIn(){return!!currentUser}function signInWithGoogle(){const e=new firebase.auth.GoogleAuthProvider;auth.signInWithPopup(e).catch(e=>{console.error("Sign-in failed:",e),"auth/popup-closed-by-user"!==e.code&&"auth/cancelled-popup-request"!==e.code&&showToast("Sign-in failed. Please try again.","danger")})}function signOutUser(){auth.signOut().catch(e=>console.error("Sign-out failed:",e))}function renderAuthWidget(e){const t=qs("#auth-widget");if(t)if(e){t.classList.remove("is-signed-out"),t.classList.add("is-signed-in");const n=e.photoURL||"",a=e.displayName||e.email||"Signed in";qs("#auth-user-avatar",t).src=n,qs("#auth-user-avatar",t).alt=a,qs("#auth-user-avatar-lg",t).src=n,qs("#auth-user-avatar-lg",t).alt=a,qs("#auth-user-name",t).textContent=a,qs("#auth-user-email",t).textContent=e.email||""}else t.classList.remove("is-signed-in"),t.classList.add("is-signed-out"),closeAuthMenu()}function setSyncStatus(e){const t=qsa(".auth-widget__sync-dot"),n={synced:"Synced to cloud",syncing:"Syncing…",error:"Sync failed - changes saved locally",offline:"Offline - changes saved locally"}[e]||"Synced to cloud";t.forEach(t=>{t.classList.remove("is-syncing","is-error"),"syncing"===e&&t.classList.add("is-syncing"),"error"!==e&&"offline"!==e||t.classList.add("is-error"),t.title=n});const a=qs("#auth-sync-status span:last-child");a&&(a.textContent=n)}function closeAuthMenu(){const e=qs("#auth-user-menu"),t=qs("#auth-user-btn");e&&(e.classList.remove("is-open"),e.setAttribute("aria-hidden","true")),t&&t.setAttribute("aria-expanded","false")}function initAuthWidget(){const e=qs("#auth-signin-btn"),t=qs("#auth-user-btn"),n=qs("#auth-signout-btn"),a=qs("#auth-user-menu");e&&e.addEventListener("click",signInWithGoogle),n&&n.addEventListener("click",()=>{closeAuthMenu(),signOutUser()}),t&&a&&(t.addEventListener("click",e=>{e.stopPropagation();const n=a.classList.toggle("is-open");a.setAttribute("aria-hidden",String(!n)),t.setAttribute("aria-expanded",String(n))}),document.addEventListener("click",e=>{a.contains(e.target)||e.target===t||closeAuthMenu()}),document.addEventListener("keydown",e=>{"Escape"===e.key&&closeAuthMenu()})),auth.onAuthStateChanged(e=>{const t=currentUser;currentUser=e,renderAuthWidget(e),e?(cloudStoreOnSignIn(e,null===t),refreshLiveExamSubmittedIds()):(cloudStoreOnSignOut(),liveExamSubmittedIds=[])})}document.addEventListener("DOMContentLoaded",initAuthWidget);const db=null;function userDocRef(e){return{get:()=>supabaseClient.from("user_data").select("ai_config, exam_prefs, exam_history").eq("firebase_uid",e).maybeSingle().then(({data:e,error:t})=>{if(t)throw t;return{exists:!!e,data:()=>e?{aiConfig:e.ai_config,examPrefs:e.exam_prefs,examHistory:e.exam_history}:{}}}),set:t=>{const n={firebase_uid:e,updated_at:(new Date).toISOString()};void 0!==t.aiConfig&&(n.ai_config=t.aiConfig),void 0!==t.examPrefs&&(n.exam_prefs=t.examPrefs),void 0!==t.examHistory&&(n.exam_history=t.examHistory);const a=getCurrentUser();return a&&a.email&&(n.email=a.email),supabaseClient.from("user_data").upsert(n,{onConflict:"firebase_uid"}).then(({error:e})=>{if(e)throw e})}}}let pendingCloudWrite=null,cloudWriteTimer=null;function queueCloudWrite(e){isSignedIn()&&(pendingCloudWrite={...pendingCloudWrite||{},...e},setSyncStatus("syncing"),clearTimeout(cloudWriteTimer),cloudWriteTimer=setTimeout(flushCloudWrite,600))}function flushCloudWrite(){const e=getCurrentUser(),t=pendingCloudWrite;pendingCloudWrite=null,e&&t&&userDocRef(e.uid).set(t).then(()=>setSyncStatus("synced")).catch(e=>{console.error("Cloud sync failed:",e),setSyncStatus("error")})}function cloudStoreOnSignIn(e,t){setSyncStatus("syncing"),userDocRef(e.uid).get().then(e=>{const t=e.exists?e.data():{};t.aiConfig&&localStorage.setItem(AI_CONFIG_STORAGE_KEY,JSON.stringify(t.aiConfig)),t.examPrefs&&localStorage.setItem(EXAM_PREFS_STORAGE_KEY,JSON.stringify(t.examPrefs));const n=mergeExamHistories(loadExamHistory(),Array.isArray(t.examHistory)?t.examHistory:[]);saveExamHistory(n),"function"==typeof renderHomeQuickStats&&renderHomeQuickStats(),"function"==typeof initAiConfigSettings&&initAiConfigSettings(),setSyncStatus("synced"),queueCloudWrite({aiConfig:getStoredAiConfig(),examPrefs:getStoredExamPrefs(),examHistory:n})}).catch(e=>{console.error("Could not load cloud data:",e),setSyncStatus("error")})}function cloudStoreOnSignOut(){pendingCloudWrite=null,clearTimeout(cloudWriteTimer),setSyncStatus("synced")}function mergeExamHistories(e,t){const n=new Map;return[...e,...t].forEach(e=>{if(!e||!e.sessionId)return;const t=n.get(e.sessionId);(!t||(e.updatedAt||0)>(t.updatedAt||0))&&n.set(e.sessionId,e)}),[...n.values()].sort((e,t)=>(t.updatedAt||0)-(e.updatedAt||0))}window.addEventListener("beforeunload",()=>{pendingCloudWrite&&flushCloudWrite()});const AI_CONFIG_STORAGE_KEY="mcq-exam-ai-config",EXAM_PREFS_STORAGE_KEY="mcq-exam-preferences",GEMINI_MODEL_OPTIONS=[{value:"gemini-3.1-flash-lite",label:"Gemini 3.1 Flash-Lite (Recommended)"},{value:"gemini-3.5-flash",label:"Gemini 3.5 Flash"},{value:"gemini-3.6-flash",label:"Gemini 3.6 Flash"},{value:"gemini-3.1-pro-preview",label:"Gemini 3.1 Pro"},{value:"gemini-2.5-flash",label:"Gemini 2.5 Flash"},{value:"gemini-2.5-pro",label:"Gemini 2.5 Pro"}];function getStoredAiConfig(){try{return JSON.parse(localStorage.getItem(AI_CONFIG_STORAGE_KEY)||"null")||{}}catch(e){return{}}}function populateGeminiModelOptions(e){const t=qs("#gemini-model-select");if(!t)return;const n=t.querySelector('option[value=""]');if(t.innerHTML="",n)t.appendChild(n);else{const e=document.createElement("option");e.value="",e.textContent="Select a model…",t.appendChild(e)}GEMINI_MODEL_OPTIONS.forEach(e=>{const n=document.createElement("option");n.value=e.value,n.textContent=e.label,t.appendChild(n)}),e&&(t.value=e)}function initAiConfigSettings(){const e=getStoredAiConfig();populateGeminiModelOptions(e.model||"");const t=qs("#gemini-api-key");t&&e.apiKey&&(t.value=e.apiKey);const n=qs("#toggle-api-key-visibility");n&&t&&n.addEventListener("click",()=>{const e="password"===t.type;t.type=e?"text":"password",n.setAttribute("aria-pressed",String(e)),n.setAttribute("aria-label",e?"Hide API key":"Show API key"),n.innerHTML=e?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a13.4 13.4 0 0 1-3.2 4.1M6.5 6.6C4 8.3 2 12 2 12s3.5 7 10 7a10.4 10.4 0 0 0 3-.44" /></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'})}function saveAiConfig(){const e={apiKey:qs("#gemini-api-key")?.value.trim()||"",model:qs("#gemini-model-select")?.value||""};localStorage.setItem(AI_CONFIG_STORAGE_KEY,JSON.stringify(e)),queueCloudWrite({aiConfig:e})}function getStoredExamPrefs(){try{return JSON.parse(localStorage.getItem(EXAM_PREFS_STORAGE_KEY)||"null")||{difficulty:"medium",language:"en",duration:"60",autosave:!0,showAnswerKey:!0,negativeMarkValue:.25}}catch(e){return{difficulty:"medium",language:"en",duration:"60",autosave:!0,showAnswerKey:!0,negativeMarkValue:.25}}}function populateExamPrefsForm(e){const t=qs("#default-difficulty-select"),n=qs("#default-language-select"),a=qs("#default-duration-select"),s=qs("#autosave-toggle"),i=qs("#answer-key-toggle"),o=qs("#negative-mark-value-select");t&&(t.value=e.difficulty),n&&(n.value=e.language),a&&(a.value=e.duration),s&&(s.checked=!!e.autosave),i&&(i.checked=!!e.showAnswerKey),o&&(o.value=e.negativeMarkValue??.25)}function saveExamPrefs(){const e={difficulty:qs("#default-difficulty-select")?.value||"medium",language:qs("#default-language-select")?.value||"en",duration:qs("#default-duration-select")?.value||"60",autosave:!!qs("#autosave-toggle")?.checked,showAnswerKey:!!qs("#answer-key-toggle")?.checked,negativeMarkValue:Number(qs("#negative-mark-value-select")?.value)||.25};localStorage.setItem(EXAM_PREFS_STORAGE_KEY,JSON.stringify(e)),queueCloudWrite({examPrefs:e})}function initSettingsModal(){const e=qs("#settings-modal"),t=qs("#settings-save-btn"),n=qs("#settings-save-note");if(!e)return;qsa('[data-modal-open="settings-modal"]').forEach(t=>{t.addEventListener("click",()=>{populateExamPrefsForm(getStoredExamPrefs()),n&&(n.textContent="");const a=t.getAttribute("data-settings-tab");if(a){const t=qsa("[data-tab]",e),n=qsa("[data-tab-panel]",e),s=t.find(e=>e.getAttribute("data-tab")===a);s&&activateTab(s,t,n)}})}),t&&t.addEventListener("click",()=>{saveAiConfig(),saveExamPrefs(),n&&(n.textContent="Settings saved."),showToast("Settings saved.","success")})}function initActiveNavLink(){const e=document.body.getAttribute("data-page");e&&qsa(".site-header__nav-link").forEach(t=>{t.getAttribute("data-nav")===e&&(t.classList.add("is-active"),t.setAttribute("aria-current","page"))})}document.addEventListener("DOMContentLoaded",()=>{initAiConfigSettings(),initSettingsModal()}),document.addEventListener("DOMContentLoaded",()=>{initActiveNavLink()});const SESSION_STORAGE_KEY="mcq-exam-active-session",PRINT_PREFS_KEY="mcq-exam-print-prefs",EXAM_HISTORY_KEY="mcq-exam-history";function genId(e){return`${e}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`}function formatDuration(e){const t=Math.max(0,Math.round(e/1e3)),n=Math.floor(t/3600),a=Math.floor(t%3600/60),s=t%60,i=n>0?String(a).padStart(2,"0"):String(a),o=String(s).padStart(2,"0");return n>0?`${n}:${i}:${o}`:`${i.padStart(2,"0")}:${o}`}function loadExamHistory(){try{const e=JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY)||"[]");return Array.isArray(e)?e:[]}catch(e){return[]}}function saveExamHistory(e){localStorage.setItem(EXAM_HISTORY_KEY,JSON.stringify(e)),queueCloudWrite({examHistory:e})}function upsertExamHistory(e){if(!e||!e.exam)return;const t=loadExamHistory(),n=t.findIndex(t=>t.sessionId===e.sessionId),a={...e,updatedAt:Date.now()};-1===n?t.unshift(a):t[n]=a,t.sort((e,t)=>(t.updatedAt||0)-(e.updatedAt||0)),saveExamHistory(t)}function removeFromExamHistory(e){saveExamHistory(loadExamHistory().filter(t=>t.sessionId!==e))}function loadSession(){try{return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY)||"null")}catch(e){return null}}function saveSession(e){return localStorage.setItem(SESSION_STORAGE_KEY,JSON.stringify(e)),upsertExamHistory(e),e}function createExamSession(e){return saveSession({sessionId:genId("session"),examId:e.examId,status:"active",startedAt:Date.now(),currentQuestion:0,answers:{},markedForReview:[],exam:e,result:null})}function restoreExamSession(){const e=loadSession();return e&&e.exam&&Array.isArray(e.exam.questions)?e:null}function calculateRemainingTime(e){const t=60*e.exam.duration*1e3;return clamp(t-(Date.now()-e.startedAt),0,t)}function selectAnswer(e,t,n){return e.answers[t]=n,saveSession(e),e}function toggleMarkForReview(e,t){const n=e.markedForReview.indexOf(t);return-1===n?e.markedForReview.push(t):e.markedForReview.splice(n,1),saveSession(e),e}function navigateToQuestion(e,t){return e.currentQuestion=clamp(t,0,e.exam.questions.length-1),saveSession(e),e}function getQuestionReviewState(e,t){const n=e.answers[t.id];if(null==n)return{selected:null,isCorrect:!1,isWrong:!1,isUnanswered:!0};const a=n===t.correctAnswer;return{selected:n,isCorrect:a,isWrong:!a,isUnanswered:!1}}function calculateMarks(e){const t=e.exam.marksPerQuestion||1,n=e.exam.negativeMarking||0;let a=0;for(const s of e.exam.questions){const i=getQuestionReviewState(e,s);i.isCorrect?a+=t:i.isWrong&&(a-=n)}return Math.round(100*a)/100}function calculatePercentage(e,t){return t?Math.round(e/t*1e4)/100:0}function calculateResult(e){const t=e.exam.questions;let n=0,a=0,s=0;for(const i of t){const t=getQuestionReviewState(e,i);t.isUnanswered?s++:t.isCorrect?n++:a++}const i=t.length-s,o=t.length*(e.exam.marksPerQuestion||1),r=calculateMarks(e),l=60*e.exam.duration*1e3,c=clamp(Date.now()-e.startedAt,0,l);return{examId:e.exam.examId,sessionId:e.sessionId,submittedAt:Date.now(),totalQuestions:t.length,attempted:i,correct:n,wrong:a,unanswered:s,totalMarks:o,obtainedMarks:r,percentage:calculatePercentage(r,o),timeAllowed:l,timeUsed:c,timeRemaining:l-c,answers:{...e.answers}}}function submitExam(e){if(e.status="submitted",e.result=calculateResult(e),e.status="completed",saveSession(e),e.exam.liveExamId){const t=currentMemberEmail(),n=findCurrentMember(),a=n&&n.name||t||"Anonymous";t&&submitLiveExamResultToSupabase(e.exam.liveExamId,t,a,e.answers,e.result.obtainedMarks,e.result.totalMarks).then(()=>{liveExamSubmittedIds.push(e.exam.liveExamId)})}return e}function autoSubmitExam(e){return submitExam(e)}function containsBengaliScript(e){return/[\u0980-\u09FF]/.test(String(e||""))}function resolveGenerationLanguage(e){const t=containsBengaliScript(e.prompt);return"bn"===e.language?"bn":"en-bn"===e.language?"en-bn":t?"bn":"en"}function languageInstruction(e){return"bn"===e?"Bengali (বাংলা). Write the question, all four options, and the explanation entirely in Bengali script. Do not use English.":"en-bn"===e?"A mix of English and Bengali (বাংলা), matching however the user's own prompt mixes the two languages.":"English."}function buildGeminiPrompt(e){const t=resolveGenerationLanguage(e);return`You are generating a multiple-choice exam for a study/practice app.\n\nSubject: ${e.subject||"General"}\nTopic: ${e.topic||e.prompt||"General"}\nExtra instructions from the user: ${e.prompt||"(none)"}\nNumber of questions: ${e.questionCount}\nDifficulty: ${e.difficulty}\nLanguage: ${languageInstruction(t)}\n\nReturn ONLY a JSON array (no markdown fences, no commentary) with exactly\n${e.questionCount} items. Each item must have this exact shape:\n{"question": string, "options": [string, string, string, string], "correctAnswer": number (0-3 index into options), "explanation": string}\n\nWrite the question, options, and explanation in the requested language.\n\nFormatting math and chemistry:\n- Whenever a question, option, or explanation contains a mathematical\n  expression, equation, exponent, fraction, subscript/superscript, or a\n  chemical formula/equation, write it as LaTeX wrapped in $...$ for\n  inline notation or $$...$$ for a standalone/display equation. Do this\n  even inside otherwise plain sentences.\n- Examples: "$x^2 + y^2 = r^2$", "$\\frac{a}{b}$", "$H_2SO_4$",\n  "$2H_2 + O_2 \\rightarrow 2H_2O$", "$\\sqrt{16} = 4$".\n- Do not use plain-text approximations for these (e.g. "x^2", "H2SO4",\n  "->") — always use the $...$ / $$...$$ LaTeX form instead.\n- Text with no math or chemistry content should NOT contain any $ signs.${e.attachmentCount>0?`\n\nAttached source material: ${e.attachmentCount} file(s) (captured photo(s) and/or uploaded document(s)/image(s)) are attached to this request. Base the exam questions on the content of those files — the text, diagrams, tables, or problems shown in them — combined with the subject/topic/prompt above. If a file is unreadable or irrelevant, fall back to the subject/topic/prompt instead.`:""}`}function repairAndParseGeminiJson(e){let t=e.trim();const n=t.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);n&&(t=n[1].trim());const a=[t];a.push(t.replace(/\\(?!["\\/u])/g,"\\\\")),a.push(a[a.length-1].replace(/,(\s*[\]}])/g,"$1"));for(const e of a)try{const t=JSON.parse(e);if(Array.isArray(t)&&t.length>0)return t}catch(e){}const s=a[1].match(/\{[^{}]*\}/g)||[],i=[];for(const e of s)try{const t=JSON.parse(e);t&&"object"==typeof t&&t.question&&i.push(t)}catch(e){}return i.length>0?i:null}function fileToBase64(e){return new Promise((t,n)=>{const a=new FileReader;a.onload=()=>t(String(a.result).split(",")[1]||""),a.onerror=()=>n(a.error||new Error("FILE_READ_ERROR")),a.readAsDataURL(e)})}const GEMINI_SUPPORTED_MIME_TYPES=new Set(["image/png","image/jpeg","image/webp","image/heic","image/heif","application/pdf"]);function resolveGeminiMimeType(e){return GEMINI_SUPPORTED_MIME_TYPES.has(e.mimeType)?e.mimeType:"image"===e.kind?"image/jpeg":null}async function buildAttachmentParts(e){const t=[];for(const n of e){const e=resolveGeminiMimeType(n);e&&(n.base64||(n.base64=await fileToBase64(n.file)),t.push({inlineData:{mimeType:e,data:n.base64}}))}return t}async function generateQuestionsWithGemini(e){const t=getStoredAiConfig();if(!t.apiKey)throw new Error("NO_API_KEY");const n=`https://generativelanguage.googleapis.com/v1beta/models/${t.model||"gemini-3.1-flash-lite"}:generateContent?key=${encodeURIComponent(t.apiKey)}`,a=await buildAttachmentParts(e.attachments||[]),s=await fetch(n,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:buildGeminiPrompt(e)},...a]}],generationConfig:{responseMimeType:"application/json",temperature:.7}})});if(!s.ok){const e=await s.text().catch(()=>"");throw new Error(`GEMINI_HTTP_${s.status}: ${e.slice(0,200)}`)}const i=await s.json(),o=i?.candidates?.[0]?.finishReason,r=i?.candidates?.[0]?.content?.parts?.map(e=>e.text||"").join("")||"";let l;try{l=JSON.parse(r)}catch(e){if(l=repairAndParseGeminiJson(r),!l){console.error("Gemini returned unparseable JSON.",{finishReason:o,textPreview:r.slice(0,500)});throw new Error(`GEMINI_BAD_JSON${o&&"STOP"!==o?`_${o}`:""}`)}}if(!Array.isArray(l)||0===l.length)throw new Error("GEMINI_EMPTY");return l}function generateSampleQuestions(e){const t=[];for(let n=1;n<=e.questionCount;n++){const a=(n-1)%4,s=["Option A","Option B","Option C","Option D"].map((e,t)=>t===a?`${e} (sample correct answer)`:e);t.push({question:`[Sample] Question ${n} about ${e.topic||e.subject||"this topic"}?`,options:s,correctAnswer:a,explanation:`This is a placeholder explanation for sample question ${n}.`})}return t}const LATEX_COMMAND_RE=/\\(?:frac|sqrt|sum|int|lim|prod|left|right|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|sim|propto|infty|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Delta|Gamma|Theta|Lambda|Sigma|Phi|Psi|Omega|rightarrow|leftarrow|Rightarrow|Leftarrow|leftrightarrow|Leftrightarrow|longrightarrow|to|implies|iff|circ|degree|text|mathrm|mathbb|mathcal|mathbf|overline|underline|vec|hat|dot|partial|in|notin|ni|subset|subseteq|supset|supseteq|cup|cap|setminus|emptyset|varnothing|forall|exists|nexists|neg|lnot|wedge|vee|land|lor|mid|nmid|parallel|perp|angle|triangle|square|therefore|because|dfrac|binom|nabla|oplus|otimes|langle|rangle)\b(?:\{[^{}]*\}|\[[^\[\]]*\])*/g,LATEX_TOKEN_RE=new RegExp(LATEX_COMMAND_RE.source+"|\\\\[{}(),.]","g");function autoWrapStrayLatex(e){if("string"!=typeof e||-1===e.indexOf("\\"))return e;return e.split(/(\${1,2}[^$]*\${1,2})/).map(e=>{if(e.startsWith("$"))return e;if(-1===e.indexOf("\\"))return e;const t=[];let n;for(LATEX_TOKEN_RE.lastIndex=0;null!==(n=LATEX_TOKEN_RE.exec(e));)t.push({start:n.index,end:n.index+n[0].length});if(0===t.length)return e;const a=[];let s=t[0].start,i=t[0].end;for(let n=1;n<t.length;n++){const o=t[n].start-i,r=e.slice(i,t[n].start);o<=20&&-1===r.indexOf("\n")||(a.push({start:s,end:i}),s=t[n].start),i=t[n].end}a.push({start:s,end:i});let o="",r=0;return a.forEach(t=>{o+=e.slice(r,t.start),o+=`$${e.slice(t.start,t.end)}$`,r=t.end}),o+=e.slice(r),o}).join("")}function sanitizeQuestionMath(e){return{...e,question:autoWrapStrayLatex(e.question),options:Array.isArray(e.options)?e.options.map(autoWrapStrayLatex):e.options,explanation:autoWrapStrayLatex(e.explanation)}}function buildExamFromQuestions(e,t){const n=t.slice(0,e.questionCount).map((e,t)=>{const n=sanitizeQuestionMath(e);return{id:`question-${t+1}`,question:n.question,options:n.options,correctAnswer:n.correctAnswer,explanation:n.explanation}});return{examId:genId("exam"),subject:e.subject,topic:e.topic,prompt:e.prompt,language:resolveGenerationLanguage(e),difficulty:e.difficulty,questionCount:n.length,duration:e.duration,marksPerQuestion:e.marksPerQuestion??1,negativeMarking:e.negativeMarking??.25,additionalInstructions:e.additionalInstructions||"",questions:n}}function buildExamFromLiveExam(e){const t=(centralExamState.questionBank[e.id]||[]).map((e,t)=>{const n=sanitizeQuestionMath(e);return{id:`question-${t+1}`,question:n.question,options:n.options,correctAnswer:n.correctAnswer,explanation:n.explanation||""}}),n=e.start+60*e.duration*1e3,a=Math.max(0,(n-Date.now())/6e4),s=Math.min(e.duration,a);return{examId:genId("exam"),liveExamId:e.id,subject:e.subject,topic:e.topic,language:e.language||"en",questionCount:t.length,duration:s,marksPerQuestion:e.marksPerQuestion??1,negativeMarking:e.negativeMarking??.25,questions:t}}let liveExamState={session:null,timerInterval:null},liveExamSubmittedIds=[];async function refreshLiveExamSubmittedIds(){const e=currentMemberEmail();if(!e)return void(liveExamSubmittedIds=[]);const{data:t,error:n}=await supabaseClient.from("live_exam_submissions").select("exam_id").eq("member_email",e);n?console.error("Could not load submitted live exams:",n):liveExamSubmittedIds=(t||[]).map(e=>e.exam_id)}const viewHistoryStack=[];let isPopping=!1;function showView(e,t){const n=t||{},a=document.body.getAttribute("data-page");!n.skipHistory&&a&&a!==e&&(viewHistoryStack.push(a),isPopping||history.pushState({view:e},"",location.href)),n.resetHistory&&(viewHistoryStack.length=0),qsa(".view").forEach(e=>{e.classList.remove("is-active"),e.hidden=!0});const s=qs(`#view-${e}`);s&&(s.classList.add("is-active"),s.hidden=!1),document.body.setAttribute("data-page","home"===e?"home":e),window.scrollTo(0,0)}function goBackView(e){viewHistoryStack.length>0?history.back():navigateToView(e||"home",{skipHistory:!0})}function navigateToView(e,t){if("stats"!==e){if("live-exam-admin"===e&&!isLiveExamAdmin())return showToast("This panel is restricted to the campaign's admins.","danger"),showView("live-exam",t),void renderCentralLiveExamHub();showView(e,t),"history"===e?renderHistoryPage():"statistics"===e?renderStatisticsPage():"live-exam"===e?renderCentralLiveExamHub():"live-exam-admin"===e&&renderLiveExamAdminPanel()}else enterStatistics()}function withExamDefaults(e){return{...e,marksPerQuestion:e.marksPerQuestion??1,negativeMarking:e.negativeMarking??.25,attachments:aiModeAttachments,attachmentCount:aiModeAttachments.length}}async function runGeneration(e,t){const n=qs("#generator-loading"),a=qs("#generator-error");a.classList.remove("is-visible"),n.classList.remove("is-hidden"),showView("generating");try{const n=t?generateSampleQuestions(e):await generateQuestionsWithGemini(e);createExamSession(buildExamFromQuestions(e,n)),localStorage.removeItem(EXAM_CONFIG_STORAGE_KEY),clearAiModeAttachments(),enterLiveExam()}catch(e){n.classList.add("is-hidden"),a.classList.add("is-visible");const t=qs("#generator-error-message");String(e.message).includes("NO_API_KEY")?t.textContent="No Gemini API key is configured in Settings. Add one, or continue with sample questions to test the exam flow.":t.textContent="The AI generation request failed ("+e.message+"). You can try again or continue with sample questions."}}function initGeneratorView(){qs("#retry-btn")?.addEventListener("click",()=>{runGeneration(withExamDefaults(JSON.parse(localStorage.getItem(EXAM_CONFIG_STORAGE_KEY)||"{}")),!1)}),qs("#sample-btn")?.addEventListener("click",()=>{runGeneration(withExamDefaults(JSON.parse(localStorage.getItem(EXAM_CONFIG_STORAGE_KEY)||"{}")),!0)}),qs("#generator-back-btn")?.addEventListener("click",()=>showView("home"))}function enterLiveExam(){const e=restoreExamSession();if(!e)return showToast("No active exam found.","danger"),void showView("home");if("completed"===e.status)return void enterStatistics();liveExamState.session=e;const t=e.exam;qs("#header-subject").textContent=t.subject||"Exam",qs("#header-topic").textContent=t.topic||"",showView("exam"),renderQuestionStream(),renderNavigator(),renderQuestion(),startTimer(),initMobileNavStripSync()}function currentQuestion(){const e=liveExamState.session;return e.exam.questions[e.currentQuestion]}window.addEventListener("popstate",()=>{if(justClosedModalViaHistoryBack)return void(justClosedModalViaHistoryBack=!1);const e=qs(".modal-overlay.is-open");if(e){isModalPopping=!0;try{closeModal(e.id)}finally{isModalPopping=!1}}else{isPopping=!0;try{const e=viewHistoryStack.pop();if(!e)return void history.back();navigateToView(e,{skipHistory:!0})}finally{isPopping=!1}}});const MARK_REVIEW_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.75A1.75 1.75 0 0 1 7.75 2h8.5A1.75 1.75 0 0 1 18 3.75V21l-6-4-6 4V3.75Z"/></svg>',BENGALI_DIGITS=["০","১","২","৩","৪","৫","৬","৭","৮","৯"];function toBengaliDigits(e){return String(e).replace(/[0-9]/g,e=>BENGALI_DIGITS[Number(e)])}function formatQuestionNumber(e,t){const n=String(e+1).padStart(2,"0");return(t?toBengaliDigits(n):n)+"."}const OPTION_LETTERS_EN=["A","B","C","D"],OPTION_LETTERS_BN=["ক","খ","গ","ঘ"];function optionLetters(e){return e?OPTION_LETTERS_BN:OPTION_LETTERS_EN}function usesLocalizedLabels(e){return"bn"===e||"en-bn"===e}function renderQuestionStream(){const e=liveExamState.session,t=qs("#question-stream");t.innerHTML="";e.exam.language;const n=usesLocalizedLabels(e.exam.language),a=optionLetters(n);e.exam.questions.forEach((s,i)=>{const o=document.createElement("div");o.className="card question-card",o.id=`q-card-${i}`,o.dataset.index=String(i);const r=document.createElement("div");r.className="question-card__head";const l=document.createElement("h2");l.className="question-text",l.id=`question-text-${i}`,l.setAttribute("lang","bn"===e.exam.language?"bn":"en");const c=document.createElement("span");c.className="question-card__num",c.textContent=formatQuestionNumber(i,n),l.appendChild(c),l.appendChild(document.createTextNode(s.question));const d=document.createElement("button");d.type="button",d.className="mark-review-btn",d.innerHTML=MARK_REVIEW_ICON,d.setAttribute("aria-label","Mark for review"),d.setAttribute("aria-pressed","false"),d.title="Mark for review",d.addEventListener("click",()=>{toggleMarkForReview(e,s.id),updateQuestionCard(i),renderNavigator()}),r.appendChild(l),r.appendChild(d),o.appendChild(r);const m=document.createElement("div");m.id=`options-list-${i}`,m.setAttribute("role","radiogroup"),m.setAttribute("aria-labelledby",`question-text-${i}`),s.options.forEach((t,n)=>{const o=document.createElement("label");o.className="option",o.innerHTML=`<span class="option__letter">${a[n]}</span><span class="option__text"></span><input type="radio" class="sr-only visually-hidden" name="option-${i}" tabindex="-1" />`,o.querySelector(".option__text").textContent=t,o.addEventListener("click",t=>{t.preventDefault(),selectAnswer(e,s.id,n),updateQuestionCard(i),renderNavigator()}),m.appendChild(o)}),o.appendChild(m),t.appendChild(o),renderMathIn(o)}),updateAllQuestionCards()}function updateQuestionCard(e){const t=liveExamState.session,n=t.exam.questions[e],a=qs(`#q-card-${e}`);if(!a)return;const s=t.answers[n.id];qsa(".option",qs(`#options-list-${e}`)).forEach((e,t)=>{e.classList.toggle("is-selected",s===t);const n=qs("input",e);n&&(n.checked=s===t)});const i=t.markedForReview.includes(n.id),o=qs(".mark-review-btn",a);o&&(o.classList.toggle("is-marked",i),o.setAttribute("aria-pressed",String(i)),o.title=i?"Marked for review (click to unmark)":"Mark for review"),a.classList.toggle("is-current",e===t.currentQuestion)}function updateAllQuestionCards(){liveExamState.session.exam.questions.forEach((e,t)=>updateQuestionCard(t))}function renderQuestion(){const e=liveExamState.session,t=e.exam.questions.length;qs("#exam-progress").textContent=`Question ${e.currentQuestion+1} of ${t}`,updateAllQuestionCards()}function goToQuestionCard(e){navigateToQuestion(liveExamState.session,e);const t=qs(`#q-card-${e}`),n=qs(".question-stream");if(t&&n){if(n.scrollHeight>n.clientHeight){const e=t.offsetTop-n.offsetTop;n.scrollTo({top:e,behavior:"smooth"})}else{const e=qs("#view-exam .exam-header"),n=qs(".mobile-nav-strip"),a=(e?.offsetHeight||0)+(n?.offsetHeight||0),s=t.getBoundingClientRect().top+window.scrollY;window.scrollTo({top:s-a-12,behavior:"smooth"})}}else t&&t.scrollIntoView({behavior:"smooth",block:"start"});renderQuestion(),renderNavigator()}function questionStateClasses(e,t,n){const a=["q-btn"];return n===e.currentQuestion&&a.push("is-current"),void 0!==e.answers[t.id]&&a.push("is-answered"),e.markedForReview.includes(t.id)&&a.push("is-marked"),a.join(" ")}function renderNavigator(){const e=liveExamState.session,t=qs("#question-nav-grid"),n=qs("#mobile-nav-strip"),a=e.exam.questions.length,s=t.children.length===a,i=n.children.length===a;s&&i?e.exam.questions.forEach((a,s)=>{const i=questionStateClasses(e,a,s);t.children[s].className=i,n.children[s].className=i}):(t.innerHTML="",n.innerHTML="",e.exam.questions.forEach((a,s)=>{const i=String(s+1).padStart(2,"0");[t,n].forEach(t=>{const n=document.createElement("button");n.type="button",n.className=questionStateClasses(e,a,s),n.textContent=i,n.setAttribute("aria-label",`Question ${s+1}`),n.addEventListener("click",()=>{goToQuestionCard(s)}),t.appendChild(n)})}))}function initMobileNavStripSync(){const e=qs(".question-stream"),t=qs("#mobile-nav-strip");if(!e||!t)return;liveExamState.navSyncObserver&&liveExamState.navSyncObserver.disconnect();const n=window.matchMedia("(max-width: 900px)");let a=null;const s=()=>{if(a&&(a.disconnect(),a=null),!n.matches)return;const s=liveExamState.session;if(!s)return;const i=new Map;a=new IntersectionObserver(e=>{e.forEach(e=>{const t=Number(e.target.dataset.index);i.set(t,e.isIntersecting?e.intersectionRatio:0)});let n=s.currentQuestion,a=-1;i.forEach((e,t)=>{e>a&&(a=e,n=t)}),a>0&&n!==s.currentQuestion&&(s.currentQuestion=n,renderNavigator(),(e=>{const n=t.children[e];if(!n)return;const a=n.offsetLeft,s=a+n.offsetWidth,i=t.scrollLeft,o=i+t.clientWidth;if(a<i||s>o){const e=a-(t.clientWidth-n.offsetWidth)/2;t.scrollTo({left:Math.max(0,e),behavior:"smooth"})}})(n))},{root:null,threshold:[.25,.5,.75],rootMargin:`-${(qs("#view-exam .exam-header")?.offsetHeight||0)+(t.offsetHeight||0)}px 0px -40% 0px`}),qsa(".question-card",e).forEach(e=>a.observe(e))};n.addEventListener("change",s),s(),liveExamState.navSyncObserver={disconnect:()=>{a&&a.disconnect(),n.removeEventListener("change",s)}}}function startTimer(){updateTimerDisplay(),liveExamState.timerInterval=setInterval(updateTimerDisplay,1e3)}function updateTimerDisplay(){const e=liveExamState.session,t=calculateRemainingTime(e),n=qs("#exam-timer");n.textContent=formatDuration(t),t<=6e4?n.setAttribute("data-state","critical"):t<=3e5?n.setAttribute("data-state","warning"):n.removeAttribute("data-state"),t<=0&&(clearInterval(liveExamState.timerInterval),autoSubmitExam(e),showToast("Time is up. Your exam has been submitted automatically.","warning"),setTimeout(enterStatistics,900))}function initLiveExamView(){const e=()=>{const e=liveExamState.session,t=e.exam.questions.length,n=Object.keys(e.answers).length;qs("#summary-answered").textContent=n,qs("#summary-unanswered").textContent=t-n,qs("#summary-marked").textContent=e.markedForReview.length};qs("#submit-exam-btn")?.addEventListener("click",e),qs("#submit-exam-btn-header")?.addEventListener("click",e),qs("#confirm-submit-btn")?.addEventListener("click",()=>{clearInterval(liveExamState.timerInterval),submitExam(liveExamState.session),closeModal("submit-modal"),setTimeout(enterStatistics,0)}),window.addEventListener("beforeunload",()=>{liveExamState.session&&"active"===liveExamState.session.status&&saveSession(liveExamState.session)})}function enterStatistics(e){const t=e||restoreExamSession();if(!t||"completed"!==t.status||!t.result)return showToast("No completed exam to show statistics for.","danger"),void showView("home");liveExamState.session=t,showView("stats");const n=t.exam.liveExamId?centralExamState.exams.find(e=>e.id===t.exam.liveExamId):null,a=!!n&&!n.published;qs("#stats-pending-publish").hidden=!a,qs("#stats-result-content").hidden=a,a||(renderStatistics(),renderAnswerReview())}function renderStatistics(){const e=liveExamState.session,t=e.exam,n=e.result;qs("#result-subject").textContent=t.subject||"Exam",qs("#result-topic").textContent=t.topic||"",qs("#obtained-marks").textContent=n.obtainedMarks,qs("#total-marks").textContent=n.totalMarks,qs("#result-percentage").textContent=`${n.percentage}%`;const a=qs("#headline-sub");a&&(a.textContent=`${n.correct} correct · ${n.wrong} wrong · ${n.unanswered} skipped · ${n.attempted} Attempted · ${formatDuration(n.timeUsed)} Time Used`);const s=qs("#review-count");s&&(s.textContent=`(${n.totalQuestions})`);const i=qs("#headline-ring-progress");if(i){const e=2*Math.PI*56,t=clamp(n.percentage,0,100)/100;i.style.strokeDasharray=String(e),i.style.strokeDashoffset=String(e),requestAnimationFrame(()=>{i.style.strokeDashoffset=String(e*(1-t))})}}function renderAnswerReview(){const e=liveExamState.session,t=qs("#review-list");t.innerHTML="";const n="bn"===e.exam.language,a=usesLocalizedLabels(e.exam.language),s=optionLetters(a);e.exam.questions.forEach((i,o)=>{const r=getQuestionReviewState(e,i),l=document.createElement("div");l.className="card review-question";const c=document.createElement("div");c.className="review-question__head";const d=document.createElement("p");d.className="review-question__text",n&&d.classList.add("lang-bn");const m=document.createElement("span");if(m.className="review-question__num",m.textContent=formatQuestionNumber(o,a),d.appendChild(m),d.appendChild(document.createTextNode(i.question)),c.appendChild(d),r.isUnanswered){const e=document.createElement("span");e.className="not-answered-tag",e.setAttribute("role","img"),e.setAttribute("aria-label","Not answered"),e.title="Not answered",e.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7-1.2c.5.9.1 1.5-.6 2.1-.7.6-1.3 1-1.4 2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.3" r="1.1" fill="currentColor"/></svg>',c.appendChild(e)}l.appendChild(c);const u=document.createElement("div");if(u.className="review-options-grid",i.options.forEach((e,t)=>{const n=t===i.correctAnswer,a=t===r.selected,o=document.createElement("div");o.className="review-option"+(n?" is-correct":a&&r.isWrong?" is-wrong":"");const l=document.createElement("span");l.className="review-option__letter",l.textContent=s[t],o.appendChild(l);const c=document.createElement("span");if(c.className="review-option__text",c.textContent=e,o.appendChild(c),n||a&&r.isWrong){const e=document.createElement("span");e.className="review-option__tag",e.setAttribute("aria-label",n?"Correct":"Wrong"),e.textContent=n?"✓":"✕",o.appendChild(e)}u.appendChild(o)}),l.appendChild(u),i.explanation){const e=document.createElement("div");e.className="review-explanation",e.innerHTML=`<div class="review-explanation__label">${a?"ব্যাখ্যাঃ":"Explanation"}</div>`;const t=document.createElement("div");n&&t.classList.add("lang-bn"),t.textContent=i.explanation,e.appendChild(t),l.appendChild(e)}t.appendChild(l),renderMathIn(l)})}function goToPrint(){enterPrint()}function initStatisticsView(){qs("#download-btn-stats")?.addEventListener("click",goToPrint),qs("#print-btn-stats")?.addEventListener("click",goToPrint)}const PDF_SETTINGS_KEY="mcq-exam-pdf-settings",PDF_SETTINGS_DEFAULTS={paperSize:"A4",pageColor:"#ffffff",fontEn:"Times New Roman",fontBn:"Kalpurush",fontSize:11,lineHeight:1.2,fontColor:"#111111"};let pendingPdfDownload=!1;function getStoredPdfSettings(){try{const e=JSON.parse(localStorage.getItem(PDF_SETTINGS_KEY)||"null");return Object.assign({},PDF_SETTINGS_DEFAULTS,e||{})}catch(e){return Object.assign({},PDF_SETTINGS_DEFAULTS)}}function savePdfSettings(e){localStorage.setItem(PDF_SETTINGS_KEY,JSON.stringify(e))}function readPdfSettingsFormValues(){const e=qs(".page-color-swatch.is-active")?.getAttribute("data-page-color")||PDF_SETTINGS_DEFAULTS.pageColor,t=qs(".font-color-swatch.is-active")?.getAttribute("data-font-color")||PDF_SETTINGS_DEFAULTS.fontColor;return{paperSize:qs("#pdf-paper-size-select")?.value||PDF_SETTINGS_DEFAULTS.paperSize,pageColor:e,fontEn:qs("#pdf-font-en-select")?.value||PDF_SETTINGS_DEFAULTS.fontEn,fontBn:qs("#pdf-font-bn-select")?.value||PDF_SETTINGS_DEFAULTS.fontBn,fontSize:Number(qs("#pdf-font-size-range")?.value)||PDF_SETTINGS_DEFAULTS.fontSize,lineHeight:Number(qs("#pdf-line-height-range")?.value)||PDF_SETTINGS_DEFAULTS.lineHeight,fontColor:t}}function setActiveSwatch(e,t,n){qsa(e).forEach(e=>{e.classList.toggle("is-active",e.getAttribute(t)===n)})}function populatePdfSettingsForm(e){setActiveSwatch(".page-color-swatch","data-page-color",e.pageColor),setActiveSwatch(".font-color-swatch","data-font-color",e.fontColor);const t=qs("#pdf-paper-size-select"),n=qs("#pdf-font-en-select"),a=qs("#pdf-font-bn-select"),s=qs("#pdf-font-size-range"),i=qs("#pdf-line-height-range"),o=qs("#pdf-font-size-value"),r=qs("#pdf-line-height-value"),l=qs("#pdf-page-color-custom"),c=qs("#pdf-font-color-custom");t&&(t.value=e.paperSize),n&&(n.value=e.fontEn),a&&(a.value=e.fontBn),s&&(s.value=e.fontSize),i&&(i.value=e.lineHeight),o&&(o.textContent=e.fontSize+"pt"),r&&(r.textContent=String(e.lineHeight)),l&&(l.value=e.pageColor),c&&(c.value=e.fontColor),updatePdfTypographyPreview()}function updatePdfTypographyPreview(){const e=qs("#pdf-typography-preview");if(!e)return;const t=readPdfSettingsFormValues(),n=qs(".pdf-typography-preview__en",e),a=qs(".pdf-typography-preview__bn",e);e.style.backgroundColor=t.pageColor,n&&(n.style.fontFamily=`"${t.fontEn}", serif`,n.style.fontSize=t.fontSize+"pt",n.style.lineHeight=String(t.lineHeight),n.style.color=t.fontColor),a&&(a.style.fontFamily=`"${t.fontBn}", serif`,a.style.fontSize=t.fontSize+"pt",a.style.lineHeight=String(t.lineHeight),a.style.color=t.fontColor)}function applyPdfSettingsToCanvas(e){const t=qs("#paper-canvas");if(!t)return;t.setAttribute("data-size",e.paperSize);const n="bn"===liveExamState.session?.exam?.language?"bn":"en";t.setAttribute("lang",n),t.style.setProperty("--pdf-page-bg",e.pageColor),t.style.setProperty("--pdf-font-color",e.fontColor),t.style.setProperty("--pdf-font-en",`"${e.fontEn}", serif`),t.style.setProperty("--pdf-font-bn",`"${e.fontBn}", serif`),t.style.setProperty("--pdf-font-size",e.fontSize+"pt"),t.style.setProperty("--pdf-line-height",String(e.lineHeight));const a=qs("#paper-size-select-print");a&&(a.value=e.paperSize),liveExamState.session&&paginateExam()}function applyOptionLayoutToWrap(e,t){"horizontal"===t?(e.style.display="flex",e.style.gridTemplateColumns="",e.style.flexWrap="nowrap",e.style.gap="2mm 6mm",qsa(".paper-opt",e).forEach(e=>{e.style.flex="1 1 0",e.style.minWidth="0",e.style.justifyContent="flex-start",e.style.gap="2mm"})):"rectangular"===t?(e.style.display="grid",e.style.flexWrap="",e.style.gridTemplateColumns="1fr 1fr",e.style.gap="2mm 6mm",qsa(".paper-opt",e).forEach(e=>{e.style.flex="",e.style.minWidth="",e.style.justifyContent="flex-start",e.style.gap="2mm"})):(e.style.display="block",e.style.gridTemplateColumns="",e.style.flexWrap="",e.style.gap="",qsa(".paper-opt",e).forEach(e=>{e.style.flex="",e.style.minWidth="",e.style.justifyContent="space-between",e.style.gap="4mm"}))}function buildQuestionBlock(e,t,n,a){const s=usesLocalizedLabels(a),i=optionLetters(s),o=document.createElement("div");o.className="paper-question"+(s?" lang-bn":"");const r=document.createElement("div");r.className="paper-question__num",r.textContent=`${formatQuestionNumber(t,s)} ${e.question}`,o.appendChild(r);const l=document.createElement("div");l.className="paper-question__opts",e.options.forEach((t,a)=>{const s=a===e.correctAnswer,o=a===n.selected&&n.isWrong,r=document.createElement("div");r.className="paper-opt"+(s?" pq-correct":o?" pq-wrong":"");const c=document.createElement("span");c.className="paper-opt__text",c.textContent=`${i[a]}. ${t}`;const d=document.createElement("span");d.textContent=s?"✓":o?"✕":"",r.appendChild(c),r.appendChild(d),l.appendChild(r)}),o.appendChild(l);const c=document.createElement("div");return c.className="paper-explanation",c.innerHTML=s?"<b>ব্যাখ্যাঃ</b> ":"<b>Explanation:</b> ",c.appendChild(document.createTextNode(e.explanation)),o.appendChild(c),renderMathIn(o),o}function chooseBestOptionLayout(e){const t=["horizontal","rectangular","vertical"];for(const n of t){if("vertical"===n)return"vertical";applyOptionLayoutToWrap(e,n);if(qsa(".paper-opt__text",e).every(e=>!optionTextWraps(e)))return n}return"vertical"}function optionTextWraps(e){const t=e.cloneNode(!0);t.style.whiteSpace="nowrap",t.style.position="absolute",t.style.visibility="hidden",t.style.width="auto",e.parentNode.appendChild(t);const n=t.getBoundingClientRect().height;e.parentNode.removeChild(t);return e.getBoundingClientRect().height>n+1}const PDF_HEADER_LABELS_BN={"Total Points":"পূর্ণমানঃ",Time:"সময়ঃ","Obtained Marks":"প্রাপ্ত নম্বরঃ",Correct:"সঠিকঃ",Wrong:"ভুলঃ",Skipped:"বাদ দেওয়াঃ","Negative Marks":"নেগেটিভ নম্বরঃ",Percentage:"শতকরাঃ"};function pdfHeaderLabel(e,t){return t?PDF_HEADER_LABELS_BN[e]:`${e}:`}function localizeDuration(e,t){return t?toBengaliDigits(e):e}function localizeNumber(e,t){return t?toBengaliDigits(String(e)):String(e)}function buildPageHeader(e,t,{isFirstPage:n,pageNumber:a}){if(!n)return null;const s=usesLocalizedLabels(e.language),i=document.createElement("div");i.className="paper-header";const o=Math.round((e.negativeMarking||0)*t.wrong*100)/100;return i.innerHTML=`\n    <div class="paper-header__subject">${escapeHtml(e.subject||"Exam")}</div>\n    <div class="paper-header__topic">${escapeHtml(e.topic||"")}</div>\n    <div class="paper-header__row">\n      <span><b>${pdfHeaderLabel("Total Points",s)}</b> ${localizeNumber(t.totalMarks,s)} ${s?"নম্বর":"Marks"}</span>\n      <span><b>${pdfHeaderLabel("Time",s)}</b> ${localizeDuration(formatDuration(t.timeAllowed),s)} ${s?"মিনিট":"Minutes"}</span>\n    </div>\n    <div class="paper-header__stats-wrap">\n      <div class="paper-header__stats-line">\n        <span>${pdfHeaderLabel("Obtained Marks",s)} ${localizeNumber(t.obtainedMarks,s)}</span>\n        <span class="paper-header__stats-sep">|</span>\n        <span>${pdfHeaderLabel("Correct",s)} ${localizeNumber(t.correct,s)}</span>\n        <span class="paper-header__stats-sep">|</span>\n        <span>${pdfHeaderLabel("Wrong",s)} ${localizeNumber(t.wrong,s)}</span>\n        <span class="paper-header__stats-sep">|</span>\n        <span>${pdfHeaderLabel("Skipped",s)} ${localizeNumber(t.unanswered,s)}</span>\n        <span class="paper-header__stats-sep">|</span>\n        <span>${pdfHeaderLabel("Negative Marks",s)} ${localizeNumber(o,s)}</span>\n        <span class="paper-header__stats-sep">|</span>\n        <span>${pdfHeaderLabel("Percentage",s)} ${localizeNumber(t.percentage,s)}%</span>\n      </div>\n    </div>`,i}function buildPageFooter(e,t){const n=document.createElement("div");n.className="paper-page__footer";const a=e=>String(e).padStart(2,"0");return n.textContent=`Page ${a(e)}/${a(t)}`,n}function escapeHtml(e){const t=document.createElement("div");return t.textContent=String(e),t.innerHTML}function paginateExam(){const e=liveExamState.session;if(!e)return;const t=e.exam,n=e.result,a=qs("#paper-canvas");if(!a)return;const s=getStoredPdfSettings(),i=t.questions.map((n,a)=>buildQuestionBlock(n,a,getQuestionReviewState(e,n),t.language)),o={A4:297,Legal:355.6,Letter:279.4},r={A4:210,Legal:215.9,Letter:215.9},l=o[s.paperSize]||o.A4,c=r[s.paperSize]||r.A4,d=document.getElementById("dynamic-page-size");d&&(d.textContent=`@page { size: ${c}mm ${l}mm; margin: 0; }`);const m=(l-34-6)/25.4*96;const u=(c-30-8)/2,p=document.createElement("div");p.className="paper-canvas",p.setAttribute("data-size",s.paperSize),p.setAttribute("lang",a.getAttribute("lang")||("bn"===t.language?"bn":"en")),p.style.cssText="position:absolute; visibility:hidden; pointer-events:none; left:-9999px; top:0; gap:0; padding:0;",Array.from(a.style).forEach(e=>{e.startsWith("--pdf-")&&p.style.setProperty(e,a.style.getPropertyValue(e))});const h=document.createElement("div");h.className="paper-page",h.style.height="auto",h.style.overflow="visible";const g=buildPageHeader(t,n,{isFirstPage:!0,pageNumber:1}),v=document.createElement("div");v.className="paper-columns",h.appendChild(g),h.appendChild(v),p.appendChild(h),document.body.appendChild(p);const b=g.getBoundingClientRect().height+(parseFloat(getComputedStyle(g).marginBottom)||0);v.style.display="block",v.style.width=`${u}mm`;const f=i.map(e=>{v.appendChild(e);const t=qs(".paper-question__opts",e);t&&applyOptionLayoutToWrap(t,chooseBestOptionLayout(t));const n=e.getBoundingClientRect(),a=parseFloat(getComputedStyle(e).marginBottom)||0,s=n.height+a;return v.removeChild(e),s});document.body.removeChild(p);const E=[],x=(e,t)=>{const n=e.length,a=[0];for(let t=0;t<n;t++)a.push(a[t]+e[t]);const s=a[n];let i=null;for(let e=0;e<=n;e++){const n=a[e],o=s-n;if(n<=t&&o<=t){const t=Math.max(n,o);(!i||t<i.tallest)&&(i={splitIndex:e,tallest:t})}}return i};let y=0,w=0;for(;y<i.length;){w+=1;const e=m-(1===w?b:0);let t=y+1,n=x(f.slice(y,t),e);for(;t<i.length;){const a=x(f.slice(y,t+1),e);if(!a)break;t+=1,n=a}const a=i.slice(y,t),s=n?n.splitIndex:a.length;E.push({col0:a.slice(0,s),col1:a.slice(s)}),y=t}a.innerHTML="";const q=E.length;E.forEach((e,s)=>{const i=document.createElement("div");i.className="paper-page";const o=buildPageHeader(t,n,{isFirstPage:0===s,pageNumber:s+1});o&&i.appendChild(o);const r=document.createElement("div");r.className="paper-columns";const l=document.createElement("div");l.className="paper-column",e.col0.forEach(e=>l.appendChild(e));const c=document.createElement("div");c.className="paper-column",e.col1.forEach(e=>c.appendChild(e)),r.appendChild(l),r.appendChild(c),i.appendChild(r),i.appendChild(buildPageFooter(s+1,q));const d=document.createElement("div");d.className="paper-page-frame",d.appendChild(i),a.appendChild(d)}),applyPreviewScale()}function applyPreviewScale(){const e=qs("#paper-canvas"),t=qs(".paper-page",e||void 0);if(!e||!t)return;e.style.setProperty("--pdf-preview-scale","1");const n=t.offsetWidth,a=t.offsetHeight;if(!n||!a)return;const s=Math.max(240,e.clientWidth-32),i=Math.min(1,s/n);e.style.setProperty("--pdf-preview-scale",String(i)),qsa(".paper-page-frame",e).forEach(e=>{e.style.setProperty("--pdf-frame-w",n*i+"px"),e.style.setProperty("--pdf-frame-h",a*i+"px")})}function initPdfSettingsPanel(){const e=qs("#pdf-settings-modal");if(!e)return;qsa('[data-modal-open="pdf-settings-modal"]').forEach(e=>{e.addEventListener("click",()=>{populatePdfSettingsForm(getStoredPdfSettings());const e=qs("#pdf-settings-save-note");e&&(e.textContent="")})}),qsa(".page-color-swatch",e).forEach(t=>{t.addEventListener("click",()=>{qsa(".page-color-swatch",e).forEach(e=>e.classList.remove("is-active")),t.classList.add("is-active");const n=qs("#pdf-page-color-custom");n&&(n.value=t.getAttribute("data-page-color")),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())})}),qs("#pdf-page-color-custom")?.addEventListener("input",t=>{qsa(".page-color-swatch",e).forEach(e=>e.classList.remove("is-active")),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),qsa(".font-color-swatch",e).forEach(t=>{t.addEventListener("click",()=>{qsa(".font-color-swatch",e).forEach(e=>e.classList.remove("is-active")),t.classList.add("is-active");const n=qs("#pdf-font-color-custom");n&&(n.value=t.getAttribute("data-font-color")),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())})}),qs("#pdf-font-color-custom")?.addEventListener("input",()=>{qsa(".font-color-swatch",e).forEach(e=>e.classList.remove("is-active")),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),qs("#pdf-paper-size-select")?.addEventListener("change",()=>{applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),qs("#pdf-font-en-select")?.addEventListener("change",()=>{updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),qs("#pdf-font-bn-select")?.addEventListener("change",()=>{updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())});const t=qs("#pdf-font-size-range"),n=qs("#pdf-line-height-range");t&&t.addEventListener("input",()=>{const e=qs("#pdf-font-size-value");e&&(e.textContent=t.value+"pt"),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),n&&n.addEventListener("input",()=>{const e=qs("#pdf-line-height-value");e&&(e.textContent=n.value),updatePdfTypographyPreview(),applyPdfSettingsToCanvas(readPdfSettingsFormValues())}),qs("#pdf-settings-reset-btn")?.addEventListener("click",()=>{savePdfSettings(PDF_SETTINGS_DEFAULTS),populatePdfSettingsForm(PDF_SETTINGS_DEFAULTS),applyPdfSettingsToCanvas(PDF_SETTINGS_DEFAULTS);const e=qs("#pdf-settings-save-note");e&&(e.textContent="Reset to defaults."),showToast("PDF preview settings reset.","info")}),qs("#pdf-settings-save-btn")?.addEventListener("click",()=>{const e=readPdfSettingsFormValues();savePdfSettings(e),applyPdfSettingsToCanvas(e);const t=qs("#pdf-settings-save-note");t&&(t.textContent="Settings saved."),showToast("PDF preview settings saved.","success"),closeModal("pdf-settings-modal"),pendingPdfDownload&&(pendingPdfDownload=!1,setTimeout(()=>downloadExam(),350))})}function buildAdminAnswerSheetSession(e){const t=centralExamState.exams.find(t=>t.id===e);if(!t)return null;const n=centralExamState.questionBank[e]||[];if(!n.length)return null;const a=n.map((e,t)=>({id:`question-${t+1}`,question:e.question,options:e.options,correctAnswer:e.correctAnswer,explanation:e.explanation})),s={};a.forEach(e=>{s[e.id]=e.correctAnswer});const i={exam:{examId:e,subject:t.subject,topic:t.topic,language:t.language||"en",duration:t.duration,marksPerQuestion:t.marksPerQuestion??1,negativeMarking:Number(getStoredExamPrefs().negativeMarkValue??.25),questionCount:a.length,questions:a},answers:s,markedForReview:[],currentQuestion:0,status:"completed",startedAt:Date.now()};return i.result=calculateResult(i),i}function enterAdminAnswerSheetPrint(e){const t=buildAdminAnswerSheetSession(e);if(!t)return void showToast("This Live Exam has no questions yet.","danger");liveExamState.session=t,showView("print");const n=qs("#print-back-btn");n&&n.setAttribute("data-spa-nav","live-exam-admin");const a=getStoredPdfSettings(),s=qs("#paper-canvas");s&&(s.setAttribute("data-size",a.paperSize),s.setAttribute("lang","bn"===t.exam.language?"bn":"en"),s.style.setProperty("--pdf-page-bg",a.pageColor),s.style.setProperty("--pdf-font-color",a.fontColor),s.style.setProperty("--pdf-font-en",`"${a.fontEn}", serif`),s.style.setProperty("--pdf-font-bn",`"${a.fontBn}", serif`),s.style.setProperty("--pdf-font-size",a.fontSize+"pt"),s.style.setProperty("--pdf-line-height",String(a.lineHeight))),paginateExam();const i=qs("#paper-size-select-print");i&&(i.value=a.paperSize)}function enterPrint(){const e=restoreExamSession();if(!e||"completed"!==e.status||!e.result)return showToast("No completed exam available to print.","danger"),void showView("home");const t=e.exam.liveExamId?centralExamState.exams.find(t=>t.id===e.exam.liveExamId):null;if(t&&!t.published)return void enterStatistics(e);liveExamState.session=e,showView("print");const n=qs("#print-back-btn");n&&n.setAttribute("data-spa-nav","stats");const a=getStoredPdfSettings(),s=qs("#paper-canvas");s&&(s.setAttribute("data-size",a.paperSize),s.setAttribute("lang","bn"===e.exam?.language?"bn":"en"),s.style.setProperty("--pdf-page-bg",a.pageColor),s.style.setProperty("--pdf-font-color",a.fontColor),s.style.setProperty("--pdf-font-en",`"${a.fontEn}", serif`),s.style.setProperty("--pdf-font-bn",`"${a.fontBn}", serif`),s.style.setProperty("--pdf-font-size",a.fontSize+"pt"),s.style.setProperty("--pdf-line-height",String(a.lineHeight))),paginateExam();const i=qs("#paper-size-select-print");i&&(i.value=a.paperSize)}function slugify(e){return String(e||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"exam"}async function downloadExam(){const e=qs("#paper-canvas"),t=e?qsa(".paper-page",e):[];if(!e||!t.length)return void showToast("Nothing to download yet.","danger");if("function"!=typeof window.html2canvas||!window.jspdf||!window.jspdf.jsPDF)return void showToast("The PDF library didn't load - check your connection and try again.","danger");const n=qs("#download-btn-print");n&&n.setAttribute("disabled","true"),showToast("Preparing your PDF…","info");const a=getStoredPdfSettings(),s={A4:[210,297],Legal:[215.9,355.6],Letter:[215.9,279.4]},[i,o]=s[a.paperSize]||s.A4,r=document.createElement("div");r.style.position="fixed",r.style.top="0",r.style.left="-99999px",r.style.zIndex="-1",r.style.pointerEvents="none",e.appendChild(r);try{const{jsPDF:e}=window.jspdf,n=new e({unit:"mm",format:[i,o],orientation:"portrait"});for(let e=0;e<t.length;e++){const s=t[e].cloneNode(!0);s.style.setProperty("transform","none","important"),s.style.setProperty("box-shadow","none","important"),r.innerHTML="",r.appendChild(s);const l=(await window.html2canvas(s,{scale:3,useCORS:!0,backgroundColor:a.pageColor||"#ffffff"})).toDataURL("image/jpeg",.95);e>0&&n.addPage([i,o],"portrait"),n.addImage(l,"JPEG",0,0,i,o)}const s=liveExamState.session,l=s&&s.exam&&s.exam.subject?s.exam.subject:"exam";n.save(`${slugify(l)}-mcq-exam.pdf`),showToast("PDF downloaded.","success")}catch(e){console.error("PDF export failed:",e),showToast("Couldn't generate the PDF. Please try again.","danger")}finally{r.remove(),n&&n.removeAttribute("disabled")}}function initPrintView(){qs("#download-btn-print")?.addEventListener("click",()=>{const e=qs("#pdf-settings-modal");e&&e.classList.contains("is-open")?(pendingPdfDownload=!0,closeModal("pdf-settings-modal"),setTimeout(()=>{pendingPdfDownload&&(pendingPdfDownload=!1,downloadExam())},350)):downloadExam()}),window.addEventListener("resize",debounce(()=>{qs("#view-print")?.classList.contains("is-active")&&applyPreviewScale()},150))}function getAllExamRecords(){return loadExamHistory()}const EXAM_ICON_SVG='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',HISTORY_ARROW_SVG='<svg class="record-row__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';function scoreBadgeClass(e){return e>=80?"badge-success":e>=60?"badge-primary":"badge-danger"}function formatRecordDate(e){const t=e.result?.submittedAt||e.updatedAt||e.startedAt;return t?new Date(t).toLocaleDateString(void 0,{day:"2-digit",month:"short",year:"numeric"}):""}function emptyStateRow(e){return`<div class="record-row-empty text-secondary text-small" style="padding: var(--space-6); text-align: center;">${escapeHtml(e)}</div>`}function openExamRecord(e){if("completed"===e.status&&e.result)enterStatistics(e);else{const t=restoreExamSession();t&&t.sessionId===e.sessionId?enterLiveExam():showToast("This exam can no longer be resumed.","info")}}function wireRecordRowClicks(e,t){qsa(".record-row",e).forEach((e,n)=>{e.style.cursor="pointer",e.addEventListener("click",()=>openExamRecord(t[n]))})}function renderPracticeExamRow(e){const t=e.exam.questions.length,n="completed"===e.status?'<span class="badge badge-success"><span class="badge__dot"></span>Completed</span>':'<span class="badge badge-warning"><span class="badge__dot"></span>In Progress</span>',a=Object.keys(e.answers||{}).length,s="completed"===e.status?`<div class="record-row__score"><div class="record-row__score-value">${e.result.percentage}%</div><div class="record-row__score-label">Score</div></div>`:`<div class="record-row__score"><div class="record-row__score-value">${a}/${t}</div><div class="record-row__score-label">Progress</div></div>`;return`\n      <div class="record-row">\n        <span class="record-row__icon">${EXAM_ICON_SVG}</span>\n        <div class="record-row__body">\n          <div class="record-row__title">${escapeHtml(e.exam.subject||"Exam")}</div>\n          <div class="record-row__topic">${escapeHtml(e.exam.topic||"")}</div>\n          <div class="record-row__meta">\n            <span>${t} questions</span>\n            <span class="record-row__meta-sep">·</span>\n            <span>${formatRecordDate(e)}</span>\n            <span class="record-row__meta-sep">·</span>\n            ${n}\n          </div>\n        </div>\n        <div class="record-row__side">\n          ${s}\n          ${HISTORY_ARROW_SVG}\n        </div>\n      </div>`}function getLiveExamResultRecords(){const e=Date.now();return centralExamState.exams.filter(t=>t.published&&e>=t.start+60*t.duration*1e3).map(e=>{const t=(centralExamState.merit||[]).find(e=>e.self);return{exam:e,percentage:t?t.score:null,submittedAt:e.start+60*e.duration*1e3}}).sort((e,t)=>t.submittedAt-e.submittedAt)}function renderHistoryPage(){const e=qs("#history-live-list"),t=qs("#history-list");if(!e||!t)return;const n=getAllExamRecords().filter(e=>"completed"===e.status),a=getLiveExamResultRecords();0===a.length?e.innerHTML=emptyStateRow("No published live exam results yet - they'll appear here once the admin publishes them."):e.innerHTML=a.map(e=>`\n      <div class="record-row">\n        <span class="record-row__icon" style="background-color: var(--color-danger-light); color: var(--color-danger);"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M6.2 6.2a8.1 8.1 0 0 0 0 11.6M17.8 6.2a8.1 8.1 0 0 1 0 11.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>\n        <div class="record-row__body">\n          <div class="record-row__title">${escapeHtml(e.exam.subject)}</div>\n          <div class="record-row__topic">${escapeHtml(e.exam.topic)}</div>\n          <div class="record-row__meta">\n            <span>${e.exam.questionCount} questions</span>\n            <span class="record-row__meta-sep">·</span>\n            <span>${new Date(e.submittedAt).toLocaleDateString(void 0,{day:"2-digit",month:"short",year:"numeric"})}</span>\n            <span class="record-row__meta-sep">·</span>\n            <span class="badge badge-danger">Central Live Exam</span>\n          </div>\n        </div>\n        <div class="record-row__side">\n          ${null!=e.percentage?`<span class="badge ${scoreBadgeClass(e.percentage)}">${e.percentage}%</span>`:'<span class="badge badge-neutral">-</span>'}\n        </div>\n      </div>`).join(""),0===n.length?t.innerHTML=emptyStateRow("No completed practice exams yet - generate one from the Home page to see it here."):(t.innerHTML=n.map(renderPracticeExamRow).join(""),wireRecordRowClicks(t,n))}function renderStatisticsPage(){const e=qs("#subject-breakdown-list"),t=qs("#stats-recent-list");if(!e||!t)return;const n=getAllExamRecords().filter(e=>"completed"===e.status),a=qs("#stats-overview-practice-exams"),s=qs("#stats-overview-practice-avg"),i=qs("#stats-overview-practice-questions"),o=n.length?Math.round(n.reduce((e,t)=>e+t.result.percentage,0)/n.length):0,r=n.reduce((e,t)=>e+t.exam.questions.length,0);a&&(a.textContent=n.length),s&&(s.textContent=`${o}%`),i&&(i.textContent=r.toLocaleString());const l=getLiveExamResultRecords(),c=qs("#stats-overview-live-exams"),d=qs("#stats-overview-live-avg"),m=qs("#stats-overview-live-questions"),u=l.filter(e=>null!=e.percentage),p=u.length?Math.round(u.reduce((e,t)=>e+t.percentage,0)/u.length):0,h=l.reduce((e,t)=>e+(t.exam.questionCount||0),0);if(c&&(c.textContent=l.length),d&&(d.textContent=`${p}%`),m&&(m.textContent=h.toLocaleString()),0===n.length)return e.innerHTML=emptyStateRow("No data yet - complete an exam to see your subject breakdown."),void(t.innerHTML=emptyStateRow("No completed exams yet."));const g={};n.forEach(e=>{const t=e.exam.subject||"General";g[t]||(g[t]=[]),g[t].push(e.result.percentage)});const v=Object.keys(g).map(e=>{const t=g[e];return{name:e,avg:Math.round(t.reduce((e,t)=>e+t,0)/t.length)}}).sort((e,t)=>t.avg-e.avg);e.innerHTML=v.map(e=>`\n    <div class="subject-breakdown-row">\n      <span class="subject-breakdown-row__name">${escapeHtml(e.name)}</span>\n      <span class="subject-breakdown-row__bar-track"><span class="subject-breakdown-row__bar-fill" style="width:${e.avg}%;"></span></span>\n      <span class="subject-breakdown-row__value">${e.avg}%</span>\n    </div>`).join("");const b=n.slice(0,5);t.innerHTML=b.map(e=>`\n    <div class="record-row">\n      <span class="record-row__icon">${EXAM_ICON_SVG}</span>\n      <div class="record-row__body">\n        <div class="record-row__title">${escapeHtml(e.exam.subject||"Exam")}</div>\n        <div class="record-row__topic">${escapeHtml(e.exam.topic||"")}</div>\n        <div class="record-row__meta"><span>${formatRecordDate(e)}</span></div>\n      </div>\n      <div class="record-row__side">\n        <span class="badge ${scoreBadgeClass(e.result.percentage)}">${e.result.percentage}%</span>\n      </div>\n    </div>`).join(""),wireRecordRowClicks(t,b)}const LIVE_EXAM_ADMIN_EMAILS=["rifat.webflow@gmail.com"],CENTRAL_EXAM_STORAGE_KEY="mcq-central-exam-state-v1";function loadCentralExamState(){try{const e=JSON.parse(localStorage.getItem(CENTRAL_EXAM_STORAGE_KEY)||"null");if(e&&Array.isArray(e.exams)){const t=new Set(["le1","le2","le3","le4","le5"]);e.exams=e.exams.filter(e=>!t.has(e.id)),e.questionBank&&t.forEach(t=>delete e.questionBank[t])}if(e&&Array.isArray(e.subjects)&&e.subjects.some(e=>"string"==typeof e)&&(e.subjects=e.subjects.map(e=>"string"==typeof e?{id:"sub_"+e.toLowerCase().replace(/[^a-z0-9]+/g,"_"),name:e,startDate:"",endDate:""}:e)),e&&e.subscribers&&Array.isArray(e.subscribers.members)&&e.subscribers.members.forEach(e=>{Array.isArray(e.subjects)||(e.subjects=[])}),e&&!Array.isArray(e.enrollmentRequests)&&(e.enrollmentRequests=[]),e)return e}catch(e){}return{campaign:{name:"Live Exam Campaign",subjectsCount:0,startDate:""},exams:[],subjects:[],self:{rank:0,given:0,avgPercent:0},merit:[],subscribers:{total:1,active:1,assistantAdmins:0,members:[{email:LIVE_EXAM_ADMIN_EMAILS[0],role:"admin",subjects:[]}]},questionBank:{},enrollmentRequests:[]}}let centralExamState=loadCentralExamState();function saveCentralExamState(){localStorage.setItem(CENTRAL_EXAM_STORAGE_KEY,JSON.stringify(centralExamState))}function subjectRowToApp(e){return{id:e.id,name:e.name,startDate:e.start_date||"",endDate:e.end_date||""}}function examRowToApp(e){return{id:e.id,subject:e.subject,topic:e.topic,language:e.language,start:new Date(e.start_at).getTime(),duration:e.duration_minutes,marksPerQuestion:Number(e.marks_per_question),negativeMarking:Number(e.negative_marking),status:e.status,published:e.published,questionCount:e.question_count,subscriberCount:centralExamState.subscribers?centralExamState.subscribers.total:1}}function memberRowToApp(e){return{email:e.email,name:e.name||"",phone:e.phone||"",role:e.role,subjects:e.subjects||[]}}function enrollmentRowToApp(e){return{id:String(e.id),name:e.name,phone:e.phone,email:e.email,courses:e.courses||[],mfsProvider:e.mfs_provider||"",mfsTransactionId:e.mfs_transaction_id||"",submittedAt:new Date(e.submitted_at).getTime()}}async function pullCentralExamStateFromSupabase(){try{const[e,t,n,a,s]=await Promise.all([supabaseClient.from("subjects").select("*").order("created_at"),supabaseClient.from("live_exams").select("*").order("start_at"),supabaseClient.from("live_exam_questions").select("*").order("position"),supabaseClient.from("members").select("*"),supabaseClient.from("enrollment_requests").select("*").eq("status","pending").order("submitted_at")]);[e,t,n,a,s].forEach(e=>{if(e.error)throw e.error}),centralExamState.subjects=(e.data||[]).map(subjectRowToApp),centralExamState.exams=(t.data||[]).map(examRowToApp);const i={};(n.data||[]).forEach(e=>{i[e.exam_id]||(i[e.exam_id]=[]),i[e.exam_id].push({question:e.question_html,options:e.options,correctAnswer:e.correct_answer,explanation:e.explanation_html||""})}),centralExamState.questionBank=i;const o=(a.data||[]).map(memberRowToApp);centralExamState.subscribers.members=o.length?o:[{email:LIVE_EXAM_ADMIN_EMAILS[0],role:"admin",subjects:[]}],centralExamState.subscribers.total=o.length||1,centralExamState.subscribers.assistantAdmins=o.filter(e=>"assistant"===e.role).length,centralExamState.enrollmentRequests=(s.data||[]).map(enrollmentRowToApp),await refreshMeritFromSupabase(),saveCentralExamState(),"function"==typeof renderCentralLiveExamHub&&document.querySelector("#view-live-exam")&&renderCentralLiveExamHub(),"function"==typeof renderLiveExamAdminPanel&&"live-exam-admin"===document.body.getAttribute("data-page")&&renderLiveExamAdminPanel()}catch(e){console.error("Could not load Live Exam data from Supabase — using local cache instead.",e)}}async function refreshMeritFromSupabase(){const{data:e,error:t}=await supabaseClient.from("live_exam_submissions").select("member_email, member_name, score_percent");if(t)return void console.error("Could not load merit data:",t);const n=new Map;(e||[]).forEach(e=>{const t=n.get(e.member_email)||{name:e.member_name,scores:[]};t.scores.push(Number(e.score_percent)),n.set(e.member_email,t)});const a=currentMemberEmail(),s=[...n.entries()].map(([e,t])=>{const n=t.scores.reduce((e,t)=>e+t,0)/t.scores.length;return{email:e,name:t.name,score:Math.round(10*n)/10,self:e===a}}).sort((e,t)=>t.score-e.score);centralExamState.merit=s;const i=s.find(e=>e.email===a),o=i?s.indexOf(i)+1:0,r=n.get(a);centralExamState.self={rank:o,given:r?r.scores.length:0,avgPercent:i?i.score:0}}async function saveSubjectToSupabase(e){const{error:t}=await supabaseClient.from("subjects").upsert({id:e.id,name:e.name,start_date:e.startDate||null,end_date:e.endDate||null},{onConflict:"id"});t&&console.error("Could not save subject:",t)}async function deleteSubjectFromSupabase(e){const{error:t}=await supabaseClient.from("subjects").delete().eq("id",e);t&&console.error("Could not delete subject:",t)}async function renameSubjectInSupabase(e,t){const{error:n}=await supabaseClient.from("subjects").update({name:t}).eq("id",e);n&&console.error("Could not rename subject:",n)}async function saveLiveExamToSupabase(e){const{error:t}=await supabaseClient.from("live_exams").upsert({id:e.id,subject:e.subject,topic:e.topic,language:e.language,start_at:new Date(e.start).toISOString(),duration_minutes:e.duration,marks_per_question:e.marksPerQuestion,negative_marking:e.negativeMarking,status:e.status||"scheduled",published:!!e.published,question_count:e.questionCount||0},{onConflict:"id"});t&&console.error("Could not save live exam:",t)}async function deleteLiveExamFromSupabase(e){const{error:t}=await supabaseClient.from("live_exams").delete().eq("id",e);t&&console.error("Could not delete live exam:",t)}async function saveQuestionBankToSupabase(e,t){const n=await supabaseClient.from("live_exam_questions").delete().eq("exam_id",e);if(n.error)return void console.error("Could not clear old questions:",n.error);if(!t.length)return;const a=t.map((t,n)=>({exam_id:e,position:n,question_html:t.question,options:t.options,correct_answer:t.correctAnswer,explanation_html:t.explanation||""})),{error:s}=await supabaseClient.from("live_exam_questions").insert(a);s?console.error("Could not save questions:",s):supabaseClient.from("live_exams").update({question_count:t.length}).eq("id",e).then(()=>{})}async function saveMemberToSupabase(e){const{error:t}=await supabaseClient.from("members").upsert({email:e.email,name:e.name||null,phone:e.phone||null,role:e.role,subjects:e.subjects||[]},{onConflict:"email"});t&&console.error("Could not save member:",t)}async function deleteMemberFromSupabase(e){const{error:t}=await supabaseClient.from("members").delete().eq("email",e);t&&console.error("Could not delete member:",t)}async function submitEnrollmentToSupabase(e){const{data:t,error:n}=await supabaseClient.from("enrollment_requests").insert({name:e.name,phone:e.phone,email:e.email,courses:e.courses||[],mfs_provider:e.mfsProvider||null,mfs_transaction_id:e.mfsTransactionId||null}).select().single();return n?(console.error("Could not submit enrollment:",n),null):enrollmentRowToApp(t)}async function resolveEnrollmentInSupabase(e,t){const{error:n}=await supabaseClient.from("enrollment_requests").update({status:t}).eq("id",e);n&&console.error("Could not update enrollment request:",n)}async function submitLiveExamResultToSupabase(e,t,n,a,s,i){const o=i>0?Math.round(s/i*1e3)/10:0,{error:r}=await supabaseClient.from("live_exam_submissions").upsert({exam_id:e,member_email:t,member_name:n,answers:a,score_percent:o,obtained_marks:s,total_marks:i},{onConflict:"exam_id,member_email"});r?console.error("Could not submit live exam result:",r):(await refreshMeritFromSupabase(),saveCentralExamState(),"function"==typeof renderLiveMerit&&renderLiveMerit())}saveCentralExamState();const debouncedPullCentralExamState=debounce(()=>pullCentralExamStateFromSupabase(),400);let suppressRealtimeSelfEcho=!1;function subscribeCentralExamRealtime(){const e=()=>{suppressRealtimeSelfEcho||debouncedPullCentralExamState()};supabaseClient.channel("live-exam-changes").on("postgres_changes",{event:"*",schema:"public",table:"subjects"},e).on("postgres_changes",{event:"*",schema:"public",table:"members"},e).on("postgres_changes",{event:"*",schema:"public",table:"live_exams"},e).on("postgres_changes",{event:"*",schema:"public",table:"live_exam_questions"},e).on("postgres_changes",{event:"*",schema:"public",table:"live_exam_submissions"},()=>{refreshMeritFromSupabase().then(()=>{saveCentralExamState(),"function"==typeof renderLiveMerit&&renderLiveMerit(),"function"==typeof renderCentralLiveExamHub&&document.querySelector("#view-live-exam")&&renderCentralLiveExamHub()})}).on("postgres_changes",{event:"*",schema:"public",table:"enrollment_requests"},()=>pullCentralExamStateFromSupabase()).subscribe()}function isLiveExamAdmin(){const e=(window.currentUserEmail||firebase.auth().currentUser&&firebase.auth().currentUser.email||"").toLowerCase();return!!e&&(!!LIVE_EXAM_ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(e)||(centralExamState.subscribers.members||[]).some(t=>t.email.toLowerCase()===e&&("admin"===t.role||"assistant"===t.role)))}function currentMemberEmail(){return(window.currentUserEmail||firebase.auth().currentUser&&firebase.auth().currentUser.email||"").toLowerCase()}function findCurrentMember(){const e=currentMemberEmail();return e&&(centralExamState.subscribers.members||[]).find(t=>t.email.toLowerCase()===e)||null}function memberHasSubjectAccess(e,t){return!!e&&("admin"===e.role||"assistant"===e.role||Array.isArray(e.subjects)&&e.subjects.includes(t))}function currentUserHasSubjectAccess(e){if(isLiveExamAdmin())return!0;return memberHasSubjectAccess(findCurrentMember(),e)}function liveBadgeHTML(e){return`<span class="live-pulse-badge${e?" "+e:""}"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span></span>`}function isAnyExamCurrentlyLive(){const e=Date.now();return centralExamState.exams.some(t=>e>=t.start&&e<t.start+60*t.duration*1e3)}function refreshBrandLiveIndicators(){const e=isAnyExamCurrentlyLive();["home","live-exam","live-exam-admin","history","statistics","exam"].forEach(t=>{const n=document.getElementById(`brand-live-indicator-${t}`);n&&(n.hidden=!e,e&&(n.innerHTML='<span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span>'))})}function upcomingExamsForCurrentUser(){const e=Date.now();return centralExamState.exams.filter(t=>("scheduled"===t.status||"live"===t.status)&&e<t.start+60*t.duration*1e3).sort((e,t)=>e.start-t.start)}let liveCountdownInterval=null;const LIVE_CAMPAIGN_CARD_HUES=["hue-1","hue-2","hue-3","hue-4","hue-5"];function subjectColorClass(e){let t=0;const n=String(e||"");for(let e=0;e<n.length;e++)t=31*t+n.charCodeAt(e)|0;const a=Math.abs(t)%LIVE_CAMPAIGN_CARD_HUES.length;return"live-campaign-card--"+LIVE_CAMPAIGN_CARD_HUES[a]}function renderLiveCampaignCards(){clearInterval(liveCountdownInterval);const e=qs("#live-campaign-cards");if(!e)return;const t=upcomingExamsForCurrentUser();function n(){const e=Date.now();t.forEach(t=>{const n=qs(`[data-countdown-for="${t.id}"]`),a=qs(`[data-join-exam="${t.id}"]`),s=qs(`[data-campaign-corner="${t.id}"]`);if(!n||!a)return;const i=qs("[data-countdown-label]",n),o=qs("[data-join-btn-label]",a),r=t.start+60*t.duration*1e3,l=e>=t.start&&e<r,c=l?r-e:t.start-e;n.classList.toggle("is-live",l),i.textContent=l?"Remaining Time":"Upcoming Live Countdown",s&&(s.innerHTML=l?'<span class="live-pulse-badge"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span></span>':"");const d=Math.max(0,c),m=Math.floor(d/864e5),u=Math.floor(d/36e5%24),p=Math.floor(d/6e4%60),h=Math.floor(d/1e3%60);qs("[data-cd-days]",n).textContent=String(m).padStart(2,"0"),qs("[data-cd-hours]",n).textContent=String(u).padStart(2,"0"),qs("[data-cd-mins]",n).textContent=String(p).padStart(2,"0"),qs("[data-cd-secs]",n).textContent=String(h).padStart(2,"0");"true"===a.getAttribute("data-requires-subscription")?(a.disabled=!1,o.textContent="Enroll Now"):(a.disabled=!l,o.textContent=l?"Join Live Exam":"Exam not started yet")})}0!==t.length?(e.innerHTML=t.map(e=>{const t=Math.round((e.marksPerQuestion||1)*(e.questionCount||0)*100)/100,n=new Date(e.start),a=`${n.toLocaleDateString("en-US",{day:"numeric",month:"short",year:"numeric"})} · ${n.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}`,s=currentUserHasSubjectAccess(e.subject);return`\n    <section class="card live-campaign-card ${subjectColorClass(e.subject)}${s?"":" live-campaign-card--locked"}" data-exam-card="${e.id}">\n      <div class="live-campaign-card__corner" data-campaign-corner="${e.id}"></div>\n      <div class="live-campaign-card__subject">${escapeHtml(e.subject)}</div>\n      <div class="live-campaign-card__topic">${escapeHtml(e.topic)}</div>\n      <div class="live-campaign-card__submeta">\n        <span>${escapeHtml(a)}</span>\n        <span class="live-campaign-card__submeta-sep">·</span>\n        <span>${e.duration} min</span>\n        <span class="live-campaign-card__submeta-sep">·</span>\n        <span>${t||"TBA"} Marks</span>\n      </div>\n      <div class="live-campaign-card__row">\n        <div class="live-countdown live-countdown--full" data-countdown-for="${e.id}">\n          <div class="live-countdown__label" data-countdown-label>Upcoming Live Countdown</div>\n          <div class="live-countdown__digits">\n            <div class="live-countdown__unit"><span data-cd-days>00</span><small>Days</small></div>\n            <div class="live-countdown__unit"><span data-cd-hours>00</span><small>Hours</small></div>\n            <div class="live-countdown__unit"><span data-cd-mins>00</span><small>Min</small></div>\n            <div class="live-countdown__unit"><span data-cd-secs>00</span><small>Sec</small></div>\n          </div>\n        </div>\n        <button type="button" class="btn btn-primary btn-lg live-join-btn" data-join-exam="${e.id}" data-requires-subscription="${s?"false":"true"}" data-enroll-subject="${escapeHtml(e.subject)}" ${s?"disabled":""}>\n          <span data-join-btn-label>${s?"Exam not started yet":"Enroll Now"}</span>\n        </button>\n      </div>\n    </section>`}).join(""),qsa("[data-join-exam]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-join-exam"),n=centralExamState.exams.find(e=>e.id===t);if(!n||!currentUserHasSubjectAccess(n.subject))return void openEnrollModal(e.getAttribute("data-enroll-subject")||(n?n.subject:void 0));const a=Date.now(),s=n.start+60*n.duration*1e3;if(!(a>=n.start&&a<s))return;if(!(centralExamState.questionBank[n.id]||[]).length)return void showToast("This live exam has no questions yet — check back once the admin publishes them.","danger");if(currentMemberEmail()&&(liveExamSubmittedIds||[]).includes(n.id))return void showToast("You've already submitted this live exam.","info");createExamSession(buildExamFromLiveExam(n)),showToast("Joining the live exam - this reuses your existing Exam Mode player.","success"),showView("exam",{resetHistory:!0}),enterLiveExam()})}),n(),liveCountdownInterval=setInterval(n,1e3)):e.innerHTML='<div class="card live-campaign-empty">No upcoming live exam yet - enroll in a Subject Course from the admin, or check back later.</div>'}const liveRoutineOpenGroups=new Set;function renderLiveRoutine(){const e=qs("#live-routine-list");if(!e)return;const t=Date.now(),n=[...centralExamState.exams].sort((e,t)=>e.start-t.start),a=[],s=new Map;n.forEach(e=>{let t=s.get(e.subject);t||(t={subject:e.subject,exams:[]},s.set(e.subject,t),a.push(t)),t.exams.push(e)}),a.length?(e.innerHTML=a.map(e=>{const n=currentUserHasSubjectAccess(e.subject),a=e.exams.some(e=>t>=e.start&&t<e.start+60*e.duration*1e3),s=e.exams.filter(e=>t<e.start).length,i=liveRoutineOpenGroups.has(e.subject),o=[i?"is-open":"",n?"live-routine-group--subscribed":""].filter(Boolean).join(" "),r=[`${e.exams.length} Topic${1===e.exams.length?"":"s"}`];a?r.push("Live Now"):s?r.push(`${s} Upcoming`):r.push("All Ended");const l=e.exams.map(e=>{const a=e.start+60*e.duration*1e3,s=t>=e.start&&t<a,i=t>=a,o=new Date(e.start),r=[s?"live-routine-row--live":i?"live-routine-row--done":"",n?"live-routine-row--subscribed":""].filter(Boolean).join(" "),l=s?`<span class="badge badge-danger">${liveBadgeHTML()}</span>`:i?'<span class="badge badge-neutral">Ended</span>':'<span class="badge badge-info">Upcoming</span>';return`\n      <div class="live-routine-row ${r}">\n        <div class="live-routine-row__date">\n          <span class="live-routine-row__date-day">${o.getDate()}</span>\n          <span class="live-routine-row__date-month">${o.toLocaleString("en-US",{month:"short"})}</span>\n        </div>\n        <div class="live-routine-row__body">\n          <div class="live-routine-row__title">${escapeHtml(e.subject)}</div>\n          <div class="live-routine-row__topic">${escapeHtml(e.topic)}</div>\n          <div class="live-routine-row__meta">${o.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})} · ${e.duration} Min · ${e.questionCount||"TBA"} Ques</div>\n        </div>\n        ${l}\n      </div>`}).join("");return`\n    <div class="live-routine-group ${o}" data-routine-group="${escapeHtml(e.subject)}">\n      <button type="button" class="live-routine-group__header" data-routine-group-toggle="${escapeHtml(e.subject)}" aria-expanded="${i?"true":"false"}">\n        ${a?'<span class="live-routine-group__live-dot"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span></span>':""}\n        <div class="live-routine-group__title-wrap">\n          <div class="live-routine-group__title">${escapeHtml(e.subject)}</div>\n          <div class="live-routine-group__subtitle">${r.join(" · ")}</div>\n        </div>\n        <i data-lucide="chevron-down" class="live-routine-group__chevron"></i>\n      </button>\n      <div class="live-routine-group__body">\n        <div class="live-routine-group__body-inner">\n          <div class="live-routine-list">${l}</div>\n        </div>\n      </div>\n    </div>`}).join(""),qsa("[data-routine-group-toggle]",e).forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-routine-group-toggle"),n=e.closest(".live-routine-group"),a=!liveRoutineOpenGroups.has(t);a?liveRoutineOpenGroups.add(t):liveRoutineOpenGroups.delete(t),n&&n.classList.toggle("is-open",a),e.setAttribute("aria-expanded",a?"true":"false")})}),window.lucide&&"function"==typeof window.lucide.createIcons&&window.lucide.createIcons()):e.innerHTML='<p class="text-secondary" style="padding: var(--space-4) 0;">No routine has been published yet.</p>'}function renderLiveSubjects(){const e=qs("#live-subject-grid");e&&(centralExamState.subjects.length?(e.innerHTML=centralExamState.subjects.map(e=>{const t=centralExamState.exams.filter(t=>t.subject===e.name),n=currentUserHasSubjectAccess(e.name),a=n?'<span class="badge badge-success">Enrolled</span>':`<button type="button" class="btn btn-primary btn-sm" data-enroll-subject="${escapeHtml(e.name)}">Enroll Now</button>`;return`\n    <div class="live-subject-row ${n?"live-subject-row--subscribed":""}">\n      <div class="live-subject-row__body">\n        <div class="live-subject-row__name">${escapeHtml(e.name)}</div>\n        <div class="live-subject-row__meta">${t.length} live exam${1===t.length?"":"s"} in this campaign</div>\n      </div>\n      <div class="live-subject-row__action">${a}</div>\n    </div>`}).join(""),qsa("[data-enroll-subject]",e).forEach(e=>{e.addEventListener("click",()=>openEnrollModal(e.getAttribute("data-enroll-subject")))})):e.innerHTML='<p class="text-secondary" style="padding: var(--space-4) 0;">No courses are running right now — please check back soon.</p>')}function renderLiveMerit(){const e=qs("#live-merit-list");if(!e)return;const t=[...centralExamState.merit].sort((e,t)=>t.score-e.score);e.innerHTML=t.map((e,t)=>{const n=t+1;return`\n    <div class="live-merit-row ${n<=3?`live-merit-row--top${n}`:""} ${e.self?"live-merit-row--self":""}">\n      <span class="live-merit-row__rank">${n}</span>\n      <span class="live-merit-row__name">${escapeHtml(e.name)}</span>\n      <span class="live-merit-row__score">${e.score}%</span>\n    </div>`}).join("")}function renderCentralLiveExamHub(){qs("#live-summary-rank").textContent="#"+centralExamState.self.rank,qs("#live-summary-given").textContent=centralExamState.self.given,qs("#live-summary-avg").textContent=centralExamState.self.avgPercent+"%";const e=qs("#live-exam-admin-entry");e&&(e.hidden=!isLiveExamAdmin()),renderLiveCampaignCards(),renderLiveRoutine(),renderLiveSubjects(),renderLiveMerit()}function formatExamStatus(e){const t=Date.now(),n=e.start+60*e.duration*1e3;return t>=e.start&&t<n?{text:liveBadgeHTML(),cls:"badge-danger"}:t>=n?{text:e.published?"Published":"Ended",cls:e.published?"badge-success":"badge-warning"}:{text:"Scheduled",cls:"badge-info"}}function renderAdminSubjectList(){const e=qs("#admin-subject-list");e&&(centralExamState.subjects.length?(e.innerHTML=centralExamState.subjects.map(e=>{const t=centralExamState.exams.filter(t=>t.subject===e.name).sort((e,t)=>e.start-t.start),n=e.startDate&&e.endDate?`${new Date(e.startDate).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} – ${new Date(e.endDate).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`:"No campaign date range set",a=t.length?t.map(e=>{const t=formatExamStatus(e),n=new Date(e.start);return`\n          <div class="live-admin-exam-row">\n            <div class="live-admin-exam-row__body">\n              <div class="live-admin-exam-row__title">${escapeHtml(e.topic||"Untitled topic")}</div>\n              <div class="live-admin-exam-row__meta">${n.toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · ${e.duration} min · ${e.questionCount} questions · ${e.subscriberCount} enrolled</div>\n            </div>\n            <span class="badge ${t.cls}">${t.text}</span>\n            <div class="live-admin-exam-row__actions">\n              <button type="button" class="btn btn-outline btn-sm" data-admin-edit-exam="${e.id}">Edit</button>\n              <button type="button" class="btn btn-outline btn-sm" data-admin-delete-exam="${e.id}">Delete</button>\n            </div>\n          </div>`}).join(""):`<div class="admin-subject-card__empty">No Live Exams yet under "${escapeHtml(e.name)}" - add one for a topic like Noun or Tense.</div>`;return`\n    <div class="card admin-subject-card">\n      <div class="admin-subject-card__header">\n        <div>\n          <div class="admin-subject-card__name">${escapeHtml(e.name)}</div>\n          <div class="admin-subject-card__meta">${n} · ${t.length} live exam${1===t.length?"":"s"}</div>\n        </div>\n        <div class="admin-subject-card__actions">\n          <button type="button" class="btn btn-primary btn-sm" data-admin-new-exam-for="${escapeHtml(e.name)}">\n            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>\n            New Live Exam\n          </button>\n          <button type="button" class="btn btn-outline btn-sm" data-admin-edit-subject="${e.id}">Edit</button>\n          <button type="button" class="btn btn-outline btn-sm" data-admin-delete-subject="${e.id}">Delete</button>\n        </div>\n      </div>\n      <div class="admin-subject-card__exams">${a}</div>\n    </div>`}).join(""),qsa("[data-admin-new-exam-for]").forEach(e=>{e.addEventListener("click",()=>openAdminExamForm(null,e.getAttribute("data-admin-new-exam-for")))}),qsa("[data-admin-edit-exam]").forEach(e=>{e.addEventListener("click",()=>openAdminExamForm(e.getAttribute("data-admin-edit-exam")))}),qsa("[data-admin-delete-exam]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-delete-exam"),n=centralExamState.exams.find(e=>e.id===t);n&&confirm(`Delete the Live Exam "${n.topic||n.subject}"? This also removes its question bank. This can't be undone.`)&&(centralExamState.exams=centralExamState.exams.filter(e=>e.id!==t),delete centralExamState.questionBank[t],deleteLiveExamFromSupabase(t).catch(e=>{console.error("Could not delete live exam:",e),showToast("Removed locally, but the server delete failed — it may reappear on next sync. Check your connection.","danger")}),saveCentralExamState(),renderAdminSubjectList(),renderAdminQuestionBank(),renderAdminResultsList(),showToast("Live exam deleted.","success"))})}),qsa("[data-admin-edit-subject]").forEach(e=>{e.addEventListener("click",()=>openAdminSubjectForm(e.getAttribute("data-admin-edit-subject")))}),qsa("[data-admin-delete-subject]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-delete-subject"),n=centralExamState.subjects.find(e=>e.id===t);if(!n)return;const a=centralExamState.exams.filter(e=>e.subject===n.name);a.length&&!confirm(`"${n.name}" has ${a.length} Live Exam(s) under it. Deleting the subject also deletes all of them and their questions. Continue?`)||(a.length||confirm(`Delete the subject "${n.name}"?`))&&(a.forEach(e=>delete centralExamState.questionBank[e.id]),centralExamState.exams=centralExamState.exams.filter(e=>e.subject!==n.name),centralExamState.subjects=centralExamState.subjects.filter(e=>e.id!==t),deleteSubjectFromSupabase(t).catch(e=>{console.error("Could not delete subject:",e),showToast("Removed locally, but the server delete failed — it may reappear on next sync. Check your connection.","danger")}),saveCentralExamState(),renderAdminSubjectList(),renderAdminQuestionBank(),renderAdminResultsList(),showToast("Subject and its live exams deleted.","success"))})})):e.innerHTML='<div class="card text-center text-secondary" style="padding: var(--space-8);">No subjects yet - click "New Subject" to start a campaign (e.g. "English Grammar"), then add Live Exams under it for each topic.</div>')}function openAdminSubjectForm(e){const t=qs("#admin-subject-form-card"),n=e?centralExamState.subjects.find(t=>t.id===e):null;qs("#admin-subject-form-title").textContent=n?"Edit subject":"New subject",qs("#admin-subject-name").value=n?n.name:"",qs("#admin-subject-start").value=n&&n.startDate||"",qs("#admin-subject-end").value=n&&n.endDate||"",t.dataset.editingId=e||"",t.hidden=!1,t.scrollIntoView({behavior:"smooth",block:"start"})}function openAdminMemberForm(){const e=qs("#admin-member-form-card");if(!e)return;qs("#admin-member-name").value="",qs("#admin-member-phone").value="",qs("#admin-member-email").value="",qs("#admin-member-as-assistant").checked=!1;const t=qs("#admin-member-subject-picker"),n=centralExamState.subjects||[];0===n.length?(t.innerHTML="",t.style.display="none"):(t.innerHTML=n.map(e=>`\n      <label class="member-subject-editor__option">\n        <input type="checkbox" value="${escapeHtml(e.name)}" />\n        ${escapeHtml(e.name)}\n      </label>`).join(""),t.style.display="flex"),e.hidden=!1,e.scrollIntoView({behavior:"smooth",block:"start"})}function renderAdminResultsList(){const e=qs("#admin-results-list");if(!e)return;const t=Date.now(),n=centralExamState.exams.filter(e=>t>=e.start+60*e.duration*1e3);if(!n.length)return void(e.innerHTML='<div class="card text-center text-secondary" style="padding: var(--space-8);">No ended exams yet - results appear here once a live exam finishes.</div>');const a={};n.forEach(e=>{a[e.subject]||(a[e.subject]=[]),a[e.subject].push(e)}),e.innerHTML=Object.keys(a).map(e=>{const t=a[e],n=t.every(e=>e.published),s=t.map(e=>`\n      <div class="live-admin-exam-row">\n        <div class="live-admin-exam-row__body">\n          <div class="live-admin-exam-row__title">${escapeHtml(e.topic||"Untitled topic")}</div>\n          <div class="live-admin-exam-row__meta">${e.subscriberCount} attempts · ${e.published?"Visible on users' Statistics card":"Not visible to users yet"}</div>\n        </div>\n        <span class="badge ${e.published?"badge-success":"badge-warning"}">${e.published?"Published":"Draft"}</span>\n        <div class="live-admin-exam-row__actions">\n          <button type="button" class="btn btn-outline btn-sm" data-admin-download-answers="${e.id}">Download</button>\n          <button type="button" class="btn ${e.published?"btn-outline":"btn-primary"} btn-sm" data-admin-toggle-publish="${e.id}">${e.published?"Unpublish":"Publish Result"}</button>\n        </div>\n      </div>`).join("");return`\n    <div class="card admin-subject-card">\n      <div class="admin-subject-card__header">\n        <div>\n          <div class="admin-subject-card__name">${escapeHtml(e)}</div>\n          <div class="admin-subject-card__meta">${t.length} ended exam${1===t.length?"":"s"}</div>\n        </div>\n        <div class="admin-subject-card__actions">\n          <button type="button" class="btn btn-outline btn-sm" data-admin-toggle-publish-subject="${escapeHtml(e)}">${n?"Unpublish All":"Publish All"}</button>\n        </div>\n      </div>\n      <div class="admin-subject-card__exams">${s}</div>\n    </div>`}).join(""),qsa("[data-admin-toggle-publish]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-toggle-publish"),n=centralExamState.exams.find(e=>e.id===t);n&&(n.published=!n.published,saveCentralExamState(),saveLiveExamToSupabase(n).catch(e=>{console.error("Could not sync publish state:",e),showToast("Publish state changed locally, but didn't sync to the server. Check your connection.","danger")}),renderAdminResultsList(),showToast(n.published?"Result published to users.":"Result unpublished.","success"))})}),qsa("[data-admin-download-answers]").forEach(e=>{e.addEventListener("click",()=>{enterAdminAnswerSheetPrint(e.getAttribute("data-admin-download-answers"))})}),qsa("[data-admin-toggle-publish-subject]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-toggle-publish-subject"),a=n.filter(e=>e.subject===t),s=!a.every(e=>e.published);a.forEach(e=>{e.published=s}),saveCentralExamState(),Promise.all(a.map(e=>saveLiveExamToSupabase(e))).catch(e=>{console.error("Could not sync publish state:",e),showToast("Publish state changed locally, but didn't fully sync to the server. Check your connection.","danger")}),renderAdminResultsList(),showToast(s?`All results in "${t}" published.`:`All results in "${t}" unpublished.`,"success")})})}function renderAdminMemberList(){qs("#admin-sub-total").textContent=centralExamState.subscribers.total,qs("#admin-sub-active").textContent=centralExamState.subscribers.active,qs("#admin-sub-assistants").textContent=centralExamState.subscribers.assistantAdmins;const e=qs("#admin-member-list");if(!e)return;const t=centralExamState.subjects||[];e.innerHTML=centralExamState.subscribers.members.map(e=>{const n="admin"===e.role||"assistant"===e.role,a=Array.isArray(e.subjects)?e.subjects:[],s=n?`<span class="live-member-row__subject-chip">All subjects (${"admin"===e.role?"Admin":"Assistant Admin"})</span>`:0===t.length?'<span class="live-member-row__subject-chip live-member-row__subject-chip--none">No Subject Courses yet</span>':0===a.length?'<span class="live-member-row__subject-chip live-member-row__subject-chip--none">🔒 Not enrolled in any subject</span>':a.map(e=>`<span class="live-member-row__subject-chip">${escapeHtml(e)}</span>`).join("");return`\n    <div class="live-member-row" style="flex-wrap: wrap;">\n      <div class="live-member-row__avatar">${escapeHtml((e.name||e.email)[0].toUpperCase())}</div>\n      <div class="live-member-row__body">\n        <div class="live-member-row__email">${e.name?`${escapeHtml(e.name)} <span class="text-secondary" style="font-weight: var(--font-weight-normal);">· ${escapeHtml(e.email)}</span>`:escapeHtml(e.email)}</div>\n        <div class="live-member-row__meta">${"admin"===e.role?"Admin":"assistant"===e.role?"Assistant Admin":"User"}${e.phone?` · ${escapeHtml(e.phone)}`:""}</div>\n        <div class="live-member-row__subjects">${s}</div>\n      </div>\n      <div class="live-member-row__actions">\n        ${!n&&t.length>0?`<button type="button" class="btn btn-outline btn-sm" data-admin-edit-subjects="${escapeHtml(e.email)}">Subjects</button>`:""}\n        ${"subscriber"===e.role?`<button type="button" class="btn btn-outline btn-sm" data-admin-promote-member="${escapeHtml(e.email)}">Add Admin</button>`:""}\n        ${"assistant"===e.role?`<button type="button" class="btn btn-outline btn-sm" data-admin-demote-member="${escapeHtml(e.email)}">Remove Assistant Admin</button>`:""}\n        ${"admin"!==e.role?`<button type="button" class="btn btn-outline btn-sm" data-admin-remove-member="${escapeHtml(e.email)}">Remove</button>`:""}\n      </div>\n      <div class="member-subject-editor" data-subject-editor-for="${escapeHtml(e.email)}" style="display: none; width: 100%;">\n        ${t.map(t=>`\n          <label class="member-subject-editor__option">\n            <input type="checkbox" data-subject-checkbox="${escapeHtml(e.email)}" value="${escapeHtml(t.name)}" ${a.includes(t.name)?"checked":""} />\n            ${escapeHtml(t.name)}\n          </label>`).join("")}\n        <button type="button" class="btn btn-primary btn-sm" data-admin-save-subjects="${escapeHtml(e.email)}">Save</button>\n      </div>\n    </div>`}).join(""),qsa("[data-admin-promote-member]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-promote-member"),n=centralExamState.subscribers.members.find(e=>e.email===t);n&&(n.role="assistant",centralExamState.subscribers.assistantAdmins+=1,saveCentralExamState(),saveMemberToSupabase(n).catch(e=>{console.error("Could not sync member role:",e),showToast("Role changed locally, but didn't sync to the server. Check your connection.","danger")}),renderAdminMemberList(),showToast(`${t} is now an Assistant Admin.`,"success"))})}),qsa("[data-admin-demote-member]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-demote-member"),n=centralExamState.subscribers.members.find(e=>e.email===t);n&&(n.role="subscriber",centralExamState.subscribers.assistantAdmins=Math.max(0,centralExamState.subscribers.assistantAdmins-1),saveCentralExamState(),saveMemberToSupabase(n).catch(e=>{console.error("Could not sync member role:",e),showToast("Role changed locally, but didn't sync to the server. Check your connection.","danger")}),renderAdminMemberList(),showToast(`${t} is no longer an Assistant Admin.`,"success"))})}),qsa("[data-admin-remove-member]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-remove-member"),n=centralExamState.subscribers.members.find(e=>e.email===t);n&&"assistant"===n.role&&(centralExamState.subscribers.assistantAdmins=Math.max(0,centralExamState.subscribers.assistantAdmins-1)),centralExamState.subscribers.members=centralExamState.subscribers.members.filter(e=>e.email!==t),centralExamState.subscribers.total=Math.max(0,centralExamState.subscribers.total-1),saveCentralExamState(),deleteMemberFromSupabase(t).catch(e=>{console.error("Could not sync member removal:",e),showToast("Removed locally, but the server delete failed — they may reappear on next sync. Check your connection.","danger")}),renderAdminMemberList(),showToast("Member removed.","success")})}),qsa("[data-admin-edit-subjects]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-edit-subjects");qsa("[data-subject-editor-for]").forEach(e=>{e.style.display=e.getAttribute("data-subject-editor-for")===t&&"none"===e.style.display?"flex":"none"})})}),qsa("[data-admin-save-subjects]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-admin-save-subjects"),n=centralExamState.subscribers.members.find(e=>e.email===t);if(!n)return;const a=qsa("[data-subject-checkbox]",e.closest(".member-subject-editor")).filter(e=>e.checked).map(e=>e.value);n.subjects=a,saveCentralExamState(),saveMemberToSupabase(n).catch(e=>{console.error("Could not sync member subjects:",e),showToast("Access changed locally, but didn't sync to the server. Check your connection.","danger")}),renderAdminMemberList(),showToast(`Updated ${t}'s subject access.`,"success")})})}const MCQBuilder=(()=>{let e=[],t="en",n=null,a=null,s=null;const i=["²","³","⁴","½","⅓","¼","√","∛","∑","∫","∞","≈","≠","≤","≥","±","×","÷","α","β","γ","δ","θ","π","λ","μ","Ω","Δ","∂","∇","→","⇌","°","‰","·","…","⅔","⅕","⅖","⅗","⅘","⅙","⅚","⅛","⅜","⅝","⅞","∝"];function o(){return"q_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8)}function r(e){const t=document.createElement("div");return t.innerHTML=e||"",(t.textContent||t.innerText||"").trim()}function l(e){if(window.DOMPurify)return DOMPurify.sanitize(e,{ALLOWED_TAGS:["b","strong","i","em","u","sup","sub","span","br","ul","ol","li","font","div"],ALLOWED_ATTR:["style","class"]});const t=document.createElement("div");return t.innerHTML=e,t.querySelectorAll("script, style, iframe, object, embed").forEach(e=>e.remove()),t.querySelectorAll("*").forEach(e=>{[...e.attributes].forEach(t=>{/^on/i.test(t.name)&&e.removeAttribute(t.name)})}),t.innerHTML}function c(e){return("bn"===t?["ক","খ","গ","ঘ"]:["A","B","C","D"])[e]||String(e+1)}function d(){return window.matchMedia("(max-width: 640px)").matches?"vertical":"grid"}function m(){return{id:o(),questionHtml:"",optionsLayout:d(),layoutLocked:!1,explanationHtml:"",options:[{id:"a",html:""},{id:"b",html:""},{id:"c",html:""},{id:"d",html:""}],correctIndex:-1}}function u(e){return""===r(e.questionHtml)&&e.options.every(e=>""===r(e.html))}function p(){return(!e.length||!u(e[e.length-1]))&&(e.push(m()),!0)}function h(){return centralExamState.exams.find(e=>e.id===n)||null}function g(t){n=t;if(!h())return;const a=centralExamState.questionBank[t]||[];e=a.map(e=>{const t=(e.options||["","","",""]).slice(0,4);for(;t.length<4;)t.push("");return{id:o(),questionHtml:escapeHtml(e.question||""),optionsLayout:d(),layoutLocked:!1,explanationHtml:escapeHtml(e.explanation||""),options:t.map((e,t)=>({id:["a","b","c","d"][t],html:escapeHtml(e)})),correctIndex:"number"==typeof e.correctAnswer?e.correctAnswer:-1}}),v()}function v(){p();const t=qs("#mcqp-questions-list");t.innerHTML="",e.forEach((e,n)=>t.appendChild(_(e,n))),b(),window.lucide&&lucide.createIcons()}function b(){const t=e.filter(e=>!u(e)).length;qs("#mcqp-question-count").textContent=`${t} question${1===t?"":"s"}`}function f(t){const n=e.findIndex(e=>e.id===t);if(-1===n||n!==e.length-1)return;if(!p())return;const a=e[e.length-1];qs("#mcqp-questions-list").appendChild(_(a,e.length-1)),b(),window.lucide&&lucide.createIcons()}function E(e,t){e.innerHTML=t||"",x(e)}function x(e){e.classList.toggle("is-empty",""===r(e.innerHTML))}function y(e,t){const n=function(e,t){let n=null;return function(...a){clearTimeout(n),n=setTimeout(()=>e.apply(this,a),t)}}(()=>t(l(e.innerHTML)),180);e.addEventListener("input",()=>{x(e),n()}),e.addEventListener("focus",()=>{a=e}),e.addEventListener("keyup",()=>w(e)),e.addEventListener("mouseup",()=>w(e)),e.addEventListener("keydown",e=>{if(!(e.ctrlKey||e.metaKey))return;const t=e.key.toLowerCase();"b"===t?(e.preventDefault(),S("bold")):"i"===t?(e.preventDefault(),S("italic")):"u"===t&&(e.preventDefault(),S("underline"))})}function w(e){const t=window.getSelection();t.rangeCount>0&&e.contains(t.anchorNode)&&(s=t.getRangeAt(0).cloneRange())}function q(){if(!s)return;const e=window.getSelection();e.removeAllRanges(),e.addRange(s)}function S(e,t=null){if(a){a.focus(),q();try{document.execCommand(e,!1,t)}catch(n){document.execCommand("styleWithCSS",!1,!0);try{document.execCommand(e,!1,t)}catch(e){}}w(a),x(a),a.dispatchEvent(new Event("input",{bubbles:!0}))}}function _(n,a){const s=document.createElement("div");s.className="mcqp2-qcard",s.dataset.id=n.id;const l=n.optionsLayout||"vertical",u=document.createElement("div");u.className="mcqp2-qcard__head";const p=document.createElement("span");p.className="mcqp2-qcard__number",p.textContent=`${"bn"===t?"প্রশ্ন":"MCQ"} ${a+1}`,u.appendChild(p);const h=document.createElement("div");h.className="mcqp2-qcard__controls";const g=document.createElement("div");g.className="mcqp2-toolbar",g.setAttribute("role","toolbar");[{cmd:"bold",icon:"bold",label:"Bold"},{cmd:"italic",icon:"italic",label:"Italic"},{cmd:"underline",icon:"underline",label:"Underline"},{sep:!0},{cmd:"superscript",text:"x²",label:"Superscript"},{cmd:"subscript",text:"x₂",label:"Subscript"},{sep:!0},{cmd:"insertUnorderedList",icon:"list",label:"Bullet list"},{cmd:"insertOrderedList",icon:"list-ordered",label:"Numbered list"},{sep:!0}].forEach(e=>{if(e.sep){const e=document.createElement("span");return e.className="rt-sep",void g.appendChild(e)}const t=document.createElement("button");if(t.type="button",t.className="rt-btn",t.dataset.cmd=e.cmd,t.setAttribute("aria-label",e.label),t.title=e.label,e.icon){const n=document.createElement("i");n.setAttribute("data-lucide",e.icon),t.appendChild(n)}else e.text&&(t.textContent=e.text);g.appendChild(t)});const x=document.createElement("div");x.className="rt-dropdown";const w=document.createElement("button");w.type="button",w.className="rt-btn",w.setAttribute("aria-label","Insert math symbol"),w.title="Math & symbols";const q=document.createElement("i");q.setAttribute("data-lucide","sigma"),w.appendChild(q),x.appendChild(w);const S=document.createElement("div");S.className="rt-dropdown__panel",S.hidden=!0,i.forEach(e=>{const t=document.createElement("button");t.type="button",t.className="rt-math-symbol",t.dataset.symbol=e,t.textContent=e,S.appendChild(t)}),x.appendChild(S),g.appendChild(x);const _=document.createElement("span");_.className="rt-sep",g.appendChild(_);const C=document.createElement("label");C.className="rt-color",C.title="Text color";const A=document.createElement("i");A.setAttribute("data-lucide","palette"),C.appendChild(A);const L=document.createElement("input");L.type="color",L.dataset.cmd="foreColor",L.value="#111111",L.setAttribute("aria-label","Text color"),C.appendChild(L),g.appendChild(C);const k=document.createElement("span");k.className="rt-sep",g.appendChild(k);const M=document.createElement("button");M.type="button",M.className="rt-btn",M.dataset.cmd="removeFormat",M.setAttribute("aria-label","Clear formatting"),M.title="Clear formatting";const T=document.createElement("i");T.setAttribute("data-lucide","eraser"),M.appendChild(T),g.appendChild(M);const j=document.createElement("span");j.className="rt-sep",g.appendChild(j);const $=document.createElement("button");$.type="button",$.className="rt-close",$.setAttribute("aria-label","Close formatting tools"),$.title="Close toolbar",$.textContent="×",g.appendChild($),h.appendChild(g);const P=document.createElement("button");P.type="button",P.className="mcqp2-format-toggle",P.setAttribute("aria-label","Toggle formatting tools"),P.title="Formatting tools";const N=document.createElement("i");N.setAttribute("data-lucide","pencil"),P.appendChild(N),h.appendChild(P);const I=document.createElement("div");I.className="mcqp2-layout-picker",I.setAttribute("role","group"),[{value:"vertical",icon:"rows-3",label:"Vertical"},{value:"horizontal",icon:"columns-3",label:"Horizontal"},{value:"grid",icon:"grid-2x2",label:"Rectangular"}].forEach(e=>{const t=document.createElement("button");t.type="button",t.className="mcqp2-qc-btn"+(l===e.value?" is-active":""),t.dataset.layout=e.value,t.setAttribute("aria-label",e.label),t.title=e.label;const n=document.createElement("i");n.setAttribute("data-lucide",e.icon),t.appendChild(n),I.appendChild(t)}),h.appendChild(I);const H=document.createElement("span");H.className="mcqp2-qc-divider",h.appendChild(H);const D=document.createElement("button");D.type="button",D.className="mcqp2-qc-btn",D.dataset.action="move-up",D.setAttribute("aria-label","Move question up"),D.title="Move up";const R=document.createElement("i");R.setAttribute("data-lucide","chevron-up"),D.appendChild(R),h.appendChild(D);const O=document.createElement("button");O.type="button",O.className="mcqp2-qc-btn",O.dataset.action="move-down",O.setAttribute("aria-label","Move question down"),O.title="Move down";const F=document.createElement("i");F.setAttribute("data-lucide","chevron-down"),O.appendChild(F),h.appendChild(O);const G=document.createElement("button");G.type="button",G.className="mcqp2-qc-btn",G.dataset.action="duplicate",G.setAttribute("aria-label","Duplicate question"),G.title="Duplicate";const B=document.createElement("i");B.setAttribute("data-lucide","copy"),G.appendChild(B),h.appendChild(G);const U=document.createElement("button");U.type="button",U.className="mcqp2-qc-btn mcqp2-qc-btn--danger",U.dataset.action="delete",U.setAttribute("aria-label","Delete question"),U.title="Delete";const Q=document.createElement("i");Q.setAttribute("data-lucide","trash-2"),U.appendChild(Q),h.appendChild(U),u.appendChild(h),s.appendChild(u);const V=document.createElement("div");V.className="mcqp2-qcard__body";const z=document.createElement("div");z.className="mcqp2-editor-area mcqp2-question-editor",z.contentEditable="true",z.dataset.role="question",z.dataset.placeholder="bn"===t?"প্রশ্ন লিখুন...":"Type your question...",z.setAttribute("aria-label","Question text"),E(z,n.questionHtml),V.appendChild(z);const W=document.createElement("div");W.className=`mcqp2-options-list layout-${l}`,n.options.forEach((e,a)=>{W.appendChild(function(e,n,a,s){const i=document.createElement("div");i.className="mcqp2-option-row";const o=document.createElement("button");o.type="button",o.className="mcqp2-option-row__label"+(e.correctIndex===a?" is-correct":""),o.textContent=c(a),o.title="Mark as correct answer",o.setAttribute("aria-pressed",e.correctIndex===a?"true":"false"),o.setAttribute("aria-label",`Mark correct answer: ${c(a)}`),i.appendChild(o);const l=document.createElement("div");return l.className="mcqp2-editor-area",l.contentEditable="true",l.dataset.role="option",l.dataset.placeholder="bn"===t?"অপশন লিখুন...":"Option text...",l.setAttribute("aria-label",`Option ${c(a)}`),E(l,n.html),i.appendChild(l),y(l,t=>{if(n.html=t,!e.layoutLocked){e.optionsLayout=function(e){const t=e.options.map(e=>r(e.html).length),n=Math.max(0,...t),a=t.reduce((e,t)=>e+t,0);return 0===a?d():n<=6&&a<=20?"horizontal":n<=18&&a<=56?"grid":"vertical"}(e);const t=i.parentElement;t&&(t.className=`mcqp2-options-list layout-${e.optionsLayout}`)}f(e.id),b()}),o.addEventListener("click",()=>{const t=e.correctIndex===a;e.correctIndex=t?-1:a;const n=i.closest(".mcqp2-qcard");n&&n.querySelectorAll(".mcqp2-option-row").forEach((t,n)=>{const a=e.correctIndex===n,s=t.querySelector(".mcqp2-option-row__label");s&&(s.classList.toggle("is-correct",a),s.setAttribute("aria-pressed",a?"true":"false"))}),s&&s(e.correctIndex>=0)}),i}(n,e,a,e=>{K.classList.toggle("is-correct-picked",e),e?setTimeout(()=>J.focus(),0):E(J,"")}))}),V.appendChild(W);const K=document.createElement("div");K.className="mcqp2-option-explanation"+(n.correctIndex>=0?" is-correct-picked":"");const Y=document.createElement("span");Y.className="mcqp2-option-explanation__label",Y.textContent="bn"===t?"ব্যাখ্যা..":"Explanation..",K.appendChild(Y);const J=document.createElement("div");function X(){const e=g.getBoundingClientRect(),t=w.getBoundingClientRect();S.style.left="0px",S.style.top="0px",S.style.bottom="auto",S.style.transform="none";const n=Math.min(S.offsetWidth||190,window.innerWidth-16),a=S.offsetHeight||180,s=e.top,i=window.innerHeight-e.bottom;let o;if(S.classList.remove("is-below"),s>=a+8||s>=i)o=e.top-a-8,o<8&&(o=8);else{o=e.bottom+8,S.classList.add("is-below");const t=window.innerHeight-a-8;o>t&&(o=Math.max(8,t))}let r=t.left+t.width/2-n/2;r=Math.max(8,Math.min(r,window.innerWidth-n-8));const l=window.innerHeight-16;S.style.maxHeight=a>l?`${l}px`:"",S.style.left=`${r}px`,S.style.top=`${o}px`}return J.className="mcqp2-editor-area mcqp2-option-explanation__editor",J.contentEditable="true",J.dataset.role="explanation",J.dataset.placeholder="bn"===t?"সঠিক উত্তরের ব্যাখ্যা লিখুন...":"Explain why this answer is correct...",J.setAttribute("aria-label","Explanation"),E(J,n.explanationHtml),K.appendChild(J),y(J,e=>{n.explanationHtml=e}),V.appendChild(K),s.appendChild(V),y(z,e=>{n.questionHtml=e,f(n.id),b()}),I.querySelectorAll(".mcqp2-qc-btn").forEach(e=>{e.addEventListener("click",()=>{n.optionsLayout=e.dataset.layout,n.layoutLocked=!0,I.querySelectorAll(".mcqp2-qc-btn").forEach(t=>t.classList.toggle("is-active",t===e)),W.className=`mcqp2-options-list layout-${n.optionsLayout}`})}),h.querySelectorAll(".mcqp2-qc-btn[data-action]").forEach(t=>{t.addEventListener("click",()=>{const a=t.dataset.action,s=e.findIndex(e=>e.id===n.id);if("delete"===a)1===e.length?e[0]=m():e.splice(s,1),v();else if("duplicate"===a){const t=JSON.parse(JSON.stringify(n));t.id=o(),e.splice(s+1,0,t),v(),showToast("Question duplicated","success")}else if("move-up"===a){if(s>0){const[t]=e.splice(s,1);e.splice(s-1,0,t),v()}}else if("move-down"===a&&s<e.length-1){const[t]=e.splice(s,1);e.splice(s+1,0,t),v()}})}),P.addEventListener("click",e=>{e.stopPropagation(),g.classList.toggle("is-visible"),P.classList.toggle("is-active"),g.classList.contains("is-visible")||(S.hidden=!0)}),$.addEventListener("click",e=>{e.stopPropagation(),g.classList.remove("is-visible"),P.classList.remove("is-active"),S.hidden=!0}),w.addEventListener("click",e=>{e.stopPropagation(),g.classList.contains("is-visible")||(g.classList.add("is-visible"),P.classList.add("is-active"));const t=S.hidden;S.hidden=!t,S.hidden||X()}),s.addEventListener("focusin",()=>{qsa(".mcqp2-qcard.is-focused").forEach(e=>e.classList.remove("is-focused")),s.classList.add("is-focused")}),s._positionMathPanel=X,s._mathPanel=S,s._mathDropdown=x,s}function C(){document.addEventListener("click",e=>{const t=e.target.closest("#mcqp-questions-list .mcqp2-toolbar .rt-btn[data-cmd]");t&&(e.preventDefault(),S(t.dataset.cmd));const n=e.target.closest("#mcqp-questions-list .mcqp2-toolbar .rt-math-symbol[data-symbol]");var s,i;n&&(e.preventDefault(),s=a,i=n.dataset.symbol,s&&(s.focus(),q(),document.execCommand("insertText",!1,i),w(s),x(s),s.dispatchEvent(new Event("input",{bubbles:!0}))))}),document.addEventListener("input",e=>{const t=e.target.closest('#mcqp-questions-list .mcqp2-toolbar .rt-color input[type="color"]');t&&(document.execCommand("styleWithCSS",!1,!0),S(t.dataset.cmd,t.value))}),document.addEventListener("click",e=>{const t=e.target.closest(".mcqp2-toolbar"),n=e.target.closest(".mcqp2-format-toggle"),a=e.target.closest(".mcqp2-qcard");n||t||a||qsa(".mcqp2-toolbar.is-visible").forEach(e=>{e.classList.remove("is-visible");const t=e.closest(".mcqp2-qcard__controls")?.querySelector(".mcqp2-format-toggle");t&&t.classList.remove("is-active");const n=e.querySelector(".rt-dropdown__panel");n&&(n.hidden=!0)})}),window.addEventListener("resize",()=>{qsa(".mcqp2-qcard").forEach(e=>{e._mathPanel&&!e._mathPanel.hidden&&e._positionMathPanel()})}),window.addEventListener("scroll",()=>{qsa(".mcqp2-qcard").forEach(e=>{e._mathPanel&&!e._mathPanel.hidden&&e._positionMathPanel()})},!0),document.addEventListener("click",e=>{qsa(".mcqp2-qcard").forEach(t=>{t._mathDropdown&&t._mathPanel&&!t._mathDropdown.contains(e.target)&&!t._mathPanel.contains(e.target)&&(t._mathPanel.hidden=!0)})})}async function A(){if(!n)return;const a=e.filter(e=>!u(e));if(!a.length)return void showToast("Add at least one question before pushing.","danger");if(a.some(e=>e.options.some(e=>""===r(e.html))||e.correctIndex<0))return void showToast("Every question needs all 4 options filled in and a correct answer marked.","danger");const s=a.map(e=>({question:l(e.questionHtml).trim(),options:e.options.map(e=>l(e.html).trim()),correctAnswer:e.correctIndex,explanation:l(e.explanationHtml).trim()}));centralExamState.questionBank[n]=s;const i=h();i&&(i.questionCount=s.length,i.language&&"en"!==i.language||(i.language=t)),suppressRealtimeSelfEcho=!0;try{const e=[saveQuestionBankToSupabase(n,s)];i&&e.push(saveLiveExamToSupabase(i)),await Promise.all(e)}finally{setTimeout(()=>{suppressRealtimeSelfEcho=!1},500)}saveCentralExamState(),renderAdminSubjectList(),b(),showToast(`${s.length} question${1===s.length?"":"s"} pushed into the Live Exam.`,"success")}function L(){if(!n)return void showToast("Select or create a Live Exam first.","danger");const a=getStoredAiConfig(),s=h(),i=document.createElement("div");i.className="mcqp-modal-overlay",i.id="mcqp-ai-overlay",i.innerHTML=`\n      <div class="mcqp-modal" role="dialog" aria-modal="true" aria-labelledby="mcqp-ai-title">\n        <div class="mcqp-modal__head">\n          <h3 id="mcqp-ai-title">\n            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>\n            Generate MCQs with AI\n          </h3>\n          <button type="button" class="icon-btn" id="mcqp-ai-close" aria-label="Close">\n            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>\n          </button>\n        </div>\n        <div class="mcqp-modal__body">\n          ${a.apiKey?"":'<p class="mcqp-hint" style="color: var(--color-danger);">No AI key configured yet - add one in Settings → AI to use AI Mode.</p>'}\n          <div class="mcqp-field">\n            <label for="mcqp-ai-prompt">Instruction for MCQ Generation</label>\n            <textarea id="mcqp-ai-prompt" class="mcqp-ai-textarea" placeholder="Generate 10 MCQs on ${escapeHtml(s?s.topic:"this topic")}, medium difficulty."></textarea>\n          </div>\n          <div class="capture-upload-row">\n            <button type="button" class="btn btn-outline" id="mcqp-ai-capture-btn">\n              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1-2h7l1 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg>\n              <span>Capture</span>\n            </button>\n            <button type="button" class="btn btn-outline" id="mcqp-ai-upload-btn">\n              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>\n              <span>Upload</span>\n            </button>\n            \x3c!-- Capture: camera-only via the capture attribute so mobile browsers\n                 open the device camera directly instead of a general picker. Mirrors\n                 the Home AI Mode card's same two-input pattern (see\n                 initCaptureUpload/[data-capture-input] there) so behavior stays\n                 identical between the two AI Mode entry points. --\x3e\n            <input type="file" id="mcqp-ai-capture-input" class="visually-hidden" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />\n            \x3c!-- Upload: general file picker, multi-select, restricted to the\n                 accepted study-material types (images, PDF, Word, PowerPoint). --\x3e\n            <input type="file" id="mcqp-ai-file-input" class="visually-hidden" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" multiple aria-hidden="true" tabindex="-1" />\n          </div>\n          <div class="attachment-list" id="mcqp-ai-attachment-list" hidden></div>\n          <div class="mcqp-ai-row">\n            <div class="mcqp-field">\n              <label for="mcqp-ai-count">Number of questions</label>\n              <input type="number" class="form-control no-spinner" id="mcqp-ai-count" min="1" max="50" value="10">\n            </div>\n            <div class="mcqp-field">\n              <label for="mcqp-ai-difficulty">Difficulty</label>\n              <select class="form-control" id="mcqp-ai-difficulty">\n                <option value="easy">Easy</option>\n                <option value="medium" selected>Medium</option>\n                <option value="hard">Hard</option>\n              </select>\n            </div>\n          </div>\n          <div class="mcqp-field">\n            <label for="mcqp-ai-insert">On generate</label>\n            <select class="form-control" id="mcqp-ai-insert">\n              <option value="append">Append to existing questions</option>\n              <option value="replace">Replace all questions</option>\n            </select>\n          </div>\n          <p class="mcqp-ai-status" id="mcqp-ai-status"></p>\n        </div>\n        <div class="mcqp-modal__foot">\n          <button type="button" class="btn btn-secondary" id="mcqp-ai-cancel">Cancel</button>\n          <button type="button" class="btn btn-primary" id="mcqp-ai-generate">\n            <svg id="mcqp-ai-generate-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>\n            <span id="mcqp-ai-generate-label">Generate MCQs</span>\n          </button>\n        </div>\n      </div>`,document.body.appendChild(i);const l=[];function c(){const e=qs("#mcqp-ai-attachment-list",i);if(e&&(e.innerHTML="",e.hidden=0===l.length,l.forEach(t=>{const n=document.createElement("div");n.className="attachment-item",n.dataset.attachmentId=t.id;const a=document.createElement("div");if(a.className="attachment-item__icon","image"===t.kind&&t.previewUrl){const e=document.createElement("img");e.src=t.previewUrl,e.alt="",a.appendChild(e)}else a.innerHTML=ATTACHMENT_KIND_ICON[t.kind]||ATTACHMENT_KIND_ICON.other;const s=document.createElement("div");s.className="attachment-item__body";const i=document.createElement("div");i.className="attachment-item__name",i.textContent=t.name;const o=document.createElement("div");o.className="attachment-item__meta",o.textContent=formatFileSize(t.size),s.appendChild(i),s.appendChild(o);const r=document.createElement("button");r.type="button",r.className="attachment-item__remove",r.setAttribute("aria-label","Remove"),r.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',r.addEventListener("click",()=>{const e=l.findIndex(e=>e.id===t.id);if(-1===e)return;const[n]=l.splice(e,1);n.previewUrl&&URL.revokeObjectURL(n.previewUrl),c()}),n.appendChild(a),n.appendChild(s),n.appendChild(r),e.appendChild(n)}),l.length>0)){const t=document.createElement("button");t.type="button",t.className="btn-add-more",t.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Add More</span>',t.addEventListener("click",()=>qs("#mcqp-ai-file-input",i)?.click()),e.appendChild(t)}}function m(e){const t=Array.from(e||[]);let n=0;t.forEach(e=>{if(!ATTACHMENT_ACCEPTED_EXT.test(e.name)&&!(e.type||"").startsWith("image/")&&"application/pdf"!==e.type)return void showToast(`"${e.name}" - Unsupported file type.`,"danger");if(e.size>15728640)return void showToast(`"${e.name}" - File is too large (max 15 MB).`,"danger");const t={id:`mcqp_att_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,file:e,name:e.name,size:e.size,mimeType:e.type||"",kind:attachmentKindFor(e),previewUrl:null,base64:null};"image"===t.kind&&(t.previewUrl=URL.createObjectURL(e)),l.push(t),n+=1}),n>0&&c()}const p=qs("#mcqp-ai-capture-btn",i),g=qs("#mcqp-ai-capture-input",i),b=qs("#mcqp-ai-upload-btn",i),f=qs("#mcqp-ai-file-input",i);p.addEventListener("click",()=>g.click()),g.addEventListener("change",()=>{g.files&&g.files.length>0&&m(g.files),g.value=""}),b.addEventListener("click",()=>f.click()),f.addEventListener("change",()=>{f.files&&f.files.length>0&&m(f.files),f.value=""});const E=()=>{l.forEach(e=>{e.previewUrl&&URL.revokeObjectURL(e.previewUrl)}),i.remove()};i.addEventListener("click",e=>{e.target===i&&E()}),qs("#mcqp-ai-close",i).addEventListener("click",E),qs("#mcqp-ai-cancel",i).addEventListener("click",E),qs("#mcqp-ai-generate",i).addEventListener("click",async()=>{const n=qs("#mcqp-ai-status",i),a=qs("#mcqp-ai-generate",i),c=qs("#mcqp-ai-generate-icon",i),m=qs("#mcqp-ai-generate-label",i),p=c.outerHTML;if(!getStoredAiConfig().apiKey)return n.textContent="Add your AI key in Settings → AI first.",void(n.className="mcqp-ai-status is-error");const h=qs("#mcqp-ai-prompt",i).value.trim(),g=parseInt(qs("#mcqp-ai-count",i).value,10)||10,b=qs("#mcqp-ai-difficulty",i).value,f=qs("#mcqp-ai-insert",i).value;a.disabled=!0,c.outerHTML='<span class="mcqp-ai-spinner" id="mcqp-ai-generate-icon" role="status" aria-label="Generating"></span>',m.textContent="Generating…",n.textContent="Generating questions…",n.className="mcqp-ai-status is-loading";try{const a=(await generateQuestionsWithGemini({subject:s?s.subject:"",topic:s?s.topic:"",prompt:h,questionCount:g,difficulty:b,language:t,attachments:l})).map(e=>{const t=sanitizeQuestionMath(e),n=(Array.isArray(t.options)?t.options:["","","",""]).slice(0,4).map(e=>String(e||"").trim());for(;n.length<4;)n.push("");return{id:o(),questionHtml:escapeHtml(String(t.question||"").trim()),optionsLayout:d(),layoutLocked:!1,explanationHtml:escapeHtml(t.explanation?String(t.explanation).trim():""),options:n.map((e,t)=>({id:["a","b","c","d"][t],html:escapeHtml(e)})),correctIndex:Number.isInteger(t.correctAnswer)?t.correctAnswer:-1}}).filter(e=>r(e.questionHtml));if(!a.length)throw new Error("EMPTY");if("replace"===f)e=a;else{const t=1===e.length&&u(e[0]);e=t?a:e.filter(e=>!u(e)).concat(a)}v(),n.textContent="",E(),showToast(`${a.length} question${1===a.length?"":"s"} generated.`,"success")}catch(e){console.error(e),n.textContent=String(e.message||e).includes("NO_API_KEY")?"Add your AI key in Settings → AI first.":"Something went wrong generating questions. Please try again.",n.className="mcqp-ai-status is-error"}finally{a.disabled=!1;const e=qs("#mcqp-ai-generate-icon",i);e&&(e.outerHTML=p);const t=qs("#mcqp-ai-generate-label",i);t&&(t.textContent="Generate MCQs")}})}return{render:function(e){!function(e){const t=qs("#mcqp-exam-select");if(!t)return;const a=t.value;t.innerHTML=centralExamState.exams.map(e=>`<option value="${e.id}">${escapeHtml(e.subject)} - ${escapeHtml(e.topic)}</option>`).join("");const s=e||a||n;s&&centralExamState.exams.some(e=>e.id===s)?t.value=s:centralExamState.exams.length&&(t.value=centralExamState.exams[0].id);const i=centralExamState.exams.length>0;qs("#mcqp-no-exam-msg").style.display=i?"none":"",qs("#mcqp-builder-root").style.display=i?"":"none",i?(t.onchange=()=>g(t.value),g(t.value)):n=null}(e)},bindEvents:function(){qs("#mcqp-add-question-btn")?.addEventListener("click",()=>{e.push(m()),v()}),qs("#mcqp-ai-mode-btn")?.addEventListener("click",L),qs("#mcqp-push-live-btn")?.addEventListener("click",A),qsa(".mcqp-lang-switch__btn").forEach(e=>{e.addEventListener("click",()=>{t=e.getAttribute("data-mcqp-lang"),qsa(".mcqp-lang-switch__btn").forEach(t=>t.classList.toggle("is-active",t===e)),v()})}),C()}}})();function renderAdminQuestionBank(e){MCQBuilder.render(e)}function openAdminExamForm(e,t){const n=qs("#admin-exam-form-card"),a=e?centralExamState.exams.find(t=>t.id===e):null;qs("#admin-exam-form-title").textContent=a?"Edit Live Exam":"New Live Exam";const s=qs("#admin-exam-subject");if(centralExamState.subjects.length){s.innerHTML=centralExamState.subjects.map(e=>`<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join("");const e=a?a.subject:t;e&&centralExamState.subjects.some(t=>t.name===e)&&(s.value=e)}else s.innerHTML='<option value="">Add a Subject first</option>';qs("#admin-exam-topic").value=a?a.topic:"",qs("#admin-exam-language").value=a&&a.language||"en",qs("#admin-exam-duration").value=a?a.duration:60,qs("#admin-exam-marks").value=a&&a.marksPerQuestion||1;const i=qs("#admin-exam-negative-mark-value");if(i&&(i.textContent=String(getStoredExamPrefs().negativeMarkValue??.25)),a){const e=new Date(a.start),t=e=>String(e).padStart(2,"0");qs("#admin-exam-start").value=`${e.getFullYear()}-${t(e.getMonth()+1)}-${t(e.getDate())}T${t(e.getHours())}:${t(e.getMinutes())}`}else qs("#admin-exam-start").value="";qs("#admin-exam-qcount").textContent=a?`${a.questionCount} questions from Question Bank`:"0 questions from Question Bank",n.dataset.editingId=e||"",n.hidden=!1,n.scrollIntoView({behavior:"smooth",block:"start"})}const ENROLL_DRAFT_KEY="mcq-enroll-draft-v1";function enrollSelectedCourses(){return qsa("#enroll-course-picker input[type=checkbox]").filter(e=>e.checked).map(e=>e.value)}function saveEnrollDraft(){try{const e={name:qs("#enroll-name")?.value||"",phone:qs("#enroll-phone")?.value||"",email:qs("#enroll-email")?.value||"",courses:enrollSelectedCourses(),mfsProvider:qs("#enroll-mfs-provider")?.value||"Bkash",mfsTransactionId:qs("#enroll-mfs-txn")?.value||""};localStorage.setItem(ENROLL_DRAFT_KEY,JSON.stringify(e))}catch(e){}}function loadEnrollDraft(){try{return JSON.parse(localStorage.getItem(ENROLL_DRAFT_KEY)||"null")}catch(e){return null}}function openEnrollModal(e){const t=qs("#enroll-course-picker"),n=centralExamState.subjects||[],a=loadEnrollDraft()||{},s=Array.isArray(a.courses)?a.courses:[];0===n.length?t.innerHTML='<span class="enroll-course-picker__empty">No courses are running right now — please check back soon.</span>':t.innerHTML=n.map(t=>{const n=s.includes(t.name)||t.name===e;return`\n      <label class="enroll-course-picker__option">\n        <input type="checkbox" value="${escapeHtml(t.name)}" ${n?"checked":""} />\n        ${escapeHtml(t.name)}\n      </label>`}).join(""),qs("#enroll-name").value=a.name||"",qs("#enroll-phone").value=a.phone||"",qs("#enroll-email").value=a.email||"",qs("#enroll-mfs-provider").value=a.mfsProvider||"Bkash",qs("#enroll-mfs-txn").value=a.mfsTransactionId||"",qsa("#enroll-form .is-invalid").forEach(e=>e.classList.remove("is-invalid")),qsa("#enroll-form .form-error.is-visible").forEach(e=>e.classList.remove("is-visible")),openModal("enroll-modal")}function validateEnrollForm(){let e=!0;const t=qs("#enroll-name"),n=qs("#enroll-name-error"),a=0===t.value.trim().length;t.classList.toggle("is-invalid",a),n.classList.toggle("is-visible",a),a&&(e=!1);const s=qs("#enroll-phone"),i=qs("#enroll-phone-error"),o=0===s.value.trim().length;s.classList.toggle("is-invalid",o),i.classList.toggle("is-visible",o),o&&(e=!1);const r=qs("#enroll-email"),l=qs("#enroll-email-error"),c=r.value.trim(),d=!c||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c);r.classList.toggle("is-invalid",d),l.classList.toggle("is-visible",d),d&&(e=!1);const m=qs("#enroll-courses-error"),u=0===enrollSelectedCourses().length;m.classList.toggle("is-visible",u),u&&(e=!1);const p=qs("#enroll-mfs-txn"),h=qs("#enroll-mfs-txn-error"),g=0===p.value.trim().length;return p.classList.toggle("is-invalid",g),h.classList.toggle("is-visible",g),g&&(e=!1),e}function initEnrollModal(){[["#enroll-name","#enroll-name-error"],["#enroll-phone","#enroll-phone-error"],["#enroll-email","#enroll-email-error"],["#enroll-mfs-txn","#enroll-mfs-txn-error"]].forEach(([e,t])=>{const n=qs(e),a=qs(t);n&&a&&n.addEventListener("input",()=>{n.classList.contains("is-invalid")&&(n.classList.remove("is-invalid"),a.classList.remove("is-visible"))})});const e=qs("#enroll-courses-error");qs("#enroll-course-picker")?.addEventListener("change",t=>{t.target.matches('input[type="checkbox"]')&&enrollSelectedCourses().length>0&&e?.classList.remove("is-visible")});const t=qs("#enroll-form");t&&(t.addEventListener("input",saveEnrollDraft),t.addEventListener("change",saveEnrollDraft)),t?.addEventListener("submit",async e=>{if(e.preventDefault(),!validateEnrollForm()){showToast("Please fill in the required fields before submitting.","danger");const e=qs(".is-invalid",t)||qs("#enroll-courses-error.is-visible");return void(e&&e.focus&&e.focus())}const n={name:qs("#enroll-name").value.trim(),phone:qs("#enroll-phone").value.trim(),email:qs("#enroll-email").value.trim(),courses:enrollSelectedCourses(),mfsProvider:qs("#enroll-mfs-provider").value,mfsTransactionId:qs("#enroll-mfs-txn").value.trim()},a=await submitEnrollmentToSupabase(n)||{...n,id:"enr_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),submittedAt:Date.now()};Array.isArray(centralExamState.enrollmentRequests)||(centralExamState.enrollmentRequests=[]),centralExamState.enrollmentRequests.push(a),saveCentralExamState();try{localStorage.removeItem(ENROLL_DRAFT_KEY)}catch(e){}renderAdminEnrollmentRequests(),closeModal("enroll-modal"),showToast("Thanks! We've received your enrollment request and will activate your access after confirming the payment.","success")})}function renderAdminEnrollmentRequests(){const e=qs("#admin-enroll-requests-wrap"),t=qs("#admin-enroll-requests-list");if(!e||!t)return;const n=centralExamState.enrollmentRequests||[];e.style.display=n.length?"":"none";const a=qs("#admin-enroll-requests-count");a&&(a.textContent=String(n.length)),t.innerHTML=n.map(e=>`\n    <div class="enroll-request-row">\n      <div class="enroll-request-row__body">\n        <div class="enroll-request-row__name">${escapeHtml(e.name)}</div>\n        <div class="enroll-request-row__meta">${escapeHtml(e.phone)} · ${escapeHtml(e.email)}</div>\n        <div class="enroll-request-row__meta">${escapeHtml(e.mfsProvider)} Transaction ID: <strong>${escapeHtml(e.mfsTransactionId)}</strong></div>\n        <div class="enroll-request-row__courses">\n          ${(e.courses||[]).map(e=>`<span class="live-member-row__subject-chip">${escapeHtml(e)}</span>`).join("")||'<span class="live-member-row__subject-chip live-member-row__subject-chip--none">No course selected</span>'}\n        </div>\n      </div>\n      <div class="enroll-request-row__actions">\n        <button type="button" class="btn btn-primary btn-sm" data-enroll-approve="${e.id}">Approve</button>\n        <button type="button" class="btn btn-outline btn-sm" data-enroll-dismiss="${e.id}">Dismiss</button>\n      </div>\n    </div>`).join(""),qsa("[data-enroll-approve]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-enroll-approve"),n=(centralExamState.enrollmentRequests||[]).find(e=>e.id===t);if(!n)return;let a=centralExamState.subscribers.members.find(e=>e.email.toLowerCase()===n.email.toLowerCase());if(a){const e=new Set([...a.subjects||[],...n.courses]);a.subjects=Array.from(e),a.name||(a.name=n.name),a.phone||(a.phone=n.phone)}else a={name:n.name,phone:n.phone,email:n.email,role:"subscriber",subjects:[...n.courses]},centralExamState.subscribers.members.push(a),centralExamState.subscribers.total+=1;centralExamState.enrollmentRequests=centralExamState.enrollmentRequests.filter(e=>e.id!==t),Promise.all([saveMemberToSupabase(a),resolveEnrollmentInSupabase(t,"approved")]).catch(e=>{console.error("Could not sync enrollment approval:",e),showToast("Approved locally, but couldn't sync to the server. Check your connection.","danger")}),saveCentralExamState(),renderAdminEnrollmentRequests(),renderAdminMemberList(),showToast(`${n.name} approved and given access to ${n.courses.join(", ")||"no courses"}.`,"success")})}),qsa("[data-enroll-dismiss]").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-enroll-dismiss");centralExamState.enrollmentRequests=(centralExamState.enrollmentRequests||[]).filter(e=>e.id!==t),resolveEnrollmentInSupabase(t,"dismissed").catch(e=>{console.error("Could not sync enrollment dismissal:",e),showToast("Dismissed locally, but couldn't sync to the server. It may reappear on next sync.","danger")}),saveCentralExamState(),renderAdminEnrollmentRequests(),showToast("Enrollment request dismissed.","info")})})}function initCentralLiveExam(){function e(e){qsa("[data-admin-tab]").forEach(e=>{e.classList.remove("is-active"),e.setAttribute("aria-selected","false")});const t=qs(`[data-admin-tab="${e}"]`);t&&(t.classList.add("is-active"),t.setAttribute("aria-selected","true")),qsa(".admin-tab-panel").forEach(e=>e.style.display="none"),qs(`#admin-panel-${e}`).style.display=""}refreshBrandLiveIndicators(),setInterval(refreshBrandLiveIndicators,1e3),qsa("[data-history-tab]").forEach(e=>{e.addEventListener("click",()=>{qsa("[data-history-tab]").forEach(e=>{e.classList.remove("is-active"),e.setAttribute("aria-selected","false")}),e.classList.add("is-active"),e.setAttribute("aria-selected","true");const t=e.getAttribute("data-history-tab");qsa(".history-tab-panel").forEach(e=>e.style.display="none"),qs(`#history-panel-${t}`).style.display=""})}),qsa("[data-stats-tab]").forEach(e=>{e.addEventListener("click",()=>{qsa("[data-stats-tab]").forEach(e=>{e.classList.remove("is-active"),e.setAttribute("aria-selected","false")}),e.classList.add("is-active"),e.setAttribute("aria-selected","true");const t=e.getAttribute("data-stats-tab");qsa(".stats-tab-panel").forEach(e=>e.style.display="none"),qs(`#stats-panel-${t}`).style.display=""})}),qsa("[data-live-tab]").forEach(e=>{e.addEventListener("click",()=>{qsa("[data-live-tab]").forEach(e=>{e.classList.remove("is-active"),e.setAttribute("aria-selected","false")}),e.classList.add("is-active"),e.setAttribute("aria-selected","true");const t=e.getAttribute("data-live-tab");qsa(".live-tab-panel").forEach(e=>e.style.display="none"),qs(`#live-panel-${t}`).style.display=""})}),qsa("[data-admin-tab]").forEach(t=>{t.addEventListener("click",()=>e(t.getAttribute("data-admin-tab")))}),qsa("[data-admin-tab-jump]").forEach(t=>{t.addEventListener("click",()=>e(t.getAttribute("data-admin-tab-jump")))}),qs("#admin-new-subject-btn")?.addEventListener("click",()=>openAdminSubjectForm(null)),qs("#admin-subject-form-close")?.addEventListener("click",()=>qs("#admin-subject-form-card").hidden=!0),qs("#admin-subject-cancel-btn")?.addEventListener("click",()=>qs("#admin-subject-form-card").hidden=!0),qs("#admin-subject-save-btn")?.addEventListener("click",()=>{const e=qs("#admin-subject-form-card"),t=e.dataset.editingId,n=qs("#admin-subject-name").value.trim(),a=qs("#admin-subject-start").value,s=qs("#admin-subject-end").value;if(!n)return void showToast("Subject name is required.","danger");if(centralExamState.subjects.some(e=>e.name.toLowerCase()===n.toLowerCase()&&e.id!==t))showToast("A subject with that name already exists.","danger");else{if(t){const e=centralExamState.subjects.find(e=>e.id===t),i=e.name;Object.assign(e,{name:n,startDate:a,endDate:s}),i!==n&&centralExamState.exams.forEach(e=>{e.subject===i&&(e.subject=n)}),saveSubjectToSupabase(e).catch(e=>{console.error("Could not save subject:",e),showToast("Saved locally, but couldn't sync to the server. Check your connection.","danger")})}else{const e={id:"sub_"+Date.now(),name:n,startDate:a,endDate:s};centralExamState.subjects.push(e),saveSubjectToSupabase(e).catch(e=>{console.error("Could not save subject:",e),showToast("Saved locally, but couldn't sync to the server. Check your connection.","danger")})}saveCentralExamState(),e.hidden=!0,renderAdminSubjectList(),renderAdminQuestionBank(),renderAdminResultsList(),showToast("Subject saved.","success")}}),qs("#admin-exam-form-close")?.addEventListener("click",()=>qs("#admin-exam-form-card").hidden=!0),qs("#admin-exam-cancel-btn")?.addEventListener("click",()=>qs("#admin-exam-form-card").hidden=!0),qs("#admin-exam-save-btn")?.addEventListener("click",()=>{const e=qs("#admin-exam-form-card"),t=e.dataset.editingId,n=qs("#admin-exam-subject").value.trim(),a=qs("#admin-exam-topic").value.trim(),s=qs("#admin-exam-language").value||"en",i=qs("#admin-exam-start").value,o=parseInt(qs("#admin-exam-duration").value,10)||60,r=parseFloat(qs("#admin-exam-marks").value)||1,l=Number(getStoredExamPrefs().negativeMarkValue??.25);if(!n)return void showToast("Add a Subject first, then pick it here.","danger");if(!a)return void showToast("Topic is required - e.g. Noun, Tense.","danger");if(!i)return void showToast("Start date & time is required.","danger");const c=new Date(i).getTime();let d=t;if(t){const e=centralExamState.exams.find(e=>e.id===t);Object.assign(e,{subject:n,topic:a,language:s,start:c,duration:o,marksPerQuestion:r,negativeMarking:l}),saveLiveExamToSupabase(e).catch(e=>{console.error("Could not save live exam:",e),showToast("Saved locally, but couldn't sync to the server. Check your connection.","danger")})}else{d="le"+Date.now();const e={id:d,subject:n,topic:a,language:s,start:c,duration:o,marksPerQuestion:r,negativeMarking:l,status:"scheduled",questionCount:0,subscriberCount:centralExamState.subscribers.total};centralExamState.exams.push(e),saveLiveExamToSupabase(e).catch(e=>{console.error("Could not save live exam:",e),showToast("Saved locally, but couldn't sync to the server. Check your connection.","danger")})}saveCentralExamState(),e.hidden=!0,renderAdminSubjectList(),renderAdminQuestionBank(d),renderAdminResultsList(),showToast("Live exam saved and scheduled.","success")}),MCQBuilder.bindEvents(),qs("#admin-add-member-btn")?.addEventListener("click",()=>openAdminMemberForm()),qs("#admin-member-form-close")?.addEventListener("click",()=>{qs("#admin-member-form-card").hidden=!0}),qs("#admin-member-cancel-btn")?.addEventListener("click",()=>{qs("#admin-member-form-card").hidden=!0}),qs("#admin-member-save-btn")?.addEventListener("click",()=>{const e=qs("#admin-member-name").value.trim(),t=qs("#admin-member-phone").value.trim(),n=qs("#admin-member-email").value.trim();if(!e)return void showToast("Please enter the member's name.","danger");if(!t)return void showToast("Please enter the member's phone number.","danger");if(!n)return void showToast("Please enter the member's Gmail address.","danger");if(centralExamState.subscribers.members.some(e=>e.email.toLowerCase()===n.toLowerCase()))return void showToast("That email is already a member.","danger");const a=qs("#admin-member-as-assistant").checked,s=a?"assistant":"subscriber",i=a?[]:qsa("#admin-member-subject-picker input[type=checkbox]").filter(e=>e.checked).map(e=>e.value),o={name:e,phone:t,email:n,role:s,subjects:i};centralExamState.subscribers.members.push(o),centralExamState.subscribers.total+=1,a&&(centralExamState.subscribers.assistantAdmins+=1),saveMemberToSupabase(o).catch(e=>{console.error("Could not save member:",e),showToast("Added locally, but couldn't sync to the server. Check your connection.","danger")}),saveCentralExamState(),qs("#admin-member-form-card").hidden=!0,renderAdminMemberList(),showToast(a?"Assistant Admin added.":i.length?`Member added - enrolled in ${i.join(", ")}.`:'Member added - no subject access yet. Use "Manage Subjects" to grant access.',"success")}),qs("#admin-member-as-assistant")?.addEventListener("change",e=>{qs("#admin-member-subject-picker").style.display=e.target.checked?"none":centralExamState.subjects.length?"flex":"none"})}function renderLiveExamAdminPanel(){if(!isLiveExamAdmin())return showToast("This panel is restricted to the campaign's admins.","danger"),void showView("live-exam");renderAdminSubjectList(),renderAdminResultsList(),renderAdminMemberList(),renderAdminEnrollmentRequests(),renderAdminQuestionBank()}function initSpaNav(){qsa("[data-spa-nav]").forEach(e=>{e.addEventListener("click",t=>{t.preventDefault();const n=e.getAttribute("data-spa-nav");e.classList.contains("icon-btn--back")?goBackView(n):navigateToView(n,"home"===n?{resetHistory:!0}:void 0)})})}document.addEventListener("DOMContentLoaded",()=>{history.replaceState({view:"home"},"",location.href),initGeneratorView(),initLiveExamView(),initCentralLiveExam(),initEnrollModal(),initStatisticsView(),initPrintView(),initPdfSettingsPanel(),initSpaNav(),pullCentralExamStateFromSupabase(),subscribeCentralExamRealtime();const e=restoreExamSession();e&&"completed"!==e.status&&"#exam"===window.location.hash&&enterLiveExam()});
+/* ==========================================================================
+   APP.JS — Examcamp's main application script.
+   Split out from the original single-file index.html into this file plus
+   styles.css and select-enhancer.js. Load order in index.html matters:
+   Firebase/Supabase SDKs (CDN <script> tags) must load BEFORE this file,
+   since the config below calls firebase.initializeApp() and
+   window.supabase.createClient() synchronously as soon as this file runs.
+   ========================================================================== */
+
+// Public web config for the "Examcamp" Firebase project. This key is
+// NOT a secret — Firebase's client config is meant to be embedded in
+// the page; real access control lives in Firestore Security Rules
+// (see the rules snippet shared alongside this file), not in hiding
+// this object.
+const firebaseConfig = {
+  apiKey: "AIzaSyDS5Dwzn9rlXiRR7XXqZwuA00DyYGFzrPQ",
+  authDomain: "exampedia-2962a.firebaseapp.com",
+  projectId: "exampedia-2962a",
+  storageBucket: "exampedia-2962a.firebasestorage.app",
+  messagingSenderId: "772575586144",
+  appId: "1:772575586144:web:d6610cb4a66052b6986005",
+};
+firebase.initializeApp(firebaseConfig);
+
+// Supabase: Postgres database (per-user sync data + Live Exam campaign
+// data) on the free plan. Auth stays on Firebase (above) — Supabase is
+// used purely as a data store here, keyed by Firebase UID. The "anon"
+// key below is NOT a secret; it's meant to ship in frontend code and
+// is safe as long as Row Level Security policies are enabled on every
+// table (see supabase_schema.sql), which they are.
+const SUPABASE_URL = "https://ximkiqggugotgmqzwpmm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpbWtpcWdndWdvdGdtcXp3cG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5Njg5MDgsImV4cCI6MjEwMzU0NDkwOH0.-kyGx_LQByohZPm0oXtUyk0SeOy2e_ZrQtgrNGt335k";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ==========================================================================
+   UTILS.JS — Small, generic helper functions used across the app.
+   ========================================================================== */
+
+/**
+ * Shorthand querySelector.
+ * @param {string} selector
+ * @param {ParentNode} [scope]
+ */
+function qs(selector, scope = document) {
+  return scope.querySelector(selector);
+}
+
+/**
+ * Shorthand querySelectorAll, returned as a real array.
+ * @param {string} selector
+ * @param {ParentNode} [scope]
+ */
+function qsa(selector, scope = document) {
+  return Array.from(scope.querySelectorAll(selector));
+}
+
+/* ==========================================================================
+   GLOBAL DROPDOWN/ACCORDION COORDINATOR
+   Every collapsible menu or accordion in the app (auth user menu, Live
+   Exam routine subject groups, Practice Panel subject accordion, Practice
+   Admin subject accordion) registers itself here with a unique key and a
+   close() callback. Opening any one of them closes all the others, so at
+   most one is ever expanded across the whole page at a time.
+   ========================================================================== */
+const globalDropdowns = new Map(); // key -> close() function
+
+function registerGlobalDropdown(key, closeFn) {
+  globalDropdowns.set(key, closeFn);
+}
+
+/** Call right when a dropdown/accordion is about to open (or right after,
+    doesn't matter which — closeOthers only ever closes the *other* keys). */
+function closeOtherGlobalDropdowns(exceptKey) {
+  globalDropdowns.forEach((closeFn, key) => {
+    if (key !== exceptKey) closeFn();
+  });
+}
+
+/**
+ * Examcamp brand logo, as a single base64 data URI — the same bitmap used
+ * for the browser favicon and iOS apple-touch-icon (see the <link> tags in
+ * <head>). Every page header has an <img data-brand-icon> placeholder with
+ * an empty src (see site-header__brand-icon usages below); this constant
+ * is the ONE place the bitmap lives in the document, and initBrandIcons()
+ * below stamps it into every placeholder on load. Keeping a single source
+ * (instead of repeating the ~20KB data URI once per header) is what keeps
+ * this file from re-embedding the same image half a dozen times over.
+ */
+const BRAND_ICON_DATA_URI = "data:image/png;base64,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";
+
+/**
+ * Flattened Examcamp wordmark (logo icon + "Examcamp" text, Inter Bold,
+ * brand indigo #6366f1) baked into a single PNG. Used only in the PDF
+ * export header (buildPageHeader()) in place of a separate <img> + <span>
+ * pair: html2canvas (used for the PDF export, see downloadPdf()) rasterizes
+ * the small multi-circle logo poorly when it's a live DOM element at print
+ * scale, causing visible aliasing/distortion in the downloaded PDF. Baking
+ * the logo and wordmark into one pre-rendered image sidesteps that: there's
+ * nothing left for html2canvas to redraw, so it always looks crisp.
+ */
+const BRAND_LOCKUP_DATA_URI = "data:image/png;base64,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";
+
+/**
+ * Populates every [data-brand-icon] <img> in the current page with the
+ * shared BRAND_ICON_DATA_URI. Run once on DOMContentLoaded (see call at
+ * the bottom of this block) since header markup is static HTML already
+ * present when the script runs.
+ */
+function initBrandIcons() {
+  qsa("[data-brand-icon]").forEach((img) => {
+    img.src = BRAND_ICON_DATA_URI;
+    img.alt = "Examcamp";
+    img.removeAttribute("aria-hidden");
+    img.classList.add("is-loaded");
+  });
+}
+document.addEventListener("DOMContentLoaded", initBrandIcons);
+
+/**
+ * Renders any $...$ (inline) or $$...$$ (display) math/chemistry notation
+ * found inside `el`'s text nodes as real typeset notation via KaTeX —
+ * used on question, option, and explanation text wherever the AI emits
+ * LaTeX-style markup (e.g. "$x^2 + y^2 = r^2$", "$H_2SO_4$"). Text
+ * without any $...$ segments is left completely untouched. Safe to call
+ * repeatedly on the same element (each call re-scans current text).
+ * @param {HTMLElement} el
+ */
+function renderMathIn(el) {
+  if (!el || typeof window.renderMathInElement !== "function") return;
+  try {
+    window.renderMathInElement(el, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false },
+        { left: "\\[", right: "\\]", display: true },
+      ],
+      throwOnError: false,
+      errorColor: "inherit",
+    });
+  } catch (e) {
+    // KaTeX not yet loaded or a malformed expression — leave the raw text
+    // as-is rather than breaking question rendering.
+  }
+}
+
+/**
+ * Traps focus within a container (used by modals) for keyboard accessibility.
+ * @param {HTMLElement} container
+ * @param {KeyboardEvent} event
+ */
+function trapFocus(container, event) {
+  const focusable = qsa(
+    'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+    container
+  );
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.key !== "Tab") return;
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+/**
+ * Debounce helper — delays function execution until calls stop for `wait` ms.
+ * @param {Function} fn
+ * @param {number} wait
+ */
+function debounce(fn, wait = 200) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), wait);
+  };
+}
+
+/**
+ * Clamp a number between min and max.
+ */
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+/* ==========================================================================
+   THEME.JS — Light / Dark / System theme management
+   Persists user choice in localStorage and reacts to OS-level changes
+   when "system" is selected.
+   ========================================================================== */
+
+const THEME_STORAGE_KEY = "mcq-exam-theme";
+const THEME_LIGHT = "light";
+const THEME_DARK = "dark";
+const THEME_SYSTEM = "system";
+
+/**
+ * Resolves "system" down to an actual light/dark value based on the
+ * user's OS preference.
+ */
+function resolveSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? THEME_DARK
+    : THEME_LIGHT;
+}
+
+/**
+ * Applies a theme to the document root via data-theme attribute.
+ * @param {string} theme - "light" | "dark" | "system"
+ */
+function applyTheme(theme) {
+  const resolved = theme === THEME_SYSTEM ? resolveSystemTheme() : theme;
+  document.documentElement.setAttribute("data-theme", resolved);
+  document.documentElement.setAttribute("data-theme-preference", theme);
+  updateThemeToggleUI(theme);
+}
+
+/**
+ * Persists the chosen theme preference and applies it immediately.
+ * @param {string} theme
+ */
+function setTheme(theme) {
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+  applyTheme(theme);
+}
+
+/**
+ * Reads stored preference, defaulting to "system" on first visit.
+ */
+function getStoredTheme() {
+  return localStorage.getItem(THEME_STORAGE_KEY) || THEME_SYSTEM;
+}
+
+/**
+ * Updates the header toggle's visual active state to match current theme.
+ */
+function updateThemeToggleUI(theme) {
+  const options = document.querySelectorAll("[data-theme-option]");
+  options.forEach((el) => {
+    const isActive = el.getAttribute("data-theme-option") === theme;
+    el.classList.toggle("is-active", isActive);
+    el.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+/**
+ * Cycles Light -> Dark -> System -> Light (used by compact icon-only toggle)
+ */
+function cycleTheme() {
+  const current = getStoredTheme();
+  const order = [THEME_LIGHT, THEME_DARK, THEME_SYSTEM];
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  setTheme(next);
+}
+
+function initTheme() {
+  // Apply immediately to avoid a flash of unstyled/incorrect theme.
+  applyTheme(getStoredTheme());
+
+  // Wire up explicit theme option buttons, if present on the page.
+  document.querySelectorAll("[data-theme-option]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setTheme(btn.getAttribute("data-theme-option"));
+    });
+  });
+
+  // Wire up compact cycle toggle, if present.
+  document.querySelectorAll("[data-theme-cycle]").forEach((btn) => {
+    btn.addEventListener("click", cycleTheme);
+  });
+
+  // React to OS theme changes when "system" is the active preference.
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", () => {
+      if (getStoredTheme() === THEME_SYSTEM) {
+        applyTheme(THEME_SYSTEM);
+      }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", initTheme);
+/* ==========================================================================
+   COMPONENTS.JS — Behavior for reusable interactive components.
+   Each component is initialized defensively (checks for element existence)
+   so this file can run safely on any page regardless of which components
+   are present.
+   ========================================================================== */
+
+/* ---------- Language Toggle (EN | বাংলা) — full UI translation ---------- */
+const LANG_STORAGE_KEY = "mcq-exam-lang";
+
+const I18N_STRINGS = {
+  en: {
+    "brand.name": "Examcamp",
+    "nav.home": "Home",
+    "nav.exams": "Exams",
+    "nav.history": "History",
+    "nav.statistics": "Statistics",
+    "footer.copyright": "© 2026 Examcamp",
+    "auth.signIn": "Sign in with Google",
+    "auth.signOut": "Sign out",
+    "auth.synced": "Synced to cloud",
+    "stats.pendingPublish.title": "Waiting for Result Publish",
+    "stats.pendingPublish.desc": "Your exam has been submitted. The admin hasn't published results for this live exam yet, check back here once they do.",
+
+    "common.easy": "Easy", "common.medium": "Medium", "common.hard": "Hard",
+    "common.langEnglish": "English", "common.langBengali": "বাংলা", "common.langMixed": "English + বাংলা",
+    "common.min10": "10 minutes", "common.min20": "20 minutes", "common.min30": "30 minutes",
+    "common.min60": "60 minutes", "common.min90": "90 minutes", "common.min120": "120 minutes",
+    "common.light": "Light", "common.dark": "Dark", "common.system": "System",
+    "common.close": "Close",
+
+    "home.aiMode.title": "AI Mode",
+    "home.aiMode.promptLabel": "Prompt",
+    "home.aiMode.promptPlaceholder": "Type what you want to create an exam about…",
+    "home.aiMode.promptError": "Please enter a prompt describing the exam you want.",
+    "home.aiMode.capture": "Capture",
+    "home.aiMode.upload": "Upload",
+    "home.aiMode.addMore": "Add More",
+    "home.aiMode.removeAttachment": "Remove",
+    "home.aiMode.attachmentAdded": "Added",
+    "home.aiMode.attachmentUnsupported": "Unsupported file type",
+    "home.aiMode.attachmentTooLarge": "File is too large (max 15 MB)",
+    "home.aiMode.questionsLabel": "Questions",
+    "home.aiMode.questionsPlaceholder": "Enter number of questions",
+    "home.aiMode.questionsError": "Enter a number between 1 and 200.",
+    "home.aiMode.difficultyLabel": "Difficulty",
+    "home.aiMode.languageLabel": "Language",
+    "home.aiMode.timeLabel": "Time",
+    "home.aiMode.subjectLabel": "Subject",
+    "home.aiMode.subjectPlaceholder": "Enter subject",
+    "home.aiMode.subjectError": "Please enter a subject.",
+    "home.aiMode.topicLabel": "Topic",
+    "home.aiMode.topicPlaceholder": "Enter topic or chapter",
+    "home.aiMode.topicError": "Please enter a topic.",
+    "home.aiMode.negativeMarkLabel": "Negative Mark",
+    "home.aiMode.negativeMarkHint": "Deduct marks for wrong answers.",
+    "home.aiMode.negativeMark025": "0.25",
+    "home.aiMode.negativeMark050": "0.50",
+    "home.aiMode.generate": "Generate Exam",
+
+    "home.dashboard.title": "Dashboard",
+    "home.dashboard.examsTitle": "Exams",
+    "home.dashboard.examsDesc": "View and manage your exams",
+    "home.dashboard.historyTitle": "History",
+    "home.dashboard.historyDesc": "View your past exams and results",
+    "home.dashboard.statsTitle": "Statistics",
+    "home.dashboard.statsDesc": "Track scores and growth",
+    "home.dashboard.quickExams": "Exams",
+    "home.dashboard.quickAvgScore": "Avg. Score",
+    "home.dashboard.quickQuestions": "Questions",
+    "home.dashboard.liveTitle": "Live Exam",
+    "home.dashboard.liveDesc": "Join live exams now",
+    "home.dashboard.practiceTitle": "Practice",
+    "home.dashboard.practiceDesc": "Sharpen skills, build habits",
+
+    "practice.pageTitle": "Practice",
+    "practice.panel.title": "Practice Panel",
+    "practice.panel.desc": "Practice by subject & topic",
+    "practice.highlights.title": "Highlights Question",
+    "practice.highlights.desc": "Frequently asked questions",
+    "practice.vocab.title": "Vocabulary Master",
+    "practice.vocab.desc": "Build your word bank",
+    "practice.current.title": "Current Affairs",
+    "practice.current.desc": "Stay updated with current events",
+    "practice.comingSoon": "Coming soon",
+
+    "home.continue.title": "Continue Exam",
+    "home.continue.titleLive": "Continue Live Exam",
+    "home.continue.titlePractice": "Continue Practice Exam",
+    "home.continue.continueBtn": "Continue",
+    "home.continue.emptyTitle": "Recent Exams",
+    "home.continue.emptyDesc": "No recent exams yet.",
+    "home.continue.emptyCta": "Create Your First Exam",
+
+    "settings.title": "Settings",
+    "settings.tab.appearance": "Appearance",
+    "settings.tab.aiConfig": "AI Configuration",
+    "settings.tab.examPrefs": "Exam Preferences",
+    "settings.exam.negativeMarkValue": "Negative mark per wrong answer",
+    "settings.exam.negativeMarkValueHint": "Marks deducted for each wrong answer when Negative Mark is enabled.",
+    "settings.appearance.theme": "Theme",
+    "settings.appearance.themeHint": "Choose how Examcamp looks. \"System\" follows your device setting.",
+    "settings.appearance.language": "Language",
+    "settings.appearance.languageHint": "Interface language. Exam content language is set separately in AI Mode.",
+    "settings.ai.apiKey": "Gemini API Key",
+    "settings.ai.apiKeyPlaceholder": "Enter your Gemini API key",
+    "settings.ai.getApiKeyLink": "Get free Gemini API key",
+    "settings.ai.model": "Model",
+    "settings.ai.modelPlaceholder": "Select a model…",
+    "settings.exam.defaultDifficulty": "Default difficulty",
+    "settings.exam.defaultLanguage": "Default exam language",
+    "settings.exam.defaultDuration": "Default duration",
+    "settings.exam.autosave": "Auto-save progress",
+    "settings.exam.autosaveHint": "Save answers automatically while taking an exam.",
+    "settings.exam.answerKey": "Show answer key after submit",
+    "settings.exam.answerKeyHint": "Reveal correct answers once an exam is finished.",
+    "settings.save": "Save Settings",
+
+    "common.skipToContent": "Skip to main content",
+    "common.correct": "Correct",
+    "common.wrong": "Wrong",
+    "common.answered": "Answered",
+    "common.unanswered": "Unanswered",
+    "common.marked": "Marked",
+    "common.download": "Download",
+    "common.cancel": "Cancel",
+    "common.submit": "Submit",
+
+    "home.continue.questionsCompleted": "questions completed",
+
+    "live.summary.rank": "Central Merit Rank",
+    "live.summary.given": "Exams Given",
+    "live.summary.avg": "Course Avg.",
+    "live.tab.routine": "Routine",
+    "live.tab.subjects": "Subjects",
+    "live.tab.merit": "Merit",
+    "live.merit.heading": "Central merit list",
+
+    "history.tab.live": "Live Exam",
+    "history.tab.practice": "Practice Exams",
+
+    "stats.tab.practice": "Practice Exam",
+    "stats.overview.examsTaken": "Exams Taken",
+    "stats.overview.avgScore": "Avg. Score",
+    "stats.overview.questions": "Questions",
+    "stats.overview.allLive": "All Live Exams",
+    "stats.overview.acrossLive": "Across all Live Exams",
+    "stats.overview.allPractice": "All Practice Exams",
+    "stats.overview.acrossPractice": "Across all Practice Exams",
+    "stats.bySubject": "Performance by subject",
+    "stats.recentResults": "Recent results",
+    "stats.resultsAnalytics": "Results & Analytics",
+    "stats.obtainedMarks": "Obtained Marks",
+    "stats.answerSheet": "Answer sheet",
+
+    "generator.title": "Generating your exam…",
+    "generator.subtitle": "Hope you will perform better",
+    "generator.errorTitle": "Couldn't generate the exam",
+    "generator.retry": "Try Again",
+    "generator.useSample": "Use Sample Questions",
+    "generator.backHome": "Back to Home",
+
+    "exam.submitExam": "Submit Exam",
+    "exam.submitModal.title": "Submit exam?",
+    "exam.submitModal.marked": "Marked for Review",
+    "exam.submitModal.warning": "Your answers cannot be changed after submission.",
+    "exam.submitModal.continue": "Continue Exam",
+
+    "print.preview": "Preview",
+
+    "enroll.title": "Enroll Now",
+    "enroll.name": "Name",
+    "enroll.nameError": "Please enter your name.",
+    "enroll.phone": "Phone number",
+    "enroll.phoneError": "Please enter your phone number.",
+    "enroll.email": "Email",
+    "enroll.emailError": "Please enter a valid email.",
+    "enroll.coursesLabel": "Enroll in course(s)",
+    "enroll.coursesError": "Please select at least one course.",
+    "enroll.sendMoney": "Send Money",
+    "enroll.transactionId": "Transaction ID",
+    "enroll.transactionIdError": "Please enter the Transaction ID.",
+  },
+  bn: {
+    "brand.name": "Examcamp",
+    "nav.home": "হোম",
+    "nav.exams": "পরীক্ষাসমূহ",
+    "nav.history": "ইতিহাস",
+    "nav.statistics": "পরিসংখ্যান",
+    "footer.copyright": "© ২০২৬ Examcamp",
+    "auth.signIn": "গুগল দিয়ে সাইন ইন করুন",
+    "auth.signOut": "সাইন আউট",
+    "auth.synced": "ক্লাউডে সিঙ্ক হয়েছে",
+    "stats.pendingPublish.title": "রেজাল্ট পাবলিশের অপেক্ষায়",
+    "stats.pendingPublish.desc": "আপনার পরীক্ষা জমা দেওয়া হয়েছে। এই লাইভ পরীক্ষার রেজাল্ট এখনো অ্যাডমিন পাবলিশ করেননি, অ্যাডমিন পাবলিশ করলে এখানেই দেখতে পাবেন।",
+
+    "common.easy": "সহজ", "common.medium": "মধ্যম", "common.hard": "কঠিন",
+    "common.langEnglish": "English", "common.langBengali": "বাংলা", "common.langMixed": "English + বাংলা",
+    "common.min10": "১০ মিনিট", "common.min20": "২০ মিনিট", "common.min30": "৩০ মিনিট",
+    "common.min60": "৬০ মিনিট", "common.min90": "৯০ মিনিট", "common.min120": "১২০ মিনিট",
+    "common.light": "লাইট", "common.dark": "ডার্ক", "common.system": "সিস্টেম",
+    "common.close": "বন্ধ করুন",
+
+    "home.aiMode.title": "এআই মোড",
+    "home.aiMode.promptLabel": "প্রম্পট",
+    "home.aiMode.promptPlaceholder": "আপনি কী বিষয়ে পরীক্ষা তৈরি করতে চান তা লিখুন…",
+    "home.aiMode.promptError": "অনুগ্রহ করে আপনার পরীক্ষার বর্ণনা দিয়ে একটি প্রম্পট লিখুন।",
+    "home.aiMode.capture": "ছবি তুলুন",
+    "home.aiMode.upload": "আপলোড করুন",
+    "home.aiMode.addMore": "আরও যুক্ত করুন",
+    "home.aiMode.removeAttachment": "মুছুন",
+    "home.aiMode.attachmentAdded": "যুক্ত হয়েছে",
+    "home.aiMode.attachmentUnsupported": "অসমর্থিত ফাইল ধরন",
+    "home.aiMode.attachmentTooLarge": "ফাইলটি অনেক বড় (সর্বোচ্চ ১৫ এমবি)",
+    "home.aiMode.questionsLabel": "প্রশ্ন সংখ্যা",
+    "home.aiMode.questionsPlaceholder": "প্রশ্নের সংখ্যা লিখুন",
+    "home.aiMode.questionsError": "১ থেকে ২০০ এর মধ্যে একটি সংখ্যা লিখুন।",
+    "home.aiMode.difficultyLabel": "কঠিনতা",
+    "home.aiMode.languageLabel": "ভাষা",
+    "home.aiMode.timeLabel": "সময়",
+    "home.aiMode.subjectLabel": "বিষয়",
+    "home.aiMode.subjectPlaceholder": "বিষয় লিখুন",
+    "home.aiMode.subjectError": "অনুগ্রহ করে একটি বিষয় লিখুন।",
+    "home.aiMode.topicLabel": "টপিক",
+    "home.aiMode.topicPlaceholder": "টপিক বা অধ্যায় লিখুন",
+    "home.aiMode.topicError": "অনুগ্রহ করে একটি টপিক লিখুন।",
+    "home.aiMode.negativeMarkLabel": "নেগেটিভ মার্ক",
+    "home.aiMode.negativeMarkHint": "ভুল উত্তরের জন্য মার্ক কাটা হবে।",
+    "home.aiMode.negativeMark025": "০.২৫",
+    "home.aiMode.negativeMark050": "০.৫০",
+    "home.aiMode.generate": "পরীক্ষা তৈরি করুন",
+
+    "home.dashboard.title": "ড্যাশবোর্ড",
+    "home.dashboard.examsTitle": "পরীক্ষাসমূহ",
+    "home.dashboard.examsDesc": "আপনার পরীক্ষাগুলো দেখুন ও পরিচালনা করুন",
+    "home.dashboard.historyTitle": "ইতিহাস",
+    "home.dashboard.historyDesc": "আপনার পূর্ববর্তী পরীক্ষা ও ফলাফল দেখুন",
+    "home.dashboard.statsTitle": "পরিসংখ্যান",
+    "home.dashboard.statsDesc": "স্কোর ও অগ্রগতি দেখুন",
+    "home.dashboard.quickExams": "পরীক্ষা",
+    "home.dashboard.quickAvgScore": "গড় স্কোর",
+    "home.dashboard.quickQuestions": "প্রশ্ন",
+    "home.dashboard.liveTitle": "লাইভ পরীক্ষা",
+    "home.dashboard.liveDesc": "লাইভ পরীক্ষায় অংশ নিন",
+    "home.dashboard.practiceTitle": "প্র্যাকটিস",
+    "home.dashboard.practiceDesc": "প্রতিদিন অনুশীলনে দক্ষতা বাড়ান",
+
+    "practice.pageTitle": "প্র্যাকটিস",
+    "practice.panel.title": "Practice Panel",
+    "practice.panel.desc": "বিষয় ও টপিক অনুযায়ী প্র্যাকটিস করুন",
+    "practice.highlights.title": "Highlights Question",
+    "practice.highlights.desc": "গুরুত্বপূর্ণ ও বহুল আলোচিত প্রশ্ন",
+    "practice.vocab.title": "Vocabulary Master",
+    "practice.vocab.desc": "আপনার শব্দভান্ডার তৈরি করুন",
+    "practice.current.title": "Current Affairs",
+    "practice.current.desc": "সাম্প্রতিক ঘটনাবলী সম্পর্কে জানুন",
+    "practice.comingSoon": "শীঘ্রই আসছে",
+
+    "home.continue.title": "পরীক্ষা চালিয়ে যান",
+    "home.continue.titleLive": "লাইভ পরীক্ষা চালিয়ে যান",
+    "home.continue.titlePractice": "প্র্যাকটিস পরীক্ষা চালিয়ে যান",
+    "home.continue.continueBtn": "চালিয়ে যান",
+    "home.continue.emptyTitle": "সাম্প্রতিক পরীক্ষা",
+    "home.continue.emptyDesc": "এখনো কোনো সাম্প্রতিক পরীক্ষা নেই।",
+    "home.continue.emptyCta": "আপনার প্রথম পরীক্ষা তৈরি করুন",
+
+    "settings.title": "সেটিংস",
+    "settings.tab.appearance": "চেহারা",
+    "settings.tab.aiConfig": "এআই কনফিগারেশন",
+    "settings.tab.examPrefs": "পরীক্ষার পছন্দসমূহ",
+    "settings.exam.negativeMarkValue": "প্রতিটি ভুল উত্তরের জন্য নেগেটিভ মার্ক",
+    "settings.exam.negativeMarkValueHint": "নেগেটিভ মার্ক চালু থাকলে প্রতিটি ভুল উত্তরের জন্য এই পরিমাণ মার্ক কাটা হবে।",
+    "settings.appearance.theme": "থিম",
+    "settings.appearance.themeHint": "Examcamp কেমন দেখাবে তা বেছে নিন। \"সিস্টেম\" আপনার ডিভাইসের সেটিং অনুসরণ করে।",
+    "settings.appearance.language": "ভাষা",
+    "settings.appearance.languageHint": "ইন্টারফেসের ভাষা। পরীক্ষার বিষয়বস্তুর ভাষা এআই মোডে আলাদাভাবে নির্ধারণ করা হয়।",
+    "settings.ai.apiKey": "জেমিনি এপিআই কী",
+    "settings.ai.apiKeyPlaceholder": "আপনার জেমিনি এপিআই কী লিখুন",
+    "settings.ai.getApiKeyLink": "ফ্রি জেমিনি এপিআই কী নিন",
+    "settings.ai.model": "মডেল",
+    "settings.ai.modelPlaceholder": "একটি মডেল নির্বাচন করুন…",
+    "settings.exam.defaultDifficulty": "ডিফল্ট কঠিনতা",
+    "settings.exam.defaultLanguage": "ডিফল্ট পরীক্ষার ভাষা",
+    "settings.exam.defaultDuration": "ডিফল্ট সময়কাল",
+    "settings.exam.autosave": "স্বয়ংক্রিয়ভাবে অগ্রগতি সংরক্ষণ",
+    "settings.exam.autosaveHint": "পরীক্ষা দেওয়ার সময় স্বয়ংক্রিয়ভাবে উত্তর সংরক্ষণ করুন।",
+    "settings.exam.answerKey": "জমা দেওয়ার পর উত্তরপত্র দেখান",
+    "settings.exam.answerKeyHint": "পরীক্ষা শেষ হলে সঠিক উত্তর প্রদর্শন করুন।",
+    "settings.save": "সেটিংস সংরক্ষণ করুন",
+
+    "common.skipToContent": "মূল কনটেন্টে যান",
+    "common.correct": "সঠিক",
+    "common.wrong": "ভুল",
+    "common.answered": "উত্তর দেওয়া হয়েছে",
+    "common.unanswered": "উত্তর দেওয়া হয়নি",
+    "common.marked": "চিহ্নিত",
+    "common.download": "ডাউনলোড",
+    "common.cancel": "বাতিল",
+    "common.submit": "জমা দিন",
+
+    "home.continue.questionsCompleted": "টি প্রশ্ন সম্পন্ন হয়েছে",
+
+    "live.summary.rank": "কেন্দ্রীয় মেধাক্রম",
+    "live.summary.given": "পরীক্ষা দেওয়া হয়েছে",
+    "live.summary.avg": "কোর্স গড়",
+    "live.tab.routine": "রুটিন",
+    "live.tab.subjects": "বিষয়সমূহ",
+    "live.tab.merit": "মেধাতালিকা",
+    "live.merit.heading": "কেন্দ্রীয় মেধাতালিকা",
+
+    "history.tab.live": "লাইভ পরীক্ষা",
+    "history.tab.practice": "প্র্যাকটিস পরীক্ষা",
+
+    "stats.tab.practice": "প্র্যাকটিস পরীক্ষা",
+    "stats.overview.examsTaken": "পরীক্ষা দেওয়া হয়েছে",
+    "stats.overview.avgScore": "গড় স্কোর",
+    "stats.overview.questions": "প্রশ্ন",
+    "stats.overview.allLive": "সকল লাইভ পরীক্ষা",
+    "stats.overview.acrossLive": "সকল লাইভ পরীক্ষা জুড়ে",
+    "stats.overview.allPractice": "সকল প্র্যাকটিস পরীক্ষা",
+    "stats.overview.acrossPractice": "সকল প্র্যাকটিস পরীক্ষা জুড়ে",
+    "stats.bySubject": "বিষয়ভিত্তিক পারফরম্যান্স",
+    "stats.recentResults": "সাম্প্রতিক ফলাফল",
+    "stats.resultsAnalytics": "ফলাফল ও বিশ্লেষণ",
+    "stats.obtainedMarks": "প্রাপ্ত নম্বর",
+    "stats.answerSheet": "উত্তরপত্র",
+
+    "generator.title": "আপনার পরীক্ষা তৈরি হচ্ছে…",
+    "generator.subtitle": "আশা করি ভালো ফলাফল করবেন",
+    "generator.errorTitle": "পরীক্ষা তৈরি করা যায়নি",
+    "generator.retry": "আবার চেষ্টা করুন",
+    "generator.useSample": "নমুনা প্রশ্ন ব্যবহার করুন",
+    "generator.backHome": "হোমে ফিরে যান",
+
+    "exam.submitExam": "পরীক্ষা জমা দিন",
+    "exam.submitModal.title": "পরীক্ষা জমা দেবেন?",
+    "exam.submitModal.marked": "রিভিউর জন্য চিহ্নিত",
+    "exam.submitModal.warning": "জমা দেওয়ার পর উত্তর পরিবর্তন করা যাবে না।",
+    "exam.submitModal.continue": "পরীক্ষা চালিয়ে যান",
+
+    "print.preview": "প্রিভিউ",
+
+    "enroll.title": "এখনই ভর্তি হন",
+    "enroll.name": "নাম",
+    "enroll.nameError": "আপনার নাম লিখুন।",
+    "enroll.phone": "ফোন নম্বর",
+    "enroll.phoneError": "আপনার ফোন নম্বর লিখুন।",
+    "enroll.email": "ইমেইল",
+    "enroll.emailError": "একটি সঠিক ইমেইল লিখুন।",
+    "enroll.coursesLabel": "কোর্স(সমূহ)-এ ভর্তি হন",
+    "enroll.coursesError": "অন্তত একটি কোর্স নির্বাচন করুন।",
+    "enroll.sendMoney": "সেন্ড মানি",
+    "enroll.transactionId": "ট্রানজেকশন আইডি",
+    "enroll.transactionIdError": "ট্রানজেকশন আইডি লিখুন।",
+  },
+};
+
+/** Translates every element carrying data-i18n / data-i18n-placeholder in
+    the current DOM to the given language. Falls back to the English string
+    (or leaves existing text alone) if a key is somehow missing, so a typo
+    in the dictionary never blanks out the UI. */
+/** Looks up a single i18n string for the current language (falling back
+    to English), for dynamically-created elements that data-i18n can't
+    reach because they don't exist yet at applyI18nStrings() time. */
+function t(key) {
+  const lang = localStorage.getItem(LANG_STORAGE_KEY) || "en";
+  const dict = I18N_STRINGS[lang] || I18N_STRINGS.en;
+  return dict[key] ?? I18N_STRINGS.en[key];
+}
+
+function applyI18nStrings(lang) {
+  const dict = I18N_STRINGS[lang] || I18N_STRINGS.en;
+  const fallback = I18N_STRINGS.en;
+
+  qsa("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    const value = dict[key] ?? fallback[key];
+    if (value !== undefined) el.textContent = value;
+  });
+
+  qsa("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    const value = dict[key] ?? fallback[key];
+    if (value !== undefined) el.setAttribute("placeholder", value);
+  });
+}
+
+function setLanguage(lang) {
+  localStorage.setItem(LANG_STORAGE_KEY, lang);
+  qsa("[data-lang-option]").forEach((el) => {
+    const isActive = el.getAttribute("data-lang-option") === lang;
+    el.classList.toggle("is-active", isActive);
+    el.setAttribute("aria-pressed", String(isActive));
+  });
+  document.documentElement.setAttribute("lang", lang === "bn" ? "bn" : "en");
+  applyI18nStrings(lang);
+  // The Continue card's title (Live/Practice) and button label are set
+  // dynamically from session data, not from a static data-i18n string, so
+  // applyI18nStrings() above would otherwise stomp them back to the
+  // generic "Continue Exam" text on every language switch.
+  if (typeof initRecentExamState === "function") initRecentExamState();
+}
+
+function initLanguageToggle() {
+  const stored = localStorage.getItem(LANG_STORAGE_KEY) || "en";
+  setLanguage(stored);
+
+  qsa("[data-lang-option]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setLanguage(btn.getAttribute("data-lang-option"));
+    });
+  });
+}
+
+/* ---------- Dropdown Menu ---------- */
+function initDropdowns() {
+  qsa("[data-dropdown]").forEach((dropdown) => {
+    const trigger = qs("[data-dropdown-trigger]", dropdown);
+    const menu = qs("[data-dropdown-menu]", dropdown);
+    if (!trigger || !menu) return;
+
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains("is-open");
+      closeAllDropdowns();
+      if (!isOpen) {
+        menu.classList.add("is-open");
+        trigger.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    menu.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeAllDropdowns();
+        trigger.focus();
+      }
+    });
+  });
+
+  document.addEventListener("click", closeAllDropdowns);
+}
+
+function closeAllDropdowns() {
+  qsa("[data-dropdown-menu].is-open").forEach((menu) => {
+    menu.classList.remove("is-open");
+    const trigger = qs("[data-dropdown-trigger]", menu.closest("[data-dropdown]"));
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  });
+}
+
+/* ---------- Tabs ---------- */
+function initTabs() {
+  qsa("[data-tabs]").forEach((tabGroup) => {
+    const tabs = qsa("[data-tab]", tabGroup);
+    const panels = qsa("[data-tab-panel]", tabGroup.closest("[data-tabs-wrapper]") || document);
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => activateTab(tab, tabs, panels));
+      tab.addEventListener("keydown", (e) => {
+        const index = tabs.indexOf(tab);
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          const next = tabs[(index + 1) % tabs.length];
+          next.focus();
+          activateTab(next, tabs, panels);
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          const prev = tabs[(index - 1 + tabs.length) % tabs.length];
+          prev.focus();
+          activateTab(prev, tabs, panels);
+        }
+      });
+    });
+  });
+}
+
+function activateTab(tab, tabs, panels) {
+  tabs.forEach((t) => {
+    t.classList.remove("is-active");
+    t.setAttribute("aria-selected", "false");
+    t.setAttribute("tabindex", "-1");
+  });
+  tab.classList.add("is-active");
+  tab.setAttribute("aria-selected", "true");
+  tab.setAttribute("tabindex", "0");
+
+  const targetId = tab.getAttribute("data-tab");
+  panels.forEach((panel) => {
+    const match = panel.getAttribute("data-tab-panel") === targetId;
+    panel.hidden = !match;
+  });
+}
+
+/* ---------- Modal ---------- */
+// isModalPopping mirrors isPopping (defined further below, for view
+// navigation) but for the modal layer: set while a popstate-triggered
+// close is in progress, so closeModal doesn't try to pop history that
+// the browser has already popped for us.
+let isModalPopping = false;
+// Set by closeModal() right before it calls history.back() for a
+// normal (non-popstate-driven) close — see closeModal for why this is
+// needed in addition to the ".is-open" check below.
+let justClosedModalViaHistoryBack = false;
+
+function openModal(modalId) {
+  const overlay = document.getElementById(modalId);
+  if (!overlay) return;
+  overlay.classList.add("is-open");
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  const modal = qs(".modal", overlay);
+  const focusable = qs(
+    'a[href], button:not([disabled]), textarea, input, select',
+    modal
+  );
+  if (focusable) focusable.focus();
+
+  overlay.__keydownHandler = (e) => {
+    if (e.key === "Escape") closeModal(modalId);
+    trapFocus(modal, e);
+  };
+  document.addEventListener("keydown", overlay.__keydownHandler);
+
+  // Give the device/browser Back button something of its own to
+  // intercept: without this, popstate has no way to tell "a modal is
+  // open" from "just navigate the page underneath it" — pressing Back
+  // with a modal open would close/replace the page behind it while the
+  // modal itself stayed floating on screen, orphaned. Skipped while a
+  // popstate-driven close is unwinding (isModalPopping) since the
+  // browser has already moved history in that case.
+  if (!isModalPopping) history.pushState({ modal: modalId }, "", location.href);
+}
+
+function closeModal(modalId) {
+  const overlay = document.getElementById(modalId);
+  if (!overlay) return;
+  overlay.classList.remove("is-open");
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  if (overlay.__keydownHandler) {
+    document.removeEventListener("keydown", overlay.__keydownHandler);
+  }
+  // Mirror image of the pushState in openModal: a normal close (X
+  // button, backdrop click, Escape, a Continue/Cancel button) consumes
+  // the history entry the modal added, so the device Back button isn't
+  // left pointing at a stale "modal open" state. Not done when the
+  // close itself was CAUSED by popstate (isModalPopping) — the browser
+  // already moved history back in that case, and calling history.back()
+  // again here would skip past the page underneath instead of landing
+  // on it.
+  if (!isModalPopping) {
+    // The history.back() call below fires popstate ASYNCHRONOUSLY, by
+    // which point the ".is-open" class removed two lines above is
+    // already gone — so popstate's own "is a modal open?" check
+    // (qs(".modal-overlay.is-open")) can no longer see this modal and
+    // would wrongly fall through to view-navigation, popping
+    // viewHistoryStack and swapping the visible view out from under an
+    // exam/page that never actually changed (e.g. "Continue Exam"
+    // during a live exam bounced the user to Home). This flag survives
+    // across that gap so popstate can still recognize "this pop was
+    // just a modal closing" and consume it as a no-op instead.
+    justClosedModalViaHistoryBack = true;
+    history.back();
+  }
+}
+
+function initModals() {
+  qsa("[data-modal-open]").forEach((btn) => {
+    btn.addEventListener("click", () => openModal(btn.getAttribute("data-modal-open")));
+  });
+  qsa("[data-modal-close]").forEach((btn) => {
+    btn.addEventListener("click", () => closeModal(btn.closest(".modal-overlay").id));
+  });
+  qsa(".modal-overlay").forEach((overlay) => {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+}
+
+/* ---------- Toast helper (used for design-system demo) ---------- */
+const TOAST_ICONS = {
+  success: "✓",
+  danger: "✕",
+  warning: "!",
+  info: "i",
+};
+
+function showToast(message, variant = "info") {
+  let container = qs("#toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${variant}`;
+  toast.setAttribute("role", "status");
+
+  const icon = document.createElement("span");
+  icon.className = "toast__icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = TOAST_ICONS[variant] || TOAST_ICONS.info;
+
+  const text = document.createElement("span");
+  text.textContent = message;
+
+  toast.appendChild(icon);
+  toast.appendChild(text);
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3200);
+}
+
+/* ---------- Init all components on DOM ready ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  initLanguageToggle();
+  initDropdowns();
+  initTabs();
+  initModals();
+});
+/* ==========================================================================
+   HOMEPAGE.JS — Phase 2
+   Homepage-specific interactions: Capture/Upload demo actions, AI Mode
+   form validation, and the Generate Exam UI simulation.
+   Nothing here calls a real API — Phase 2 is UI-only per the brief.
+   ========================================================================== */
+
+/* ---------- Capture / Upload: attached study material ---------- */
+/**
+ * Attachments captured via camera or picked via the file dialog. Each
+ * entry: { id, file, name, size, mimeType, kind ("image"|"pdf"|"doc"|
+ * "other"), previewUrl (image thumbnails only), base64 (lazily filled
+ * in right before generation, once we know we actually need to upload
+ * it to Gemini). Lives only in memory — never persisted — since File
+ * objects can't survive localStorage/JSON serialization.
+ */
+const aiModeAttachments = [];
+const ATTACHMENT_MAX_BYTES = 15 * 1024 * 1024; // 15 MB — keeps inline base64 payloads reasonable
+const ATTACHMENT_ACCEPTED_EXT = /\.(png|jpe?g|webp|heic|heif|pdf|docx?|pptx?)$/i;
+
+function attachmentKindFor(file) {
+  const type = (file.type || "").toLowerCase();
+  const name = (file.name || "").toLowerCase();
+  if (type.startsWith("image/")) return "image";
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "pdf";
+  if (name.endsWith(".doc") || name.endsWith(".docx")) return "doc";
+  if (name.endsWith(".ppt") || name.endsWith(".pptx")) return "ppt";
+  return "other";
+}
+
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/* One icon per attachment kind — image thumbnails get a real <img>
+   preview instead, wired up in renderAttachmentList(). */
+const ATTACHMENT_KIND_ICON = {
+  image: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="8.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M21 16l-5.5-5.5L6 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13.5h1.4a1.3 1.3 0 1 1 0 2.6H9V13.5Zm0 2.6V18m3.5-4.5V18m0-4.5h1.2a1.1 1.1 0 0 1 1.1 1.1v2.3a1.1 1.1 0 0 1-1.1 1.1H12.5m3.3-4.5V18m0-2.4h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16h6M9 19h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  ppt: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="5.2" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>',
+  other: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+
+function renderAttachmentList() {
+  const list = qs("[data-attachment-list]");
+  if (!list) return;
+
+  list.innerHTML = "";
+  list.hidden = aiModeAttachments.length === 0;
+
+  aiModeAttachments.forEach((att) => {
+    const row = document.createElement("div");
+    row.className = "attachment-item";
+    row.dataset.attachmentId = att.id;
+
+    const icon = document.createElement("div");
+    icon.className = "attachment-item__icon";
+    if (att.kind === "image" && att.previewUrl) {
+      const img = document.createElement("img");
+      img.src = att.previewUrl;
+      img.alt = "";
+      icon.appendChild(img);
+    } else {
+      icon.innerHTML = ATTACHMENT_KIND_ICON[att.kind] || ATTACHMENT_KIND_ICON.other;
+    }
+
+    const body = document.createElement("div");
+    body.className = "attachment-item__body";
+    const nameEl = document.createElement("div");
+    nameEl.className = "attachment-item__name";
+    nameEl.textContent = att.name;
+    const metaEl = document.createElement("div");
+    metaEl.className = "attachment-item__meta";
+    metaEl.textContent = formatFileSize(att.size);
+    body.appendChild(nameEl);
+    body.appendChild(metaEl);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "attachment-item__remove";
+    removeBtn.setAttribute("aria-label", t("home.aiMode.removeAttachment") || "Remove");
+    removeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    removeBtn.addEventListener("click", () => removeAttachment(att.id));
+
+    row.appendChild(icon);
+    row.appendChild(body);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+
+  renderAddMoreButton(list);
+}
+
+function renderAddMoreButton(list) {
+  if (aiModeAttachments.length === 0) return; // only shown once something is attached
+  const addMoreBtn = document.createElement("button");
+  addMoreBtn.type = "button";
+  addMoreBtn.className = "btn-add-more";
+  addMoreBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>' + (t("home.aiMode.addMore") || "Add More") + "</span>";
+  addMoreBtn.addEventListener("click", () => qs("[data-file-input]")?.click());
+  list.appendChild(addMoreBtn);
+}
+
+function addAttachments(fileList) {
+  const files = Array.from(fileList || []);
+  let addedCount = 0;
+  files.forEach((file) => {
+    if (!ATTACHMENT_ACCEPTED_EXT.test(file.name) && !(file.type || "").startsWith("image/") && file.type !== "application/pdf") {
+      showToast(`"${file.name}" - ${t("home.aiMode.attachmentUnsupported") || "Unsupported file type"}.`, "danger");
+      return;
+    }
+    if (file.size > ATTACHMENT_MAX_BYTES) {
+      showToast(`"${file.name}" - ${t("home.aiMode.attachmentTooLarge") || "File is too large (max 15 MB)"}.`, "danger");
+      return;
+    }
+    const att = {
+      id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      file,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type || "",
+      kind: attachmentKindFor(file),
+      previewUrl: null,
+      base64: null,
+    };
+    if (att.kind === "image") {
+      att.previewUrl = URL.createObjectURL(file);
+    }
+    aiModeAttachments.push(att);
+    addedCount += 1;
+  });
+  if (addedCount > 0) renderAttachmentList();
+}
+
+function removeAttachment(id) {
+  const idx = aiModeAttachments.findIndex((a) => a.id === id);
+  if (idx === -1) return;
+  const [removed] = aiModeAttachments.splice(idx, 1);
+  if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+  renderAttachmentList();
+}
+
+/** Clears all attachments after a successful exam generation, so the
+    Home form starts fresh next time. Revokes image preview object URLs
+    to avoid leaking memory. */
+function clearAiModeAttachments() {
+  aiModeAttachments.forEach((att) => {
+    if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+  });
+  aiModeAttachments.length = 0;
+  renderAttachmentList();
+}
+
+function initCaptureUpload() {
+  const captureBtn = qs("[data-action='capture']");
+  const uploadBtn = qs("[data-action='upload']");
+  const captureInput = qs("[data-capture-input]");
+  const fileInput = qs("[data-file-input]");
+
+  if (captureBtn && captureInput) {
+    captureBtn.addEventListener("click", () => captureInput.click());
+    captureInput.addEventListener("change", () => {
+      if (captureInput.files && captureInput.files.length > 0) {
+        addAttachments(captureInput.files);
+      }
+      captureInput.value = ""; // allow capturing the same shot again back-to-back
+    });
+  }
+
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        addAttachments(fileInput.files);
+      }
+      fileInput.value = ""; // allow re-selecting the same file later
+    });
+  }
+}
+
+/* ---------- AI Mode form validation ---------- */
+function validateAiModeForm() {
+  let isValid = true;
+
+  const prompt = qs("#prompt-input");
+  const promptError = qs("#prompt-error");
+  if (prompt && promptError) {
+    const empty = prompt.value.trim().length === 0;
+    prompt.classList.toggle("is-invalid", empty);
+    prompt.setAttribute("aria-invalid", String(empty));
+    promptError.classList.toggle("is-visible", empty);
+    if (empty) isValid = false;
+  }
+
+  const subject = qs("#subject-input");
+  const subjectError = qs("#subject-error");
+  if (subject && subjectError) {
+    const empty = subject.value.trim().length === 0;
+    subject.classList.toggle("is-invalid", empty);
+    subject.setAttribute("aria-invalid", String(empty));
+    subjectError.classList.toggle("is-visible", empty);
+    if (empty) isValid = false;
+  }
+
+  const topic = qs("#topic-input");
+  const topicError = qs("#topic-error");
+  if (topic && topicError) {
+    const empty = topic.value.trim().length === 0;
+    topic.classList.toggle("is-invalid", empty);
+    topic.setAttribute("aria-invalid", String(empty));
+    topicError.classList.toggle("is-visible", empty);
+    if (empty) isValid = false;
+  }
+
+  const questions = qs("#questions-input");
+  const questionsError = qs("#questions-error");
+  if (questions && questionsError) {
+    const value = Number(questions.value);
+    const invalid = !value || value < 1 || value > 200;
+    questions.classList.toggle("is-invalid", invalid);
+    questions.setAttribute("aria-invalid", String(invalid));
+    questionsError.classList.toggle("is-visible", invalid);
+    if (invalid) isValid = false;
+  }
+
+  return isValid;
+}
+
+/* Clear a single field's invalid state once the person starts fixing it */
+function initInlineValidationClearing() {
+  const fields = [
+    ["#prompt-input", "#prompt-error"],
+    ["#subject-input", "#subject-error"],
+    ["#topic-input", "#topic-error"],
+    ["#questions-input", "#questions-error"],
+  ];
+  fields.forEach(([fieldSel, errorSel]) => {
+    const field = qs(fieldSel);
+    const error = qs(errorSel);
+    if (!field || !error) return;
+    const evt = field.tagName === "SELECT" ? "change" : "input";
+    field.addEventListener(evt, () => {
+      if (field.classList.contains("is-invalid")) {
+        field.classList.remove("is-invalid");
+        field.setAttribute("aria-invalid", "false");
+        error.classList.remove("is-visible");
+      }
+    });
+  });
+}
+
+/* ---------- Generate Exam simulation ---------- */
+const EXAM_CONFIG_STORAGE_KEY = "mcq-exam-pending-config";
+
+/**
+ * Reads the AI Mode form into a plain config object matching the shape
+ * the future Exam Generator page expects.
+ */
+function readAiModeFormConfig(form) {
+  const negativeMarkOn = qs("#negative-mark-toggle", form)?.checked || false;
+  // The per-wrong-answer amount is no longer chosen on this form; it's
+  // customized in Settings → Exam Preferences and just read here.
+  const negativeMarkValue = getStoredExamPrefs().negativeMarkValue;
+  return {
+    prompt: qs("#prompt-input", form)?.value.trim() || "",
+    subject: qs("#subject-input", form)?.value.trim() || "",
+    topic: qs("#topic-input", form)?.value.trim() || "",
+    questionCount: Number(qs("#questions-input", form)?.value) || 0,
+    difficulty: qs("#difficulty-select", form)?.value || "medium",
+    language: qs("#language-select", form)?.value || "en",
+    duration: Number(qs("#time-select", form)?.value) || 60,
+    // Negative marking is opt-in from this form: 0 when the toggle is off,
+    // otherwise the amount configured in Settings → Exam Preferences. This
+    // value flows straight into buildExamFromQuestions()/withExamDefaults()
+    // below and from there into calculateMarks(), so it applies exam-wide
+    // wherever marks are calculated or shown (results, history, statistics, PDF).
+    negativeMarking: negativeMarkOn ? Number(negativeMarkValue || 0.25) : 0,
+    // File objects can't survive JSON.stringify/localStorage, so only a
+    // count is persisted here (used by buildGeminiPrompt's prompt text).
+    // The actual File objects stay in the in-memory aiModeAttachments
+    // array and are re-attached in runGeneration()/retry below.
+    attachmentCount: aiModeAttachments.length,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function initGenerateExam() {
+  const form = qs("#ai-mode-form");
+  const button = qs("#generate-btn");
+  if (!form || !button) return;
+
+  const label = qs(".btn-generate__label", button);
+  const originalLabel = label ? label.textContent : "Generate Exam";
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    if (button.classList.contains("is-loading")) return;
+
+    if (!validateAiModeForm()) {
+      showToast("Please fill in the required fields before generating an exam.", "danger");
+      const firstInvalid = qs(".is-invalid", form);
+      if (firstInvalid) firstInvalid.focus();
+      return;
+    }
+
+    // Persist the validated configuration (also read by the Generating view).
+    const config = readAiModeFormConfig(form);
+    try {
+      localStorage.setItem(EXAM_CONFIG_STORAGE_KEY, JSON.stringify(config));
+    } catch (err) {
+      showToast("Could not save exam configuration locally. Please try again.", "danger");
+      return;
+    }
+
+    // Real flow: Generate Exam -> Generating view -> AI (or sample) call ->
+    // exam session created -> Live Exam view. Never leaves this document.
+    button.classList.add("is-loading");
+    button.disabled = true;
+    if (label) label.textContent = "Generating…";
+    button.setAttribute("aria-busy", "true");
+
+    runGeneration(withExamDefaults(config), false).finally(() => {
+      button.classList.remove("is-loading");
+      button.disabled = false;
+      if (label) label.textContent = originalLabel;
+      button.setAttribute("aria-busy", "false");
+    });
+  });
+}
+
+/* ---------- Continue / Recent exam — reflects the real session ---------- */
+function initRecentExamState() {
+  const section = qs("[data-recent-exam]");
+  if (!section) return;
+  const session = restoreExamSession();
+  const continueView = qs("[data-recent-continue]", section);
+  const emptyView = qs("[data-recent-empty]", section);
+  const hasResumable = !!session; // active (in-progress) or completed (view results)
+
+  if (continueView) continueView.hidden = !hasResumable;
+  if (emptyView) emptyView.hidden = hasResumable;
+
+  if (session) {
+    const labelTextEl = qs("#recent-title", continueView);
+    if (labelTextEl) {
+      const isLive = !!session.exam.liveExamId;
+      labelTextEl.textContent = isLive ? t("home.continue.titleLive") : t("home.continue.titlePractice");
+    }
+    const titleEl = qs(".continue-card__title", continueView);
+    if (titleEl) titleEl.textContent = session.exam.subject || "Exam";
+    const topicEl = qs(".continue-card__topic", continueView);
+    if (topicEl) topicEl.textContent = session.exam.topic || "";
+    const total = session.exam.questions.length;
+    const answered = Object.keys(session.answers).length;
+    const pct = total ? Math.round((answered / total) * 100) : 0;
+    const progressLabel = qs(".continue-card__progress-label", continueView);
+    if (progressLabel) progressLabel.innerHTML = `<span>${answered} / ${total} questions completed</span><span>${pct}%</span>`;
+    const fill = qs(".progress__fill", continueView);
+    if (fill) fill.style.width = `${pct}%`;
+    const progressBar = qs(".progress", continueView);
+    if (progressBar) progressBar.setAttribute("aria-valuenow", String(pct));
+
+    const link = qs("#continue-exam-link", continueView);
+    if (link) {
+      link.textContent = "";
+      const label = document.createElement("span");
+      const isCompleted = session.status === "completed";
+      label.textContent = isCompleted ? "View Results" : "Continue";
+      link.appendChild(label);
+      // "View Results" reads as a lighter-weight, secondary action next to
+      // "Continue" (which resumes an in-progress attempt) — brand-colored
+      // text on a transparent fill with a matching border, rather than the
+      // solid filled look "Continue" uses.
+      link.classList.toggle("btn-outline", isCompleted);
+      link.classList.toggle("btn-secondary", !isCompleted);
+      // Assigning onclick (rather than addEventListener) means re-running
+      // this function — e.g. on every language switch — replaces the
+      // handler instead of stacking a duplicate one each time.
+      link.onclick = (e) => {
+        e.preventDefault();
+        if (session.status === "completed") enterStatistics();
+        else enterLiveExam();
+      };
+    }
+  }
+}
+
+/** Home page dashboard quick-stat tiles (Exams / Avg. Score / Questions),
+    computed from real exam history — same source as the Exams/History/
+    Statistics sub-pages. */
+function renderHomeQuickStats() {
+  const completed = getAllExamRecords().filter((r) => r.status === "completed");
+  const examsEl = qs("#quick-stat-exams"), avgEl = qs("#quick-stat-avg"), qEl = qs("#quick-stat-questions");
+  const avgScore = completed.length ? Math.round(completed.reduce((a, r) => a + r.result.percentage, 0) / completed.length) : 0;
+  const totalQuestions = completed.reduce((a, r) => a + r.exam.questions.length, 0);
+  if (examsEl) examsEl.textContent = completed.length;
+  if (avgEl) avgEl.textContent = `${avgScore}%`;
+  if (qEl) qEl.textContent = totalQuestions.toLocaleString();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initCaptureUpload();
+  initInlineValidationClearing();
+  initGenerateExam();
+  initRecentExamState();
+  renderHomeQuickStats();
+});
+/* ==========================================================================
+   AUTH.JS — Google Sign-In (Firebase Authentication) + header widget.
+   ========================================================================== */
+
+const auth = firebase.auth();
+
+/** Current signed-in user, or null. Updated by the onAuthStateChanged
+    listener below; read synchronously anywhere in the app via
+    getCurrentUser(). */
+let currentUser = null;
+function getCurrentUser() { return currentUser; }
+function isSignedIn() { return !!currentUser; }
+
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch((err) => {
+    console.error("Sign-in failed:", err);
+    if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
+      showToast("Sign-in failed. Please try again.", "danger");
+    }
+  });
+}
+
+function signOutUser() {
+  auth.signOut().catch((err) => console.error("Sign-out failed:", err));
+}
+
+function renderAuthWidget(user) {
+  const widget = qs("#auth-widget");
+  if (!widget) return;
+  if (user) {
+    widget.classList.remove("is-signed-out");
+    widget.classList.add("is-signed-in");
+    const photo = user.photoURL || "";
+    const name = user.displayName || user.email || "Signed in";
+    qs("#auth-user-avatar", widget).src = photo;
+    qs("#auth-user-avatar", widget).alt = name;
+    qs("#auth-user-avatar-lg", widget).src = photo;
+    qs("#auth-user-avatar-lg", widget).alt = name;
+    qs("#auth-user-name", widget).textContent = name;
+    qs("#auth-user-email", widget).textContent = user.email || "";
+  } else {
+    widget.classList.remove("is-signed-in");
+    widget.classList.add("is-signed-out");
+    closeAuthMenu();
+  }
+}
+
+function setSyncStatus(status) {
+  // status: "synced" | "syncing" | "error" | "offline"
+  const dots = qsa(".auth-widget__sync-dot");
+  const labelText = {
+    synced: "Synced to cloud",
+    syncing: "Syncing…",
+    error: "Sync failed - changes saved locally",
+    offline: "Offline - changes saved locally",
+  }[status] || "Synced to cloud";
+  dots.forEach((dot) => {
+    dot.classList.remove("is-syncing", "is-error");
+    if (status === "syncing") dot.classList.add("is-syncing");
+    if (status === "error" || status === "offline") dot.classList.add("is-error");
+    dot.title = labelText;
+  });
+  const statusText = qs("#auth-sync-status span:last-child");
+  if (statusText) statusText.textContent = labelText;
+}
+
+function closeAuthMenu() {
+  const menu = qs("#auth-user-menu");
+  const btn = qs("#auth-user-btn");
+  if (menu) { menu.classList.remove("is-open"); menu.setAttribute("aria-hidden", "true"); }
+  if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function initAuthWidget() {
+  const signinBtn = qs("#auth-signin-btn");
+  const userBtn = qs("#auth-user-btn");
+  const signoutBtn = qs("#auth-signout-btn");
+  const menu = qs("#auth-user-menu");
+
+  if (signinBtn) signinBtn.addEventListener("click", signInWithGoogle);
+  if (signoutBtn) signoutBtn.addEventListener("click", () => { closeAuthMenu(); signOutUser(); });
+
+  if (userBtn && menu) {
+    registerGlobalDropdown("auth-menu", closeAuthMenu);
+    userBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const willOpen = !menu.classList.contains("is-open");
+      if (willOpen) closeOtherGlobalDropdowns("auth-menu");
+      menu.classList.toggle("is-open", willOpen);
+      menu.setAttribute("aria-hidden", String(!willOpen));
+      userBtn.setAttribute("aria-expanded", String(willOpen));
+    });
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && e.target !== userBtn) closeAuthMenu();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAuthMenu();
+    });
+  }
+
+  auth.onAuthStateChanged((user) => {
+    const previousUser = currentUser;
+    currentUser = user;
+    renderAuthWidget(user);
+    if (user) {
+      // Fresh sign-in (not just a page-refresh restoring the same session):
+      // pull this user's cloud data down and merge it with whatever is
+      // already sitting in localStorage from anonymous/local use.
+      cloudStoreOnSignIn(user, previousUser === null);
+      refreshLiveExamSubmittedIds();
+    } else {
+      cloudStoreOnSignOut();
+      liveExamSubmittedIds = [];
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initAuthWidget);
+
+/* ==========================================================================
+   CLOUD-STORE.JS — Firestore-backed persistence for exam history, AI/API
+   config, and preferences, keyed per signed-in user (users/{uid}).
+
+   Design: every piece of data still has a synchronous localStorage-backed
+   getter (existing call sites like getStoredAiConfig()/loadExamHistory()
+   are untouched — the rest of the app keeps working exactly as before,
+   including while signed out). Every setter now ALSO queues a debounced
+   write to Firestore when signed in, so data survives across devices and
+   browsers instead of living only in this one browser's localStorage.
+   On sign-in, the user's Firestore document is fetched once and merged
+   into localStorage so history/config "permanently" follow the account.
+   ========================================================================== */
+
+const db = null; // Firestore no longer used — data now lives in Supabase (see below).
+
+/* ---------- Supabase-backed replacement for the old Firestore
+   users/{uid} document. Table: public.user_data, primary key
+   firebase_uid (see supabase_schema.sql). Same design as before:
+   localStorage stays the synchronous source of truth for every existing
+   getter, and this just mirrors writes up to Supabase in the background
+   so data follows the (Firebase-authenticated) account across devices. */
+function userDocRef(uid) {
+  // Kept as a thin helper (same name/shape as the old Firestore version)
+  // so call sites below don't need to change beyond .get()/.set() →
+  // Supabase's query builder.
+  return {
+    get: () =>
+      supabaseClient
+        .from("user_data")
+        .select("ai_config, exam_prefs, exam_history")
+        .eq("firebase_uid", uid)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return {
+            exists: !!data,
+            data: () =>
+              data
+                ? { aiConfig: data.ai_config, examPrefs: data.exam_prefs, examHistory: data.exam_history }
+                : {},
+          };
+        }),
+    set: (payload) => {
+      const row = { firebase_uid: uid, updated_at: new Date().toISOString() };
+      if (payload.aiConfig !== undefined) row.ai_config = payload.aiConfig;
+      if (payload.examPrefs !== undefined) row.exam_prefs = payload.examPrefs;
+      if (payload.examHistory !== undefined) row.exam_history = payload.examHistory;
+      const user = getCurrentUser();
+      if (user && user.email) row.email = user.email;
+      return supabaseClient
+        .from("user_data")
+        .upsert(row, { onConflict: "firebase_uid" })
+        .then(({ error }) => {
+          if (error) throw error;
+        });
+    },
+  };
+}
+
+/** Debounced multi-key Supabase writer so rapid local edits (e.g. typing
+    in the API key field, answering questions one after another) collapse
+    into a single write instead of hammering the database. */
+let pendingCloudWrite = null;
+let cloudWriteTimer = null;
+function queueCloudWrite(partialDoc) {
+  if (!isSignedIn()) return;
+  pendingCloudWrite = { ...(pendingCloudWrite || {}), ...partialDoc };
+  setSyncStatus("syncing");
+  clearTimeout(cloudWriteTimer);
+  cloudWriteTimer = setTimeout(flushCloudWrite, 600);
+}
+function flushCloudWrite() {
+  const user = getCurrentUser();
+  const payload = pendingCloudWrite;
+  pendingCloudWrite = null;
+  if (!user || !payload) return;
+  userDocRef(user.uid)
+    .set(payload)
+    .then(() => setSyncStatus("synced"))
+    .catch((err) => {
+      console.error("Cloud sync failed:", err);
+      setSyncStatus("error");
+    });
+}
+// Best-effort flush if the tab is closed with a pending debounce in flight.
+window.addEventListener("beforeunload", () => {
+  if (pendingCloudWrite) flushCloudWrite();
+});
+
+/** Called once per sign-in. Fetches the user's Supabase row and merges it
+    into localStorage. On a genuinely fresh sign-in (not a page-refresh
+    restoring an existing session) local exam history made before signing
+    in is merged in (by sessionId) rather than discarded, then the merged
+    result is pushed back up to Supabase. */
+function cloudStoreOnSignIn(user, isFreshSignIn) {
+  setSyncStatus("syncing");
+  userDocRef(user.uid)
+    .get()
+    .then((doc) => {
+      const cloud = doc.exists ? doc.data() : {};
+
+      if (cloud.aiConfig) localStorage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(cloud.aiConfig));
+      if (cloud.examPrefs) localStorage.setItem(EXAM_PREFS_STORAGE_KEY, JSON.stringify(cloud.examPrefs));
+
+      const localHistory = loadExamHistory();
+      const cloudHistory = Array.isArray(cloud.examHistory) ? cloud.examHistory : [];
+      const merged = mergeExamHistories(localHistory, cloudHistory);
+      saveExamHistory(merged); // local cache stays authoritative & synchronous
+
+      // Re-render anything already on screen using the old (pre-merge) data.
+      if (typeof renderHomeQuickStats === "function") renderHomeQuickStats();
+      if (typeof initAiConfigSettings === "function") initAiConfigSettings();
+
+      setSyncStatus("synced");
+
+      // Push the merged view back up so Supabase has the full picture too
+      // (covers both "first sign-in with local history" and "returning
+      // sign-in on a new device" cases).
+      queueCloudWrite({
+        aiConfig: getStoredAiConfig(),
+        examPrefs: getStoredExamPrefs(),
+        examHistory: merged,
+      });
+    })
+    .catch((err) => {
+      console.error("Could not load cloud data:", err);
+      setSyncStatus("error");
+    });
+}
+
+function cloudStoreOnSignOut() {
+  pendingCloudWrite = null;
+  clearTimeout(cloudWriteTimer);
+  setSyncStatus("synced");
+}
+
+/** Merges two exam-history arrays by sessionId, keeping whichever copy of
+    each session has the newer updatedAt, and sorts most-recent-first. */
+function mergeExamHistories(a, b) {
+  const bySession = new Map();
+  [...a, ...b].forEach((rec) => {
+    if (!rec || !rec.sessionId) return;
+    const existing = bySession.get(rec.sessionId);
+    if (!existing || (rec.updatedAt || 0) > (existing.updatedAt || 0)) {
+      bySession.set(rec.sessionId, rec);
+    }
+  });
+  return [...bySession.values()].sort((x, y) => (y.updatedAt || 0) - (x.updatedAt || 0));
+}
+
+/* ==========================================================================
+   SETTINGS.JS — Settings panel: Appearance, AI Configuration, and Exam
+   Preferences. Persists everything to localStorage. No network calls are
+   made here — Gemini connectivity is wired up in a later phase.
+   ========================================================================== */
+
+const AI_CONFIG_STORAGE_KEY = "mcq-exam-ai-config";
+const EXAM_PREFS_STORAGE_KEY = "mcq-exam-preferences";
+
+const GEMINI_MODEL_OPTIONS = [
+  { value: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite (Recommended)" },
+  { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
+  { value: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
+  { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+];
+
+/* ---------- AI Configuration (Gemini) ---------- */
+function getStoredAiConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(AI_CONFIG_STORAGE_KEY) || "null") || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function populateGeminiModelOptions(selectedValue) {
+  const select = qs("#gemini-model-select");
+  if (!select) return;
+  const placeholder = select.querySelector('option[value=""]');
+  select.innerHTML = "";
+  if (placeholder) select.appendChild(placeholder);
+  else {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Select a model…";
+    select.appendChild(opt);
+  }
+  GEMINI_MODEL_OPTIONS.forEach((model) => {
+    const opt = document.createElement("option");
+    opt.value = model.value;
+    opt.textContent = model.label;
+    select.appendChild(opt);
+  });
+  if (selectedValue) select.value = selectedValue;
+}
+
+function initAiConfigSettings() {
+  const stored = getStoredAiConfig();
+  populateGeminiModelOptions(stored.model || "");
+
+  const apiKeyInput = qs("#gemini-api-key");
+  if (apiKeyInput && stored.apiKey) apiKeyInput.value = stored.apiKey;
+
+  const toggleBtn = qs("#toggle-api-key-visibility");
+  if (toggleBtn && apiKeyInput) {
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = apiKeyInput.type === "password";
+      apiKeyInput.type = isHidden ? "text" : "password";
+      toggleBtn.setAttribute("aria-pressed", String(isHidden));
+      toggleBtn.setAttribute("aria-label", isHidden ? "Hide API key" : "Show API key");
+      toggleBtn.innerHTML = isHidden
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a13.4 13.4 0 0 1-3.2 4.1M6.5 6.6C4 8.3 2 12 2 12s3.5 7 10 7a10.4 10.4 0 0 0 3-.44" /></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  }
+}
+
+function saveAiConfig() {
+  const config = {
+    apiKey: qs("#gemini-api-key")?.value.trim() || "",
+    model: qs("#gemini-model-select")?.value || "",
+  };
+  localStorage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(config));
+  queueCloudWrite({ aiConfig: config });
+}
+
+/* ---------- Exam Preferences ---------- */
+function getStoredExamPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(EXAM_PREFS_STORAGE_KEY) || "null") || {
+      difficulty: "medium",
+      language: "en",
+      duration: "60",
+      autosave: true,
+      showAnswerKey: true,
+      negativeMarkValue: 0.25,
+    };
+  } catch (e) {
+    return { difficulty: "medium", language: "en", duration: "60", autosave: true, showAnswerKey: true, negativeMarkValue: 0.25 };
+  }
+}
+
+function populateExamPrefsForm(prefs) {
+  const difficultySelect = qs("#default-difficulty-select");
+  const languageSelect = qs("#default-language-select");
+  const durationSelect = qs("#default-duration-select");
+  const autosaveToggle = qs("#autosave-toggle");
+  const answerKeyToggle = qs("#answer-key-toggle");
+  const negativeMarkValueSelect = qs("#negative-mark-value-select");
+
+  if (difficultySelect) difficultySelect.value = prefs.difficulty;
+  if (languageSelect) languageSelect.value = prefs.language;
+  if (durationSelect) durationSelect.value = prefs.duration;
+  if (autosaveToggle) autosaveToggle.checked = !!prefs.autosave;
+  if (answerKeyToggle) answerKeyToggle.checked = !!prefs.showAnswerKey;
+  if (negativeMarkValueSelect) negativeMarkValueSelect.value = prefs.negativeMarkValue ?? 0.25;
+}
+
+function saveExamPrefs() {
+  const prefs = {
+    difficulty: qs("#default-difficulty-select")?.value || "medium",
+    language: qs("#default-language-select")?.value || "en",
+    duration: qs("#default-duration-select")?.value || "60",
+    autosave: !!qs("#autosave-toggle")?.checked,
+    showAnswerKey: !!qs("#answer-key-toggle")?.checked,
+    negativeMarkValue: Number(qs("#negative-mark-value-select")?.value) || 0.25,
+  };
+  localStorage.setItem(EXAM_PREFS_STORAGE_KEY, JSON.stringify(prefs));
+  queueCloudWrite({ examPrefs: prefs });
+}
+
+/* ---------- Settings modal wiring ---------- */
+function initSettingsModal() {
+  const modal = qs("#settings-modal");
+  const saveBtn = qs("#settings-save-btn");
+  const saveNote = qs("#settings-save-note");
+  if (!modal) return;
+
+  // Populate every section's current state whenever the modal opens.
+  // Multiple triggers can exist (main header + statistics navbar), so bind them all.
+  const settingsTriggers = qsa('[data-modal-open="settings-modal"]');
+  settingsTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      populateExamPrefsForm(getStoredExamPrefs());
+      if (saveNote) saveNote.textContent = "";
+
+      // A trigger can ask to land directly on a specific settings tab
+      // (e.g. the Campaign form's "set in Settings → Exam Preferences"
+      // link) instead of always opening on whichever tab was last active.
+      const wantTab = trigger.getAttribute("data-settings-tab");
+      if (wantTab) {
+        const tabs = qsa("[data-tab]", modal);
+        const panels = qsa("[data-tab-panel]", modal);
+        const target = tabs.find((t) => t.getAttribute("data-tab") === wantTab);
+        if (target) activateTab(target, tabs, panels);
+      }
+    });
+  });
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      saveAiConfig();
+      saveExamPrefs();
+      if (saveNote) saveNote.textContent = "Settings saved.";
+      showToast("Settings saved.", "success");
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initAiConfigSettings();
+  initSettingsModal();
+});
+
+/* ==========================================================================
+   APP.JS — Application entry point.
+   Phase 1 scope: wires up header nav active-state and the Design System
+   showcase page interactions that don't belong in the generic components.js.
+   ========================================================================== */
+
+/**
+ * Highlights the current page in the header nav based on the document's
+ * data-page attribute on <body>.
+ */
+function initActiveNavLink() {
+  const currentPage = document.body.getAttribute("data-page");
+  if (!currentPage) return;
+
+  qsa(".site-header__nav-link").forEach((link) => {
+    if (link.getAttribute("data-nav") === currentPage) {
+      link.classList.add("is-active");
+      link.setAttribute("aria-current", "page");
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initActiveNavLink();
+});
+
+/* ==========================================================================
+   PHASE 4-6 ADDITIONS — appended to the existing script.
+   Reuses qs/qsa/clamp/showToast/openModal/closeModal/getStoredAiConfig
+   and the storage-key constants already defined above; only NEW names
+   are introduced here.
+   ========================================================================== */
+
+const SESSION_STORAGE_KEY = "mcq-exam-active-session";
+const PRINT_PREFS_KEY = "mcq-exam-print-prefs";
+const EXAM_HISTORY_KEY = "mcq-exam-history";
+
+function genId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+function formatDuration(ms) {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const mm = h > 0 ? String(m).padStart(2, "0") : String(m);
+  const ss = String(s).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm.padStart(2, "0")}:${ss}`;
+}
+
+/* ---------- Exam history store — every exam the user has generated,
+   in-progress or completed, keyed by sessionId. This is separate from
+   SESSION_STORAGE_KEY (which only ever tracks the single "current" exam)
+   so the Exams/History/Statistics pages can show every past exam, not
+   just the most recent one. A session is upserted here every time it's
+   saved (see saveSession below), so it's always kept in sync. ---------- */
+// Hard cap on how many sessions live in EXAM_HISTORY_KEY. Every session
+// entry carries a full question set + answers + results, so an
+// unbounded history can eventually hit localStorage's quota (mobile
+// Safari especially) and make every future save throw. Capped here —
+// the single save choke point — so every caller (upsertExamHistory,
+// removeFromExamHistory, and the cloud-merge path in cloudStoreOnSignIn)
+// is protected the same way without having to repeat the cap logic.
+const EXAM_HISTORY_MAX_ENTRIES = 50;
+
+function loadExamHistory() {
+  try {
+    const list = JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY) || "[]");
+    return Array.isArray(list) ? list : [];
+  } catch (e) { return []; }
+}
+function saveExamHistory(list) {
+  // Most-recently-updated first is already the convention this store is
+  // kept in (see upsertExamHistory's sort), so trimming from the end
+  // drops the oldest entries first.
+  const trimmed = list.length > EXAM_HISTORY_MAX_ENTRIES
+    ? list.slice(0, EXAM_HISTORY_MAX_ENTRIES)
+    : list;
+  try {
+    localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(trimmed));
+  } catch (e) {
+    // Quota exceeded (or storage blocked entirely, e.g. some mobile
+    // Safari private-mode states) — fail loudly to the user instead of
+    // silently losing this session's save.
+    console.error("Could not save exam history to localStorage:", e);
+    if (typeof showToast === "function") {
+      showToast("Storage is full — couldn't save exam history. Try clearing old exams.", "danger");
+    }
+  }
+  queueCloudWrite({ examHistory: trimmed });
+}
+/** Inserts or updates this session's entry in the history store (matched
+    by sessionId), then re-saves the whole list, most-recently-updated
+    first. Called every time a session is saved, so in-progress exams
+    show up immediately and completed ones update in place instead of
+    appearing as a duplicate row. */
+function upsertExamHistory(session) {
+  if (!session || !session.exam) return;
+  const list = loadExamHistory();
+  const idx = list.findIndex((r) => r.sessionId === session.sessionId);
+  const entry = { ...session, updatedAt: Date.now() };
+  if (idx === -1) list.unshift(entry);
+  else list[idx] = entry;
+  list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  saveExamHistory(list);
+}
+function removeFromExamHistory(sessionId) {
+  const list = loadExamHistory().filter((r) => r.sessionId !== sessionId);
+  saveExamHistory(list);
+}
+
+/* ---------- Exam session model (one session, reused everywhere) ---------- */
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || "null"); }
+  catch (e) { return null; }
+}
+function saveSession(session) {
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  upsertExamHistory(session);
+  return session;
+}
+function createExamSession(exam) {
+  return saveSession({
+    sessionId: genId("session"),
+    examId: exam.examId,
+    status: "active",
+    startedAt: Date.now(),
+    currentQuestion: 0,
+    answers: {},
+    markedForReview: [],
+    exam,
+    result: null,
+  });
+}
+function restoreExamSession() {
+  const session = loadSession();
+  if (!session || !session.exam || !Array.isArray(session.exam.questions)) return null;
+  return session;
+}
+function calculateRemainingTime(session) {
+  const durationMs = session.exam.duration * 60 * 1000;
+  const elapsed = Date.now() - session.startedAt;
+  return clamp(durationMs - elapsed, 0, durationMs);
+}
+function selectAnswer(session, questionId, optionIndex) {
+  session.answers[questionId] = optionIndex;
+  saveSession(session);
+  return session;
+}
+function toggleMarkForReview(session, questionId) {
+  const idx = session.markedForReview.indexOf(questionId);
+  if (idx === -1) session.markedForReview.push(questionId);
+  else session.markedForReview.splice(idx, 1);
+  saveSession(session);
+  return session;
+}
+function navigateToQuestion(session, index) {
+  session.currentQuestion = clamp(index, 0, session.exam.questions.length - 1);
+  saveSession(session);
+  return session;
+}
+function getQuestionReviewState(session, question) {
+  const selected = session.answers[question.id];
+  if (selected === undefined || selected === null) {
+    return { selected: null, isCorrect: false, isWrong: false, isUnanswered: true };
+  }
+  const isCorrect = selected === question.correctAnswer;
+  return { selected, isCorrect, isWrong: !isCorrect, isUnanswered: false };
+}
+function calculateMarks(session) {
+  const marksPerQuestion = session.exam.marksPerQuestion || 1;
+  const negativeMarking = session.exam.negativeMarking || 0;
+  let obtained = 0;
+  for (const q of session.exam.questions) {
+    const state = getQuestionReviewState(session, q);
+    if (state.isCorrect) obtained += marksPerQuestion;
+    else if (state.isWrong) obtained -= negativeMarking;
+  }
+  return Math.round(obtained * 100) / 100;
+}
+function calculatePercentage(obtainedMarks, totalMarks) {
+  if (!totalMarks) return 0;
+  return Math.round((obtainedMarks / totalMarks) * 10000) / 100;
+}
+function calculateResult(session) {
+  const questions = session.exam.questions;
+  let correct = 0, wrong = 0, unanswered = 0;
+  for (const q of questions) {
+    const state = getQuestionReviewState(session, q);
+    if (state.isUnanswered) unanswered++;
+    else if (state.isCorrect) correct++;
+    else wrong++;
+  }
+  const attempted = questions.length - unanswered;
+  const totalMarks = questions.length * (session.exam.marksPerQuestion || 1);
+  const obtainedMarks = calculateMarks(session);
+  const durationMs = session.exam.duration * 60 * 1000;
+  const timeUsedMs = clamp(Date.now() - session.startedAt, 0, durationMs);
+  return {
+    examId: session.exam.examId,
+    sessionId: session.sessionId,
+    submittedAt: Date.now(),
+    totalQuestions: questions.length,
+    attempted, correct, wrong, unanswered,
+    totalMarks, obtainedMarks,
+    percentage: calculatePercentage(obtainedMarks, totalMarks),
+    timeAllowed: durationMs,
+    timeUsed: timeUsedMs,
+    timeRemaining: durationMs - timeUsedMs,
+    answers: { ...session.answers },
+  };
+}
+function submitExam(session) {
+  session.status = "submitted";
+  session.result = calculateResult(session);
+  session.status = "completed";
+  saveSession(session);
+  // Live Exam attempts (see buildExamFromLiveExam) additionally get
+  // reported to Supabase so the Merit/leaderboard tab and this member's
+  // rank/given/avgPercent summary reflect a real score, not just this
+  // browser's local history.
+  if (session.exam.liveExamId) {
+    const email = currentMemberEmail();
+    const member = findCurrentMember();
+    const name = (member && member.name) || email || "Anonymous";
+    if (email) {
+      submitLiveExamResultToSupabase(
+        session.exam.liveExamId, email, name,
+        session.answers, session.result.obtainedMarks, session.result.totalMarks
+      ).then(() => {
+        liveExamSubmittedIds.push(session.exam.liveExamId);
+      });
+    }
+  }
+  return session;
+}
+function autoSubmitExam(session) { return submitExam(session); }
+
+/* ---------- Gemini generation (data separation: AI only returns Qs) ---------- */
+/** Detects Bengali script in free text (Unicode block U+0980–U+09FF). */
+function containsBengaliScript(text) {
+  return /[\u0980-\u09FF]/.test(String(text || ""));
+}
+
+/** Resolves the actual generation language: the explicit dropdown choice
+    is respected, but if the user's own prompt is written in Bengali script
+    while the dropdown is still on its default ("English"), that's a signal
+    the dropdown wasn't changed on purpose — so Bengali script in the prompt
+    wins over an unchanged "en" default. An explicit "bn" or "en-bn" choice
+    is always honored as-is. */
+function resolveGenerationLanguage(config) {
+  const promptHasBengali = containsBengaliScript(config.prompt);
+  if (config.language === "bn") return "bn";
+  if (config.language === "en-bn") return "en-bn";
+  if (promptHasBengali) return "bn"; // dropdown left on default "en", but prompt is Bengali
+  return "en";
+}
+
+function languageInstruction(lang) {
+  if (lang === "bn") {
+    return "Bengali (বাংলা). Write the question, all four options, and the explanation entirely in Bengali script. Do not use English.";
+  }
+  if (lang === "en-bn") {
+    return "A mix of English and Bengali (বাংলা), matching however the user's own prompt mixes the two languages.";
+  }
+  return "English.";
+}
+
+function buildGeminiPrompt(config) {
+  const resolvedLanguage = resolveGenerationLanguage(config);
+  return `You are generating a multiple-choice exam for a study/practice app.
+
+Exam-prep context you must always apply (this app is built specifically
+for Bangladeshi competitive job exam preparation — BCS Preliminary, Bank
+Job recruitment tests, and general Government job (non-cadre) exams):
+
+- Treat every question you generate as if it could appear in an actual
+  BCS Preliminary, Bank Officer/Senior Officer, or Government job
+  preliminary MCQ exam in Bangladesh — regardless of what subject/topic
+  the user gives you. Match the real style, difficulty curve, and
+  phrasing conventions used by BPSC (Bangladesh Public Service
+  Commission), Bangladesh Bank, and PSC-administered recruitment exams.
+
+- Draw on and mentally cross-check against the full range of sources a
+  serious Bangladeshi exam candidate would actually study from, not just
+  one type of material. Depending on which is most relevant to the
+  topic, this includes:
+  - National academic textbooks for Classes 1 through 12 (NCTB Bangla
+    and English medium books) for core facts in science, mathematics,
+    Bangla/English literature, and social science.
+  - Well-known job-exam guidebooks (Professors, Oracle, MP3, Assurance,
+    and similar BCS/Bank/Govt-job preparatory guides) for how topics are
+    actually phrased and tested in practice.
+  - Board/college-level lecture slides and course material for
+    structured conceptual explanations.
+  - Banglapedia and Wikipedia (Bangla and English editions) for
+    encyclopedic facts on history, geography, biography, and culture.
+  - Reputable general websites and reference sources for supporting
+    context.
+  - Established Bangladeshi newspapers (e.g. Prothom Alo, The Daily
+    Star, Kaler Kantho, Ittefaq) for current affairs, recent events,
+    and up-to-date figures.
+  - Well-regarded educational YouTube channels for how a topic is
+    commonly taught and which sub-points get emphasized.
+  - Original literary works and their standard critical/textbook
+    commentary for Bangla and English literature topics (authors,
+    titles, characters, publication years, literary movements).
+  You may also draw on your broader worldwide knowledge -- international
+  history, geography, science, world literature, global current
+  affairs, and general encyclopedic knowledge from any part of the
+  world -- whenever a topic genuinely calls for it (e.g. world
+  organizations, foreign countries, international treaties, global
+  scientific facts). However, the sources listed above are the PRIMARY,
+  authoritative sources for anything Bangladesh-specific: whenever a
+  Bangladesh-related fact from your general/worldwide knowledge
+  conflicts with, or is not confirmed by, the sources listed above, the
+  Bangladesh-specific sources above take precedence. Use worldwide
+  sources to fill in genuinely global topics or extra context, not to
+  override Bangladesh-specific facts.
+  When these sources could disagree (e.g. a date or figure that varies
+  by source), prefer the version most consistent with official/
+  government sources (Constitution, gazettes, BBS, Bangladesh Bank,
+  NCTB) over guidebooks, and prefer guidebooks/textbooks over general
+  web content when no official source covers the point.
+
+- Base facts (dates, numbers, names, articles/sections, statistics,
+  office-holders, historical events) ONLY on information you are
+  confident is accurate and would be consistent across these sources.
+  Do not invent or guess a specific date, number, or name — if you are
+  not confident a fact is correct and stable across reliable sources,
+  choose a different, well-established fact from the same topic instead
+  of fabricating or guessing one.
+
+- Favor question angles and phrasing patterns that have historically
+  appeared in past BCS/Bank/Government preliminary exams for this kind
+  of topic (frequently tested sub-areas, common distractor patterns,
+  the kind of "close but wrong" options examiners typically use) over
+  generic textbook-style questions.
+
+- Each explanation should briefly justify the correct answer the way a
+  good exam coaching guide would — clear enough that a student
+  understands WHY the other three options are wrong, not just that they
+  are — and may note which kind of source the fact is best known from
+  (e.g. "as per the Constitution", "per NCTB textbook", "widely tested
+  in guidebooks") when that helps the learner remember it.
+
+- Do not include a question if you cannot state its correct answer with
+  high confidence; prefer a safer, well-established fact over a
+  borderline, disputed, or rapidly-changing one.
+
+Subject: ${config.subject || "General"}
+Topic: ${config.topic || config.prompt || "General"}
+Extra instructions from the user: ${config.prompt || "(none)"}
+Number of questions: ${config.questionCount}
+Difficulty: ${config.difficulty}
+Language: ${languageInstruction(resolvedLanguage)}
+
+Return ONLY a JSON array (no markdown fences, no commentary) with exactly
+${config.questionCount} items. Each item must have this exact shape:
+{"question": string, "options": [string, string, string, string], "correctAnswer": number (0-3 index into options), "explanation": string}
+
+Write the question, options, and explanation in the requested language.
+
+Formatting math and chemistry:
+- Whenever a question, option, or explanation contains a mathematical
+  expression, equation, exponent, fraction, subscript/superscript, or a
+  chemical formula/equation, write it as LaTeX wrapped in $...$ for
+  inline notation or $$...$$ for a standalone/display equation. Do this
+  even inside otherwise plain sentences.
+- Examples: "$x^2 + y^2 = r^2$", "$\\frac{a}{b}$", "$H_2SO_4$",
+  "$2H_2 + O_2 \\rightarrow 2H_2O$", "$\\sqrt{16} = 4$".
+- Do not use plain-text approximations for these (e.g. "x^2", "H2SO4",
+  "->") — always use the $...$ / $$...$$ LaTeX form instead.
+- Text with no math or chemistry content should NOT contain any $ signs.${
+    config.attachmentCount > 0
+      ? `\n\nAttached source material: ${config.attachmentCount} file(s) (captured photo(s) and/or uploaded document(s)/image(s)) are attached to this request. Base the exam questions on the content of those files — the text, diagrams, tables, or problems shown in them — combined with the subject/topic/prompt above. If a file is unreadable or irrelevant, fall back to the subject/topic/prompt instead.`
+      : ""
+  }`;
+}
+/**
+ * Best-effort repair for a JSON string that failed to parse as-is.
+ * Gemini is asked to return raw JSON, but in practice it can still:
+ *  - wrap the array in ```json ... ``` markdown fences
+ *  - leave a trailing comma before a closing ] or }
+ *  - emit a raw backslash inside a string that collides with a JSON
+ *    control escape (e.g. "\frac{1}{x}" — \f IS a valid JSON escape but
+ *    means form-feed, so JSON.parse silently swallows just the "f" and
+ *    leaves "rac{1}{x}"; "\rightarrow" loses its "r" via \r, "\times"
+ *    loses its "t" via \t, the same way, and unlike a truncated array
+ *    this produces validly-parsing JSON with corrupted string content
+ *    instead of a parse error — so it isn't caught by trying JSON.parse
+ *    on the raw text) — this doubles any backslash that isn't one of
+ *    the three unambiguous JSON escapes (\" \\ \/) or a \uXXXX escape,
+ *    which also means \b \f \n \r \t are doubled even though they're
+ *    technically valid JSON escapes too: in this AI-math/LaTeX context
+ *    a single-char control escape immediately followed by more letters
+ *    (frac, rightarrow, times, ...) is virtually always a truncated
+ *    LaTeX command, never an intentional control character
+ *  - get cut off mid-array if the response hit the token limit, in
+ *    which case we salvage every complete "{...}" question object up
+ *    to the truncation point instead of discarding the whole batch
+ * Each fix is tried in order; the function returns the first variant
+ * that parses successfully, or null if nothing works.
+ */
+function repairAndParseGeminiJson(rawText) {
+  let text = rawText.trim();
+
+  // Strip ```json ... ``` or ``` ... ``` fences if present.
+  const fenceMatch = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  const attempts = [text];
+
+  // Escape stray backslashes that aren't one of the three unambiguous
+  // JSON escapes (\" \\ \/) or a \uXXXX escape — turns "\frac" into
+  // "\\frac" so the string content itself still reads as literal LaTeX,
+  // instead of JSON.parse silently eating a letter as a control escape
+  // (see \b \f \n \r \t note in the doc comment above).
+  attempts.push(
+    text.replace(/\\(?!["\\/u])/g, "\\\\")
+  );
+
+  // Drop trailing commas before a closing bracket/brace.
+  attempts.push(attempts[attempts.length - 1].replace(/,(\s*[\]}])/g, "$1"));
+
+  for (const candidate of attempts) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {
+      // try the next repair strategy
+    }
+  }
+
+  // Last resort: the array may have been cut off mid-question by a
+  // token limit. Pull out every syntactically-complete {...} object
+  // from the (possibly backslash-fixed) text and parse those
+  // individually, discarding only the incomplete tail object.
+  const salvageSource = attempts[1];
+  const objectMatches = salvageSource.match(/\{[^{}]*\}/g) || [];
+  const salvaged = [];
+  for (const objText of objectMatches) {
+    try {
+      const obj = JSON.parse(objText);
+      if (obj && typeof obj === "object" && obj.question) salvaged.push(obj);
+    } catch (e) {
+      // skip this malformed/incomplete object
+    }
+  }
+  return salvaged.length > 0 ? salvaged : null;
+}
+/** Reads a File as a base64 string (no "data:...;base64," prefix),
+    caching the result on the attachment object so re-generation
+    (retry) doesn't need to re-read the file. */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(reader.error || new Error("FILE_READ_ERROR"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Gemini's inline-data endpoint only understands a fixed set of mime
+    types. Word/PowerPoint files aren't among them (Gemini has no
+    native .docx/.pptx parser the way it does for PDF/images), so those
+    are best-effort: sent as a text/plain fallback (which Gemini simply
+    ignores if the bytes aren't actually text) alongside a note in the
+    prompt to rely on the subject/topic instead when a file can't be read. */
+const GEMINI_SUPPORTED_MIME_TYPES = new Set([
+  "image/png", "image/jpeg", "image/webp", "image/heic", "image/heif",
+  "application/pdf",
+]);
+function resolveGeminiMimeType(attachment) {
+  if (GEMINI_SUPPORTED_MIME_TYPES.has(attachment.mimeType)) return attachment.mimeType;
+  if (attachment.kind === "image") return "image/jpeg"; // safe default for camera captures without a set MIME type
+  return null; // .doc/.docx/.ppt/.pptx — not natively parseable by Gemini's file API
+}
+
+/** Builds the extra `inlineData` parts for every attachment Gemini can
+    actually read. Word/PowerPoint attachments are skipped here (see
+    resolveGeminiMimeType) — buildGeminiPrompt() already tells the model
+    to fall back to the subject/topic/prompt when source files can't be
+    used, so this failing open is safe rather than silently wrong. */
+async function buildAttachmentParts(attachments) {
+  const parts = [];
+  for (const att of attachments) {
+    const mimeType = resolveGeminiMimeType(att);
+    if (!mimeType) continue;
+    if (!att.base64) att.base64 = await fileToBase64(att.file);
+    parts.push({ inlineData: { mimeType, data: att.base64 } });
+  }
+  return parts;
+}
+
+async function generateQuestionsWithGemini(config) {
+  const aiConfig = getStoredAiConfig();
+  if (!aiConfig.apiKey) throw new Error("NO_API_KEY");
+  const model = aiConfig.model || "gemini-3.1-flash-lite";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(aiConfig.apiKey)}`;
+  const attachmentParts = await buildAttachmentParts(config.attachments || []);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: buildGeminiPrompt(config) }, ...attachmentParts] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    throw new Error(`GEMINI_HTTP_${response.status}: ${errText.slice(0, 200)}`);
+  }
+  const data = await response.json();
+  const finishReason = data?.candidates?.[0]?.finishReason;
+  const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    parsed = repairAndParseGeminiJson(text);
+    if (!parsed) {
+      // Logged (not shown to the user) so a bad response can actually be
+      // diagnosed instead of just surfacing as an opaque GEMINI_BAD_JSON.
+      console.error("Gemini returned unparseable JSON.", {
+        finishReason, textPreview: text.slice(0, 500),
+      });
+      const reasonSuffix = finishReason && finishReason !== "STOP" ? `_${finishReason}` : "";
+      throw new Error(`GEMINI_BAD_JSON${reasonSuffix}`);
+    }
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("GEMINI_EMPTY");
+  return parsed;
+}
+function generateSampleQuestions(config) {
+  const out = [];
+  for (let i = 1; i <= config.questionCount; i++) {
+    const correct = (i - 1) % 4;
+    const options = ["Option A", "Option B", "Option C", "Option D"].map((label, idx) =>
+      idx === correct ? `${label} (sample correct answer)` : label
+    );
+    out.push({
+      question: `[Sample] Question ${i} about ${config.topic || config.subject || "this topic"}?`,
+      options, correctAnswer: correct,
+      explanation: `This is a placeholder explanation for sample question ${i}.`,
+    });
+  }
+  return out;
+}
+/**
+ * Defensive fix-up for AI-emitted math/chemistry text. The prompt asks
+ * Gemini to always wrap LaTeX in $...$ / $$...$$, but models sometimes
+ * emit raw LaTeX commands (e.g. "x + \frac{1}{x} = 3") with no dollar
+ * delimiters at all — KaTeX's auto-render only looks inside $...$, so
+ * un-wrapped LaTeX like this would otherwise show up as literal
+ * backslash-command text in the exam instead of typeset notation.
+ * This scans for common LaTeX command patterns outside of any existing
+ * $...$/$$...$$ segment and wraps just that stray command (plus its
+ * argument braces) in $...$ so renderMathIn() can pick it up. Text with
+ * no LaTeX commands, or that's already correctly delimited, is returned
+ * untouched.
+ */
+const LATEX_COMMAND_RE = /\\(?:frac|sqrt|sum|int|lim|prod|left|right|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|sim|propto|infty|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Delta|Gamma|Theta|Lambda|Sigma|Phi|Psi|Omega|rightarrow|leftarrow|Rightarrow|Leftarrow|leftrightarrow|Leftrightarrow|longrightarrow|to|implies|iff|circ|degree|text|mathrm|mathbb|mathcal|mathbf|overline|underline|vec|hat|dot|partial|in|notin|ni|subset|subseteq|supset|supseteq|cup|cap|setminus|emptyset|varnothing|forall|exists|nexists|neg|lnot|wedge|vee|land|lor|mid|nmid|parallel|perp|angle|triangle|square|therefore|because|dfrac|binom|nabla|oplus|otimes|langle|rangle)\b(?:\{[^{}]*\}|\[[^\[\]]*\])*/g;
+// Matches one LaTeX command (as above) OR a bare backslash-escaped
+// brace/symbol (e.g. "\{", "\}", "\," ) that commonly appears glued to
+// real commands in set-builder notation like "\{x : x \in \mathbb{N}\}".
+const LATEX_TOKEN_RE = new RegExp(LATEX_COMMAND_RE.source + "|\\\\[{}(),.]", "g");
+function autoWrapStrayLatex(text) {
+  if (typeof text !== "string" || text.indexOf("\\") === -1) return text;
+
+  // Walk the string, tracking whether we're inside an existing $...$ or
+  // $$...$$ segment; only touch \-commands found OUTSIDE those segments
+  // (anything already inside dollar signs is left exactly as the model
+  // wrote it, since KaTeX will handle it directly).
+  const segments = text.split(/(\${1,2}[^$]*\${1,2})/);
+  return segments
+    .map((seg) => {
+      if (seg.startsWith("$")) return seg; // already-delimited math — leave alone
+      if (seg.indexOf("\\") === -1) return seg;
+
+      // Merge each RUN of LaTeX tokens (plus whatever plain characters —
+      // variable names, digits, colons, commas, spaces — sit between
+      // them) into a single $...$ span, instead of wrapping each \command
+      // in isolation. Wrapping commands individually breaks expressions
+      // like "\{x : x \in \mathbb{N}, x \text{...}\}" into fragments —
+      // only the isolated \text{...} became math, while the surrounding
+      // "\{x : x \in \mathbb{N}, x" and trailing "\}" were left as literal
+      // backslash text outside any $ delimiter, rendering as garbled
+      // characters instead of typeset set-builder notation. Grouping the
+      // whole run keeps the expression intact for KaTeX to parse as one
+      // unit.
+      const tokens = [];
+      let match;
+      LATEX_TOKEN_RE.lastIndex = 0;
+      while ((match = LATEX_TOKEN_RE.exec(seg)) !== null) {
+        tokens.push({ start: match.index, end: match.index + match[0].length });
+      }
+      if (tokens.length === 0) return seg;
+
+      // Merge tokens into runs, allowing short gaps of plain text
+      // (variable names, punctuation, single spaces) between consecutive
+      // commands to stay inside the same run. A gap is only treated as
+      // ending the run if it contains a newline or is unusually long
+      // (likely prose, not part of the same expression).
+      const MAX_GAP = 20; // e.g. ", x < 5" or "1, 2, 3" between braces
+      const runs = [];
+      let curStart = tokens[0].start;
+      let curEnd = tokens[0].end;
+      for (let i = 1; i < tokens.length; i++) {
+        const gap = tokens[i].start - curEnd;
+        const gapText = seg.slice(curEnd, tokens[i].start);
+        if (gap <= MAX_GAP && gapText.indexOf("\n") === -1) {
+          curEnd = tokens[i].end;
+        } else {
+          runs.push({ start: curStart, end: curEnd });
+          curStart = tokens[i].start;
+          curEnd = tokens[i].end;
+        }
+      }
+      runs.push({ start: curStart, end: curEnd });
+
+      let out = "";
+      let cursor = 0;
+      runs.forEach((run) => {
+        out += seg.slice(cursor, run.start);
+        out += `$${seg.slice(run.start, run.end)}$`;
+        cursor = run.end;
+      });
+      out += seg.slice(cursor);
+      return out;
+    })
+    .join("");
+}
+/** Applies autoWrapStrayLatex to every text field the AI can populate
+    on a single question object (question, each option, explanation). */
+function sanitizeQuestionMath(q) {
+  return {
+    ...q,
+    question: autoWrapStrayLatex(q.question),
+    options: Array.isArray(q.options) ? q.options.map(autoWrapStrayLatex) : q.options,
+    explanation: autoWrapStrayLatex(q.explanation),
+  };
+}
+function buildExamFromQuestions(config, rawQuestions) {
+  const questions = rawQuestions.slice(0, config.questionCount).map((q, i) => {
+    const clean = sanitizeQuestionMath(q);
+    return {
+      id: `question-${i + 1}`,
+      question: clean.question, options: clean.options,
+      correctAnswer: clean.correctAnswer, explanation: clean.explanation,
+    };
+  });
+  return {
+    examId: genId("exam"),
+    subject: config.subject, topic: config.topic, prompt: config.prompt,
+    language: resolveGenerationLanguage(config), difficulty: config.difficulty,
+    questionCount: questions.length, duration: config.duration,
+    marksPerQuestion: config.marksPerQuestion ?? 1,
+    negativeMarking: config.negativeMarking ?? 0.25,
+    additionalInstructions: config.additionalInstructions || "",
+    questions,
+  };
+}
+
+/** Builds the same exam-session shape as buildExamFromQuestions(), but
+    sourced from a Live Exam's pushed question bank (centralExamState.
+    questionBank[examId]) instead of a fresh AI generation. `liveExamId`
+    (the "le..." id) is stamped onto the result so submitExam() can tell
+    this session apart from a regular AI Mode/practice exam and route its
+    result to Supabase (see the Live Exam submission hook below). */
+function buildExamFromLiveExam(exam) {
+  const bank = centralExamState.questionBank[exam.id] || [];
+  const questions = bank.map((q, i) => {
+    const clean = sanitizeQuestionMath(q);
+    return {
+      id: `question-${i + 1}`,
+      question: clean.question, options: clean.options,
+      correctAnswer: clean.correctAnswer, explanation: clean.explanation || "",
+    };
+  });
+  // A Live Exam has one shared, absolute end time (exam.start +
+  // exam.duration) for every participant — unlike a regular AI Mode
+  // practice exam, where each person's own start moment defines their
+  // own fresh full-length countdown. createExamSession() (used for both)
+  // always stamps startedAt = Date.now() and counts down the full
+  // `duration` from there, which is correct for practice exams but would
+  // hand a late joiner a brand-new full countdown instead of only
+  // whatever's left before the shared deadline. So here we shrink the
+  // session's duration (in whole minutes, since that's the unit
+  // calculateRemainingTime multiplies by 60*1000) down to the actual
+  // time left until exam.start + exam.duration, computed at join time —
+  // joining 10 minutes into a 30-minute exam yields a 20-minute session.
+  const scheduledEnd = exam.start + exam.duration * 60 * 1000;
+  const minutesLeft = Math.max(0, (scheduledEnd - Date.now()) / 60000);
+  const effectiveDuration = Math.min(exam.duration, minutesLeft);
+  return {
+    examId: genId("exam"),
+    liveExamId: exam.id, // marks this session as a Live Exam attempt
+    subject: exam.subject, topic: exam.topic,
+    language: exam.language || "en",
+    questionCount: questions.length, duration: effectiveDuration,
+    marksPerQuestion: exam.marksPerQuestion ?? 1,
+    negativeMarking: exam.negativeMarking ?? 0.25,
+    questions,
+  };
+}
+
+/* ==========================================================================
+   ROUTER — swaps which .view is visible; nothing here ever navigates away
+   from this file, and no exam data is regenerated on a view switch.
+   ========================================================================== */
+let liveExamState = { session: null, timerInterval: null };
+// IDs of Live Exams (centralExamState.exams[].id) the signed-in member has
+// already submitted a result for, used to block re-entry into an exam
+// they've already taken. Populated by refreshLiveExamSubmittedIds() on
+// sign-in / startup and appended to locally right after a successful
+// submitLiveExamResultToSupabase() call (see submitExam above).
+let liveExamSubmittedIds = [];
+async function refreshLiveExamSubmittedIds() {
+  const email = currentMemberEmail();
+  if (!email) { liveExamSubmittedIds = []; return; }
+  const { data, error } = await supabaseClient
+    .from("live_exam_submissions")
+    .select("exam_id")
+    .eq("member_email", email);
+  if (error) { console.error("Could not load submitted live exams:", error); return; }
+  liveExamSubmittedIds = (data || []).map((r) => r.exam_id);
+}
+
+// Stack of previously shown view names, so the various "Back" icon
+// buttons return to wherever the user actually came from instead of
+// always jumping to a hardcoded target (e.g. "home"). Every view
+// change pushes the page being LEFT (including "home") so Back can
+// walk all the way out to Home again, not just to whatever's one
+// level below it.
+const viewHistoryStack = [];
+
+// ---- Device/browser Back button support -----------------------------
+// Everything above is an in-memory stack the on-screen Back icon reads
+// from — it never touched window.history, so a phone/tablet's hardware
+// or gesture Back button had nothing to intercept and either did
+// nothing or left the app entirely. This layer mirrors every view
+// change into a real history entry via pushState, and reacts to
+// popstate (fired by the device Back button, browser Back button, and
+// Android's back gesture alike) by walking the same viewHistoryStack
+// the icon buttons use — so both paths land on identical views.
+//
+// isPopping guards against feedback loops: when popstate itself calls
+// showView, we must NOT push a new history entry for that navigation
+// (the browser already moved us there), so showView below skips
+// pushState while this flag is set.
+let isPopping = false;
+window.addEventListener("popstate", () => {
+  // This pop is the direct result of closeModal() calling
+  // history.back() a moment ago (Continue Exam, X, Escape, backdrop
+  // click, etc.) — by the time this fires the modal's ".is-open" class
+  // is already gone, so the check below can't see it. Consume the pop
+  // here and stop: the modal is already closed and the view underneath
+  // (e.g. the live exam) was never meant to change.
+  if (justClosedModalViaHistoryBack) {
+    justClosedModalViaHistoryBack = false;
+    return;
+  }
+
+  // A modal open takes priority over view navigation: the history entry
+  // being popped right now might be the one openModal() pushed, so check
+  // for an open modal FIRST and simply close it, consuming this pop —
+  // without this check, Back would instead re-run the view-navigation
+  // logic below and swap the page out from under the still-open modal.
+  const openOverlay = qs(".modal-overlay.is-open");
+  if (openOverlay) {
+    isModalPopping = true;
+    try {
+      closeModal(openOverlay.id);
+    } finally {
+      isModalPopping = false;
+    }
+    return;
+  }
+
+  isPopping = true;
+  try {
+    const previous = viewHistoryStack.pop();
+    // No app view left on our stack: this was the very first view
+    // (Home) and the device Back button should now behave like it did
+    // before this feature existed elsewhere in the browser/app (e.g.
+    // exit the app / close the tab) rather than getting stuck.
+    if (!previous) {
+      history.back();
+      return;
+    }
+    navigateToView(previous, { skipHistory: true });
+  } finally {
+    isPopping = false;
+  }
+});
+
+function showView(name, opts) {
+  const options = opts || {};
+  const current = document.body.getAttribute("data-page");
+  if (!options.skipHistory && current && current !== name) {
+    viewHistoryStack.push(current);
+    // Mirror this forward navigation into a real history entry so the
+    // device/browser Back button has something to pop. Skipped during
+    // popstate handling (isPopping) and for skipHistory navigations
+    // (e.g. goBackView) since those don't represent a NEW forward step.
+    if (!isPopping) history.pushState({ view: name }, "", location.href);
+  }
+  if (options.resetHistory) viewHistoryStack.length = 0;
+  qsa(".view").forEach((v) => { v.classList.remove("is-active"); v.hidden = true; });
+  const target = qs(`#view-${name}`);
+  if (target) { target.classList.add("is-active"); target.hidden = false; }
+  document.body.setAttribute("data-page", name === "home" ? "home" : name);
+  window.scrollTo(0, 0);
+}
+/** Navigate to whatever view precedes the current one, falling back
+    to "home" once the stack is empty. Used by every generic "Back"
+    icon button instead of a fixed data-spa-nav target.
+
+    IMPORTANT: this must consume a REAL browser history entry, not just
+    swap the visible view. Every forward navigation (showView) does a
+    matching history.pushState, so the browser's history stack and our
+    in-memory viewHistoryStack are meant to stay the same depth. If this
+    function popped viewHistoryStack and re-rendered the view WITHOUT
+    also moving browser history back (skipHistory: true used to do
+    exactly that), the two stacks fell out of sync: the on-screen Back
+    button would "use up" an app-level back step for free, while the
+    real browser history entry for the view we just left stayed behind,
+    unconsumed. The next time the user pressed the device/hardware Back
+    button, popstate would fire one step later than the app expected —
+    and once viewHistoryStack ran dry before the browser's real history
+    did, popstate's own fallback (history.back()) had nothing left to
+    land on except the page BEFORE this app ever loaded, exiting the
+    site entirely. Routing the on-screen Back button through
+    history.back() instead keeps both stacks moving together: the
+    popstate listener below is the ONLY place that actually changes the
+    visible view in response to a Back action, on-screen or hardware. */
+function goBackView(fallback) {
+  if (viewHistoryStack.length > 0) {
+    history.back();
+    return;
+  }
+  // Nothing left on our stack (e.g. this view was reached without a
+  // pushed history entry, such as a direct/refreshed load) — just show
+  // the fallback without touching history, since there's no matching
+  // entry to consume.
+  navigateToView(fallback || "home", { skipHistory: true });
+}
+/** Shared show+render logic for a target view name, used by both
+    forward navigation (data-spa-nav clicks) and goBackView so that
+    going back to e.g. "history" re-renders its list correctly. */
+function navigateToView(target, opts) {
+  if (target === "stats") { enterStatistics(); return; }
+  // Defense in depth: block navigation into the admin panel before the
+  // view is even swapped in, so a non-admin never has the admin view
+  // marked active in the DOM at all (renderLiveExamAdminPanel() below
+  // is the authoritative gate and redirects back either way, but
+  // checking here too means the browser never paints the admin view's
+  // markup for a non-admin even for a single frame).
+  if (target === "live-exam-admin" && !isLiveExamAdmin()) {
+    showToast("This panel is restricted to the campaign's admins.", "danger");
+    showView("live-exam", opts);
+    renderCentralLiveExamHub();
+    return;
+  }
+  // Same defense-in-depth gate as Live Exam's admin panel above, but for
+  // Practice: block navigation before the view swaps in, so a non-admin
+  // never sees the Practice Admin markup painted even for one frame.
+  // renderPracticeAdminPanel() (called below) is not a second gate on its
+  // own — see the redirect added there — this call site is what stops
+  // navigation from ever reaching it for a non-admin in the first place.
+  if (target === "practice-admin" && !isPracticeAdmin()) {
+    showToast("This panel is restricted to the site admin.", "danger");
+    showView("practice", opts);
+    renderPracticeSubjectList();
+    return;
+  }
+  // Practice Panel (subject/topic list + Practice Mode runner) — real
+  // view now, so route + render it like the other sub-pages instead of
+  // the earlier placeholder toast.
+  showView(target, opts);
+  if (target === "history") renderHistoryPage();
+  else if (target === "statistics") renderStatisticsPage();
+  else if (target === "live-exam") renderCentralLiveExamHub();
+  else if (target === "live-exam-admin") renderLiveExamAdminPanel();
+  else if (target === "practice") renderPracticeSubjectList();
+  else if (target === "practice-admin") renderPracticeAdminPanel();
+}
+
+/* ---------- Generating view ---------- */
+function withExamDefaults(config) {
+  return {
+    ...config,
+    marksPerQuestion: config.marksPerQuestion ?? 1,
+    negativeMarking: config.negativeMarking ?? 0.25,
+    // Re-attach the live File objects here (not persisted — see
+    // readAiModeFormConfig) so retry/sample from the Generating view
+    // still has access to whatever was captured/uploaded on Home.
+    attachments: aiModeAttachments,
+    attachmentCount: aiModeAttachments.length,
+  };
+}
+async function runGeneration(config, useSample) {
+  const loading = qs("#generator-loading");
+  const errorBox = qs("#generator-error");
+  errorBox.classList.remove("is-visible");
+  loading.classList.remove("is-hidden");
+  showView("generating");
+  try {
+    const rawQuestions = useSample ? generateSampleQuestions(config) : await generateQuestionsWithGemini(config);
+    const exam = buildExamFromQuestions(config, rawQuestions);
+    createExamSession(exam);
+    localStorage.removeItem(EXAM_CONFIG_STORAGE_KEY);
+    clearAiModeAttachments();
+    enterLiveExam();
+  } catch (err) {
+    loading.classList.add("is-hidden");
+    errorBox.classList.add("is-visible");
+    const msg = qs("#generator-error-message");
+    if (String(err.message).includes("NO_API_KEY")) {
+      msg.textContent = "No Gemini API key is configured in Settings. Add one, or continue with sample questions to test the exam flow.";
+    } else {
+      msg.textContent = "The AI generation request failed (" + err.message + "). You can try again or continue with sample questions.";
+    }
+  }
+}
+function initGeneratorView() {
+  qs("#retry-btn")?.addEventListener("click", () => {
+    const config = withExamDefaults(JSON.parse(localStorage.getItem(EXAM_CONFIG_STORAGE_KEY) || "{}"));
+    runGeneration(config, false);
+  });
+  qs("#sample-btn")?.addEventListener("click", () => {
+    const config = withExamDefaults(JSON.parse(localStorage.getItem(EXAM_CONFIG_STORAGE_KEY) || "{}"));
+    runGeneration(config, true);
+  });
+  qs("#generator-back-btn")?.addEventListener("click", () => showView("home"));
+}
+
+/* ---------- Live exam view ---------- */
+function enterLiveExam() {
+  const session = restoreExamSession();
+  if (!session) { showToast("No active exam found.", "danger"); showView("home"); return; }
+  if (session.status === "completed") { enterStatistics(); return; }
+  liveExamState.session = session;
+
+  const exam = session.exam;
+  qs("#header-subject").textContent = exam.subject || "Exam";
+  qs("#header-topic").textContent = exam.topic || "";
+
+  showView("exam");
+  renderQuestionStream();
+  renderNavigator();
+  renderQuestion();
+  startTimer();
+  initMobileNavStripSync();
+}
+function currentQuestion() {
+  const s = liveExamState.session;
+  return s.exam.questions[s.currentQuestion];
+}
+
+/* Premium bookmark/ribbon icon used for the Mark for Review toggle */
+const MARK_REVIEW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.75A1.75 1.75 0 0 1 7.75 2h8.5A1.75 1.75 0 0 1 18 3.75V21l-6-4-6 4V3.75Z"/></svg>';
+
+/* Bengali (Bangla) digits 0-9, used to render question numbers as native
+   numerals when the exam language is Bengali. */
+const BENGALI_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+function toBengaliDigits(n) {
+  return String(n).replace(/[0-9]/g, (d) => BENGALI_DIGITS[Number(d)]);
+}
+/** Zero-padded question number, localized to Bengali numerals when
+    passed true (i.e. exam language is "bn" or "en-bn" — see
+    usesLocalizedLabels below). */
+function formatQuestionNumber(index, isBn) {
+  const padded = String(index + 1).padStart(2, "0");
+  return (isBn ? toBengaliDigits(padded) : padded) + ".";
+}
+/* Option markers: Bengali consonants ক/খ/গ/ঘ in place of A/B/C/D when the
+   exam language is Bengali. */
+const OPTION_LETTERS_EN = ["A", "B", "C", "D"];
+const OPTION_LETTERS_BN = ["ক", "খ", "গ", "ঘ"];
+function optionLetters(isBn) {
+  return isBn ? OPTION_LETTERS_BN : OPTION_LETTERS_EN;
+}
+/* Whether option markers (ক/খ/গ/ঘ), question numbers (০১, ০২...), and
+   the "ব্যাখ্যাঃ" label should be used for a given exam language.
+   Unlike the strict isBn flag (which still separately drives the
+   Bengali font class and only applies to pure "bn" exams), this also
+   covers the mixed "en-bn" language so English+বাংলা exams get all
+   three of these localized too, while the rest of the question/option
+   text stays exactly as generated. */
+function usesLocalizedLabels(language) {
+  return language === "bn" || language === "en-bn";
+}
+
+/* Renders every question as a card in the scrollable right-hand stream.
+   Built once per session load; individual cards are patched in place
+   afterwards (see updateQuestionCard) so scroll position is preserved. */
+function renderQuestionStream() {
+  const s = liveExamState.session;
+  const stream = qs("#question-stream");
+  stream.innerHTML = "";
+  const isBn = s.exam.language === "bn";
+  const useLocalized = usesLocalizedLabels(s.exam.language);
+  const letters = optionLetters(useLocalized);
+
+  s.exam.questions.forEach((q, index) => {
+    const card = document.createElement("div");
+    card.className = "card question-card";
+    card.id = `q-card-${index}`;
+    card.dataset.index = String(index);
+
+    const head = document.createElement("div");
+    head.className = "question-card__head";
+
+    const heading = document.createElement("h2");
+    heading.className = "question-text";
+    heading.id = `question-text-${index}`;
+    heading.setAttribute("lang", s.exam.language === "bn" ? "bn" : "en");
+
+    const numBadge = document.createElement("span");
+    numBadge.className = "question-card__num";
+    numBadge.textContent = formatQuestionNumber(index, useLocalized);
+    heading.appendChild(numBadge);
+    heading.appendChild(document.createTextNode(q.question));
+
+    const markBtn = document.createElement("button");
+    markBtn.type = "button";
+    markBtn.className = "mark-review-btn";
+    markBtn.innerHTML = MARK_REVIEW_ICON;
+    markBtn.setAttribute("aria-label", "Mark for review");
+    markBtn.setAttribute("aria-pressed", "false");
+    markBtn.title = "Mark for review";
+    markBtn.addEventListener("click", () => {
+      toggleMarkForReview(s, q.id);
+      updateQuestionCard(index);
+      renderNavigator();
+    });
+
+    head.appendChild(heading);
+    head.appendChild(markBtn);
+    card.appendChild(head);
+
+    const list = document.createElement("div");
+    list.id = `options-list-${index}`;
+    list.setAttribute("role", "radiogroup");
+    list.setAttribute("aria-labelledby", `question-text-${index}`);
+
+    q.options.forEach((optionText, idx) => {
+      const row = document.createElement("label");
+      row.className = "option";
+      row.innerHTML = `<span class="option__letter">${letters[idx]}</span><span class="option__text"></span><input type="radio" class="sr-only visually-hidden" name="option-${index}" tabindex="-1" />`;
+      row.querySelector(".option__text").textContent = optionText;
+      row.addEventListener("click", (e) => {
+        // The row is a <label>, which natively focuses+checks its child
+        // radio input on click. That input is visually-hidden via
+        // `position: absolute`, and focusing an off-screen-ish element
+        // makes the browser auto-scroll its nearest scrollable ancestor
+        // (.question-stream) to reveal it — which is what caused the view
+        // to jump on every answer selection, worse for questions further
+        // down the list. Selection state is fully driven by
+        // updateQuestionCard() below, not by native :checked/:focus, so we
+        // stop that default behavior entirely and drive the input by hand.
+        e.preventDefault();
+        selectAnswer(s, q.id, idx);
+        updateQuestionCard(index);
+        renderNavigator();
+      });
+      list.appendChild(row);
+    });
+
+    card.appendChild(list);
+    stream.appendChild(card);
+    renderMathIn(card);
+  });
+
+  updateAllQuestionCards();
+}
+
+/* Refreshes the selected/marked visual state of a single question card
+   without rebuilding the DOM (keeps scroll position stable). */
+function updateQuestionCard(index) {
+  const s = liveExamState.session;
+  const q = s.exam.questions[index];
+  const card = qs(`#q-card-${index}`);
+  if (!card) return;
+
+  const selected = s.answers[q.id];
+  qsa(".option", qs(`#options-list-${index}`)).forEach((row, idx) => {
+    row.classList.toggle("is-selected", selected === idx);
+    const input = qs("input", row);
+    if (input) input.checked = selected === idx;
+  });
+
+  const isMarked = s.markedForReview.includes(q.id);
+  const markBtn = qs(".mark-review-btn", card);
+  if (markBtn) {
+    markBtn.classList.toggle("is-marked", isMarked);
+    markBtn.setAttribute("aria-pressed", String(isMarked));
+    markBtn.title = isMarked ? "Marked for review (click to unmark)" : "Mark for review";
+  }
+
+  card.classList.toggle("is-current", index === s.currentQuestion);
+}
+
+function updateAllQuestionCards() {
+  const s = liveExamState.session;
+  s.exam.questions.forEach((_, index) => updateQuestionCard(index));
+}
+
+/* Kept for backward-compat call sites; now just refreshes progress text
+   and card states rather than swapping a single question in/out. */
+function renderQuestion() {
+  const s = liveExamState.session;
+  const total = s.exam.questions.length;
+  qs("#exam-progress").textContent = `Question ${s.currentQuestion + 1} of ${total}`;
+  updateAllQuestionCards();
+}
+
+/* Scrolls the question stream so the given question's card is visible,
+   and marks it as current. */
+function goToQuestionCard(index) {
+  const s = liveExamState.session;
+  navigateToQuestion(s, index);
+  const card = qs(`#q-card-${index}`);
+  const stream = qs(".question-stream");
+  if (card && stream) {
+    // On desktop, .question-stream scrolls internally (fixed-height panel).
+    // On mobile, the page itself scrolls and .question-stream is just a
+    // normal-flow block (overflow: visible), so scrolling it directly does
+    // nothing. Detect which one actually applies at the current breakpoint
+    // and scroll the right target.
+    const streamScrolls = stream.scrollHeight > stream.clientHeight;
+    if (streamScrolls) {
+      const top = card.offsetTop - stream.offsetTop;
+      stream.scrollTo({ top, behavior: "smooth" });
+    } else {
+      // Page-level scroll: account for the sticky header + sticky mobile
+      // number strip sitting on top of the content so the card doesn't
+      // land underneath them.
+      const header = qs("#view-exam .exam-header");
+      const strip = qs(".mobile-nav-strip");
+      const stickyOffset = (header?.offsetHeight || 0) + (strip?.offsetHeight || 0);
+      const cardTop = card.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: cardTop - stickyOffset - 12, behavior: "smooth" });
+    }
+  } else if (card) {
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  renderQuestion();
+  renderNavigator();
+}
+function questionStateClasses(s, q, index) {
+  const classes = ["q-btn"];
+  if (index === s.currentQuestion) classes.push("is-current");
+  if (s.answers[q.id] !== undefined) classes.push("is-answered");
+  if (s.markedForReview.includes(q.id)) classes.push("is-marked");
+  return classes.join(" ");
+}
+function renderNavigator() {
+  const s = liveExamState.session;
+  const grid = qs("#question-nav-grid");
+  const strip = qs("#mobile-nav-strip");
+  const expectedCount = s.exam.questions.length;
+
+  // If the grids already have the right number of buttons (i.e. this is a
+  // state refresh, not the first build), just update classes in place.
+  // Rebuilding the whole grid from scratch on every click forces a reflow
+  // right as the smooth-scroll animation starts, which is what made the
+  // nav boxes visibly jump when tapping a question number.
+  const gridBuilt = grid.children.length === expectedCount;
+  const stripBuilt = strip.children.length === expectedCount;
+  if (gridBuilt && stripBuilt) {
+    s.exam.questions.forEach((q, index) => {
+      const cls = questionStateClasses(s, q, index);
+      grid.children[index].className = cls;
+      strip.children[index].className = cls;
+    });
+    return;
+  }
+
+  grid.innerHTML = "";
+  strip.innerHTML = "";
+  s.exam.questions.forEach((q, index) => {
+    const label = String(index + 1).padStart(2, "0");
+    [grid, strip].forEach((container) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = questionStateClasses(s, q, index);
+      btn.textContent = label;
+      btn.setAttribute("aria-label", `Question ${index + 1}`);
+      btn.addEventListener("click", () => {
+        goToQuestionCard(index);
+      });
+      container.appendChild(btn);
+    });
+  });
+}
+/* Mobile/tablet only: as the user scrolls the question stream (which, at
+   this breakpoint, is just the normal page scroll — see the comment in
+   goToQuestionCard), keep the horizontal number strip in sync — highlight
+   the question currently in view and auto-scroll the strip so that
+   number stays visible, without needing a tap on the nav bar.
+   Desktop is unaffected: .mobile-nav-strip is display:none there, and the
+   left-side .question-nav grid already stays fully visible (no horizontal
+   scroll to sync). */
+function initMobileNavStripSync() {
+  const stream = qs(".question-stream");
+  const strip = qs("#mobile-nav-strip");
+  if (!stream || !strip) return;
+  if (liveExamState.navSyncObserver) liveExamState.navSyncObserver.disconnect();
+
+  const mq = window.matchMedia("(max-width: 900px)");
+  let observer = null;
+
+  const scrollStripToIndex = (index) => {
+    const btn = strip.children[index];
+    if (!btn) return;
+    // Only nudge the strip when the button isn't already comfortably in
+    // view, so we don't fight the user's own touch-scrolling of the strip.
+    const btnLeft = btn.offsetLeft;
+    const btnRight = btnLeft + btn.offsetWidth;
+    const viewLeft = strip.scrollLeft;
+    const viewRight = viewLeft + strip.clientWidth;
+    if (btnLeft < viewLeft || btnRight > viewRight) {
+      const target = btnLeft - (strip.clientWidth - btn.offsetWidth) / 2;
+      strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+    }
+  };
+
+  const setup = () => {
+    if (observer) { observer.disconnect(); observer = null; }
+    if (!mq.matches) return; // desktop: nav strip is hidden, nothing to sync
+    const s = liveExamState.session;
+    if (!s) return;
+
+    // Tracks each card's visibility ratio so we can pick whichever question
+    // is most in-view (not just the first one that crosses the threshold),
+    // which keeps the highlighted number stable while several cards are
+    // partially visible during a scroll.
+    const ratios = new Map();
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const index = Number(entry.target.dataset.index);
+        ratios.set(index, entry.isIntersecting ? entry.intersectionRatio : 0);
+      });
+      let bestIndex = s.currentQuestion, bestRatio = -1;
+      ratios.forEach((ratio, index) => {
+        if (ratio > bestRatio) { bestRatio = ratio; bestIndex = index; }
+      });
+      if (bestRatio > 0 && bestIndex !== s.currentQuestion) {
+        s.currentQuestion = bestIndex;
+        renderNavigator();
+        scrollStripToIndex(bestIndex);
+      }
+    }, {
+      root: null, // page-level scroll on mobile, matching goToQuestionCard's own detection
+      threshold: [0.25, 0.5, 0.75],
+      rootMargin: `-${(qs("#view-exam .exam-header")?.offsetHeight || 0) + (strip.offsetHeight || 0)}px 0px -40% 0px`,
+    });
+    qsa(".question-card", stream).forEach((card) => observer.observe(card));
+  };
+
+  mq.addEventListener("change", setup);
+  setup();
+  liveExamState.navSyncObserver = { disconnect: () => { if (observer) observer.disconnect(); mq.removeEventListener("change", setup); } };
+}
+
+function startTimer() {
+  updateTimerDisplay();
+  liveExamState.timerInterval = setInterval(updateTimerDisplay, 1000);
+}
+function updateTimerDisplay() {
+  const s = liveExamState.session;
+  const remaining = calculateRemainingTime(s);
+  const el = qs("#exam-timer");
+  el.textContent = formatDuration(remaining);
+  if (remaining <= 60 * 1000) el.setAttribute("data-state", "critical");
+  else if (remaining <= 5 * 60 * 1000) el.setAttribute("data-state", "warning");
+  else el.removeAttribute("data-state");
+  if (remaining <= 0) {
+    clearInterval(liveExamState.timerInterval);
+    autoSubmitExam(s);
+    showToast("Time is up. Your exam has been submitted automatically.", "warning");
+    setTimeout(enterStatistics, 900);
+  }
+}
+function initLiveExamView() {
+  const populateSubmitSummary = () => {
+    const s = liveExamState.session;
+    const total = s.exam.questions.length;
+    const answered = Object.keys(s.answers).length;
+    qs("#summary-answered").textContent = answered;
+    qs("#summary-unanswered").textContent = total - answered;
+    qs("#summary-marked").textContent = s.markedForReview.length;
+  };
+  qs("#submit-exam-btn")?.addEventListener("click", populateSubmitSummary);
+  qs("#submit-exam-btn-header")?.addEventListener("click", populateSubmitSummary);
+  qs("#confirm-submit-btn")?.addEventListener("click", () => {
+    clearInterval(liveExamState.timerInterval);
+    submitExam(liveExamState.session);
+    closeModal("submit-modal");
+    // closeModal() calls history.back() to consume the history entry
+    // openModal() pushed, but history.back() is asynchronous — the
+    // resulting popstate doesn't fire until after this handler returns.
+    // Calling enterStatistics() (which calls showView, pushing its own
+    // history entry and swapping in the Results & Analytics view)
+    // synchronously right here means that deferred popstate arrives
+    // AFTER the stats view is already showing, and its handler then
+    // pops the view stack and navigates straight back to "exam",
+    // undoing the transition — Submit looked like it did nothing.
+    // Deferring to the next tick lets the modal's popstate resolve
+    // first, so enterStatistics()'s own view-history push happens
+    // after, not before, the browser's Back-button bookkeeping.
+    setTimeout(enterStatistics, 0);
+  });
+  window.addEventListener("beforeunload", () => {
+    if (liveExamState.session && liveExamState.session.status === "active") saveSession(liveExamState.session);
+  });
+}
+
+/* ---------- Statistics view ---------- */
+function enterStatistics(sessionOverride) {
+  const session = sessionOverride || restoreExamSession();
+  if (!session || session.status !== "completed" || !session.result) {
+    showToast("No completed exam to show statistics for.", "danger");
+    showView("home");
+    return;
+  }
+  liveExamState.session = session;
+  showView("stats");
+  // A Live Exam attempt's own score/analytics stay hidden from the
+  // student until the admin publishes that exam's results (the same
+  // exam.published flag the History page already gates on) — even
+  // though calculateResult() ran at submit time and the real score is
+  // sitting right there in session.result, showing it immediately would
+  // let an early finisher see (and potentially share) the correct
+  // answers while the live exam is still running for everyone else.
+  // Regular AI Mode practice exams have no such gate and always show
+  // results right away (liveExamId is only set by buildExamFromLiveExam).
+  const liveExam = session.exam.liveExamId
+    ? centralExamState.exams.find((e) => e.id === session.exam.liveExamId)
+    : null;
+  const pendingPublish = !!liveExam && !liveExam.published;
+  qs("#stats-pending-publish").hidden = !pendingPublish;
+  qs("#stats-result-content").hidden = pendingPublish;
+  if (pendingPublish) return;
+  renderStatistics();
+  renderAnswerReview();
+}
+function renderStatistics() {
+  const s = liveExamState.session;
+  const exam = s.exam, result = s.result;
+  qs("#result-subject").textContent = exam.subject || "Exam";
+  qs("#result-topic").textContent = exam.topic || "";
+  qs("#obtained-marks").textContent = result.obtainedMarks;
+  qs("#total-marks").textContent = result.totalMarks;
+  qs("#result-percentage").textContent = `${result.percentage}%`;
+
+  const sub = qs("#headline-sub");
+  if (sub) sub.textContent = `${result.correct} correct · ${result.wrong} wrong · ${result.unanswered} skipped · ${result.attempted} Attempted · ${formatDuration(result.timeUsed)} Time Used`;
+  const count = qs("#review-count");
+  if (count) count.textContent = `(${result.totalQuestions})`;
+
+  const ring = qs("#headline-ring-progress");
+  if (ring) {
+    const circumference = 2 * Math.PI * 56; // r=56, matches the SVG markup
+    const pct = clamp(result.percentage, 0, 100) / 100;
+    ring.style.strokeDasharray = String(circumference);
+    // rAF so the transition (set in CSS) actually animates from the
+    // fully-offset starting state instead of snapping straight to value.
+    ring.style.strokeDashoffset = String(circumference);
+    requestAnimationFrame(() => {
+      ring.style.strokeDashoffset = String(circumference * (1 - pct));
+    });
+  }
+}
+function renderAnswerReview() {
+  const s = liveExamState.session;
+  const container = qs("#review-list");
+  container.innerHTML = "";
+  const isBn = s.exam.language === "bn";
+  const useLocalized = usesLocalizedLabels(s.exam.language);
+  const letters = optionLetters(useLocalized);
+  s.exam.questions.forEach((q, index) => {
+    const state = getQuestionReviewState(s, q);
+    const card = document.createElement("div");
+    card.className = "card review-question";
+
+    const head = document.createElement("div");
+    head.className = "review-question__head";
+
+    const qText = document.createElement("p");
+    qText.className = "review-question__text";
+    if (isBn) qText.classList.add("lang-bn");
+    const numBadge = document.createElement("span");
+    numBadge.className = "review-question__num";
+    numBadge.textContent = formatQuestionNumber(index, useLocalized);
+    qText.appendChild(numBadge);
+    qText.appendChild(document.createTextNode(q.question));
+    head.appendChild(qText);
+
+    if (state.isUnanswered) {
+      const tag = document.createElement("span");
+      tag.className = "not-answered-tag";
+      tag.setAttribute("role", "img");
+      tag.setAttribute("aria-label", "Not answered");
+      tag.title = "Not answered";
+      tag.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7-1.2c.5.9.1 1.5-.6 2.1-.7.6-1.3 1-1.4 2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.3" r="1.1" fill="currentColor"/></svg>';
+      head.appendChild(tag);
+    }
+    card.appendChild(head);
+
+    const optionsGrid = document.createElement("div");
+    optionsGrid.className = "review-options-grid";
+
+    q.options.forEach((optText, idx) => {
+      const isCorrectOpt = idx === q.correctAnswer;
+      const isSelectedOpt = idx === state.selected;
+      const row = document.createElement("div");
+      row.className = "review-option" + (isCorrectOpt ? " is-correct" : (isSelectedOpt && state.isWrong ? " is-wrong" : ""));
+
+      const letter = document.createElement("span");
+      letter.className = "review-option__letter";
+      letter.textContent = letters[idx];
+      row.appendChild(letter);
+
+      const label = document.createElement("span");
+      label.className = "review-option__text";
+      label.textContent = optText;
+      row.appendChild(label);
+
+      if (isCorrectOpt || (isSelectedOpt && state.isWrong)) {
+        const tag = document.createElement("span");
+        tag.className = "review-option__tag";
+        tag.setAttribute("aria-label", isCorrectOpt ? "Correct" : "Wrong");
+        tag.textContent = isCorrectOpt ? "✓" : "✕";
+        row.appendChild(tag);
+      }
+
+      optionsGrid.appendChild(row);
+    });
+    card.appendChild(optionsGrid);
+
+    if (q.explanation) {
+      const explanation = document.createElement("div");
+      explanation.className = "review-explanation";
+      explanation.innerHTML = `<span class="review-explanation__label"></span>`;
+      const expText = document.createElement("span");
+      if (isBn) expText.classList.add("lang-bn");
+      expText.textContent = q.explanation;
+      explanation.appendChild(expText);
+      card.appendChild(explanation);
+    }
+
+    container.appendChild(card);
+    renderMathIn(card);
+  });
+}
+function goToPrint() {
+  enterPrint();
+}
+function initStatisticsView() {
+  qs("#download-btn-stats")?.addEventListener("click", goToPrint);
+  qs("#print-btn-stats")?.addEventListener("click", goToPrint);
+}
+
+/* ---------- PDF Preview Settings (layout / paper / typography) ---------- */
+const PDF_SETTINGS_KEY = "mcq-exam-pdf-settings";
+const PDF_SETTINGS_DEFAULTS = {
+  // Option layout is no longer a stored/global setting — every question
+  // auto-detects its own layout during pagination (see chooseBestOptionLayout()).
+  paperSize: "A4",       // "A4" | "Legal" | "Letter"
+  pageColor: "#ffffff",
+  // English/Bengali PDF fonts are fixed (not user-selectable — see
+  // PDF_FIXED_FONT_EN/PDF_FIXED_FONT_BN below) so these two keys stay
+  // only as the values every settings object carries, never read from
+  // a form control.
+  fontEn: "Times New Roman",
+  fontBn: "Noto Serif Bengali",
+  fontSize: 10,
+  lineHeight: 1.3,
+  fontColor: "#111111",
+};
+// PDF page typography is fixed, not user-configurable — no font
+// selector is shown in the PDF Settings panel. Times New Roman is
+// a common OS/Office font (falls back to Georgia/serif if absent);
+// Noto Serif Bengali is always available since it's loaded from
+// Google Fonts in <head>, so Bengali text never depends on a locally
+// installed font.
+const PDF_FIXED_FONT_EN = "Times New Roman";
+const PDF_FIXED_FONT_BN = "Noto Serif Bengali";
+// Guard: if the user closes the panel with the Download button, the
+// download should fire automatically once the panel finishes closing.
+let pendingPdfDownload = false;
+
+function getStoredPdfSettings() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PDF_SETTINGS_KEY) || "null");
+    // fontEn/fontBn are fixed and no longer user-selectable (no font
+    // selector in the panel) — always force these two regardless of
+    // what a pre-existing localStorage entry from before this change
+    // might still have saved (e.g. an old "Kalpurush" choice).
+    return Object.assign({}, PDF_SETTINGS_DEFAULTS, stored || {}, {
+      fontEn: PDF_FIXED_FONT_EN,
+      fontBn: PDF_FIXED_FONT_BN,
+    });
+  } catch (e) {
+    return Object.assign({}, PDF_SETTINGS_DEFAULTS);
+  }
+}
+
+function savePdfSettings(settings) {
+  localStorage.setItem(PDF_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function readPdfSettingsFormValues() {
+  const activePageColor = qs(".page-color-swatch.is-active")?.getAttribute("data-page-color") || PDF_SETTINGS_DEFAULTS.pageColor;
+  const activeFontColor = qs(".font-color-swatch.is-active")?.getAttribute("data-font-color") || PDF_SETTINGS_DEFAULTS.fontColor;
+  return {
+    paperSize: qs("#pdf-paper-size-select")?.value || PDF_SETTINGS_DEFAULTS.paperSize,
+    pageColor: activePageColor,
+    // Fixed, not user-selectable — no #pdf-font-en-select/#pdf-font-bn-select in the DOM.
+    fontEn: PDF_FIXED_FONT_EN,
+    fontBn: PDF_FIXED_FONT_BN,
+    fontSize: Number(qs("#pdf-font-size-range")?.value) || PDF_SETTINGS_DEFAULTS.fontSize,
+    lineHeight: Number(qs("#pdf-line-height-range")?.value) || PDF_SETTINGS_DEFAULTS.lineHeight,
+    fontColor: activeFontColor,
+  };
+}
+
+function setActiveSwatch(selector, matchAttr, value) {
+  qsa(selector).forEach((el) => {
+    el.classList.toggle("is-active", el.getAttribute(matchAttr) === value);
+  });
+}
+
+function populatePdfSettingsForm(settings) {
+  setActiveSwatch(".page-color-swatch", "data-page-color", settings.pageColor);
+  setActiveSwatch(".font-color-swatch", "data-font-color", settings.fontColor);
+
+  const paperSelect = qs("#pdf-paper-size-select");
+  const fontSizeRange = qs("#pdf-font-size-range");
+  const lineHeightRange = qs("#pdf-line-height-range");
+  const fontSizeValue = qs("#pdf-font-size-value");
+  const lineHeightValue = qs("#pdf-line-height-value");
+  const pageColorCustom = qs("#pdf-page-color-custom");
+  const fontColorCustom = qs("#pdf-font-color-custom");
+
+  if (paperSelect) paperSelect.value = settings.paperSize;
+  if (fontSizeRange) fontSizeRange.value = settings.fontSize;
+  if (lineHeightRange) lineHeightRange.value = settings.lineHeight;
+  if (fontSizeValue) fontSizeValue.textContent = settings.fontSize + "pt";
+  if (lineHeightValue) lineHeightValue.textContent = String(settings.lineHeight);
+  if (pageColorCustom) pageColorCustom.value = settings.pageColor;
+  if (fontColorCustom) fontColorCustom.value = settings.fontColor;
+
+  updatePdfTypographyPreview();
+}
+
+function updatePdfTypographyPreview() {
+  const preview = qs("#pdf-typography-preview");
+  if (!preview) return;
+  const values = readPdfSettingsFormValues();
+  const enEl = qs(".pdf-typography-preview__en", preview);
+  const bnEl = qs(".pdf-typography-preview__bn", preview);
+  preview.style.backgroundColor = values.pageColor;
+  if (enEl) {
+    enEl.style.fontFamily = `"${values.fontEn}", serif`;
+    enEl.style.fontSize = values.fontSize + "pt";
+    enEl.style.lineHeight = String(values.lineHeight);
+    enEl.style.color = values.fontColor;
+  }
+  if (bnEl) {
+    bnEl.style.fontFamily = `"${values.fontBn}", serif`;
+    bnEl.style.fontSize = values.fontSize + "pt";
+    bnEl.style.lineHeight = String(values.lineHeight);
+    bnEl.style.color = values.fontColor;
+  }
+}
+
+/** Applies stored/edited PDF settings to the live paper-canvas element.
+    Option layout is intentionally not part of this — it's decided per
+    question during pagination by chooseBestOptionLayout(), not a global
+    setting. */
+function applyPdfSettingsToCanvas(settings) {
+  const canvas = qs("#paper-canvas");
+  if (!canvas) return;
+  canvas.setAttribute("data-size", settings.paperSize);
+  // "en-bn" (mixed English question / Bengali options) also needs the
+  // Bengali font applied — usesLocalizedLabels() already treats "bn"
+  // and "en-bn" the same way for per-question label localization, so
+  // the canvas-level lang attribute should match that, not just "bn".
+  const activeLang = usesLocalizedLabels(liveExamState.session?.exam?.language) ? "bn" : "en";
+  canvas.setAttribute("lang", activeLang);
+  canvas.style.setProperty("--pdf-page-bg", settings.pageColor);
+  canvas.style.setProperty("--pdf-font-color", settings.fontColor);
+  canvas.style.setProperty("--pdf-font-en", `"${settings.fontEn}", serif`);
+  canvas.style.setProperty("--pdf-font-bn", `"${settings.fontBn}", "Noto Serif Bengali", serif`);
+  canvas.style.setProperty("--pdf-font-size", settings.fontSize + "pt");
+  canvas.style.setProperty("--pdf-line-height", String(settings.lineHeight));
+
+  // Keep the toolbar's paper-size quick-select (if present) in sync too.
+  const quickSelect = qs("#paper-size-select-print");
+  if (quickSelect) quickSelect.value = settings.paperSize;
+
+  // Page size, font size, and line height all change how much content
+  // fits per sheet, so re-paginate whenever any of those shift (or on
+  // first render). Layout/color changes alone don't affect pagination.
+  if (liveExamState.session) paginateExam();
+}
+
+/** Applies inline styles for one of the three option layouts (horizontal /
+    vertical / rectangular) directly to a single question's options wrap.
+      - "horizontal": A B C D run left-to-right in one line — used when
+        every option's text actually fits on a single line at that width.
+      - "rectangular": a balanced 2x2 grid (A/B on top, C/D below) — used
+        when options are too long for one row but fit without wrapping
+        in a 2-column grid.
+      - "vertical": stacked one per line — the fallback when even the
+        2-column grid wraps an option onto multiple lines.
+    Called per-question via chooseBestOptionLayout(), which measures the
+    real rendered wrap of this exact block at its true column width (see
+    paginateExam()) rather than guessing from option text length — a
+    short-looking LaTeX expression and a long plain-text string of the
+    same character count can wrap completely differently once actually
+    typeset, so text length alone isn't a reliable signal. */
+function applyOptionLayoutToWrap(wrap, layoutMode) {
+  if (layoutMode === "horizontal") {
+    wrap.style.display = "flex";
+    wrap.style.gridTemplateColumns = "";
+    wrap.style.flexWrap = "nowrap";
+    wrap.style.gap = "2mm 6mm";
+    qsa(".paper-opt", wrap).forEach((row) => {
+      // Equal-width columns that share the row (flex-basis 0, so width
+      // comes purely from flex-grow, not from content or a min-width
+      // floor) — four short options like "ক. 10" then really do sit
+      // side by side in one row instead of being forced to wrap just
+      // because each one previously had to claim 40mm regardless of
+      // how little text it actually held.
+      row.style.flex = "1 1 0";
+      row.style.minWidth = "0";
+      row.style.justifyContent = "flex-start";
+      row.style.gap = "2mm";
+    });
+  } else if (layoutMode === "rectangular") {
+    wrap.style.display = "grid";
+    wrap.style.flexWrap = "";
+    wrap.style.gridTemplateColumns = "1fr 1fr";
+    wrap.style.gap = "2mm 6mm";
+    qsa(".paper-opt", wrap).forEach((row) => {
+      row.style.flex = "";
+      row.style.minWidth = "";
+      row.style.justifyContent = "flex-start";
+      row.style.gap = "2mm";
+    });
+  } else {
+    // vertical
+    wrap.style.display = "block";
+    wrap.style.gridTemplateColumns = "";
+    wrap.style.flexWrap = "";
+    wrap.style.gap = "";
+    qsa(".paper-opt", wrap).forEach((row) => {
+      row.style.flex = "";
+      row.style.minWidth = "";
+      row.style.justifyContent = "space-between";
+      row.style.gap = "4mm";
+    });
+  }
+}
+
+function buildQuestionBlock(q, index, state, language) {
+  const useLocalized = usesLocalizedLabels(language);
+  const letters = optionLetters(useLocalized);
+  const block = document.createElement("div");
+  block.className = "paper-question" + (useLocalized ? " lang-bn" : "");
+  const numLine = document.createElement("div");
+  numLine.className = "paper-question__num";
+  numLine.textContent = `${formatQuestionNumber(index, useLocalized)} ${q.question}`;
+  block.appendChild(numLine);
+
+  const opts = document.createElement("div");
+  opts.className = "paper-question__opts";
+  q.options.forEach((optText, idx) => {
+    const isCorrectOpt = idx === q.correctAnswer;
+    const isSelectedWrong = idx === state.selected && state.isWrong;
+    const row = document.createElement("div");
+    row.className = "paper-opt" + (isCorrectOpt ? " pq-correct" : isSelectedWrong ? " pq-wrong" : "");
+    const left = document.createElement("span");
+    left.className = "paper-opt__text";
+    left.textContent = `${letters[idx]}. ${optText}`;
+    row.appendChild(left);
+    opts.appendChild(row);
+  });
+  block.appendChild(opts);
+
+  const exp = document.createElement("div");
+  exp.className = "paper-explanation";
+  exp.innerHTML = useLocalized ? `<b>ব্যাখ্যাঃ</b> ` : `<b>Explanation:</b> `;
+  exp.appendChild(document.createTextNode(q.explanation));
+  block.appendChild(exp);
+
+  // Layout (horizontal / rectangular / vertical) is NOT decided here —
+  // at this point the block isn't attached to the DOM at its real
+  // column width yet, so there's nothing accurate to measure against.
+  // A raw-text-length guess was tried here previously, but LaTeX markup
+  // (e.g. "$(a+b)(a^2+ab+b^2)$") measures long as a string while
+  // rendering short, and even a rendered-length estimate can't know
+  // whether a specific option actually wraps at the true printed column
+  // width. paginateExam() renders this block's KaTeX first, then
+  // measures real wrapping at the true column width via
+  // chooseBestOptionLayout() before pagination — see there.
+  renderMathIn(block);
+
+  return block;
+}
+
+/** Given one question's already-in-DOM .paper-question__opts wrap (at
+    its true rendered column width, with KaTeX already applied), tries
+    each layout from most-compact to least and keeps the first one where
+    no option's text wraps onto a second line within its own box.
+    Comparing scrollHeight to clientHeight does NOT reliably detect this:
+    with the default `overflow: visible`, a wrapped span's box just grows
+    to fit every line, so scrollHeight and clientHeight end up equal even
+    when the text wrapped — that comparison only works when the box's
+    height is constrained (e.g. overflow: hidden), which .paper-opt__text
+    is not. Instead this measures each option's actual rendered height
+    against a true one-line reference height (a clone of the same span
+    holding a short, definitely-one-line placeholder, laid out under the
+    exact same font/size/width) — if an option's real height comes out
+    taller than that one-line reference, its text wrapped, and this
+    layout doesn't fit. */
+function chooseBestOptionLayout(wrap) {
+  const layouts = ["horizontal", "rectangular", "vertical"];
+  for (const layout of layouts) {
+    if (layout === "vertical") return "vertical"; // always fits — nothing left to fall back to
+    applyOptionLayoutToWrap(wrap, layout);
+    const spans = qsa(".paper-opt__text", wrap);
+    const fits = spans.every((span) => !optionTextWraps(span));
+    if (fits) return layout;
+  }
+  return "vertical";
+}
+
+/** True if `span`'s content currently renders on more than one line.
+    Clones the span (same computed width, font, and content) with
+    `white-space: nowrap` forced on, so the clone always renders as
+    exactly one line — its height is the true single-line reference.
+    If the real span (which wraps normally) is taller than that
+    reference, its text broke onto 2+ lines at the current width. */
+function optionTextWraps(span) {
+  const clone = span.cloneNode(true);
+  clone.style.whiteSpace = "nowrap";
+  clone.style.position = "absolute";
+  clone.style.visibility = "hidden";
+  clone.style.width = "auto";
+  span.parentNode.appendChild(clone);
+  const oneLineHeight = clone.getBoundingClientRect().height;
+  span.parentNode.removeChild(clone);
+  const actualHeight = span.getBoundingClientRect().height;
+  return actualHeight > oneLineHeight + 1; // +1px rounding slack
+}
+
+/** Bengali labels for the PDF result-summary header, keyed to the same
+    English label used in the markup below. Falls back to the English
+    label itself for anything not listed. */
+const PDF_HEADER_LABELS_BN = {
+  "Total Points": "পূর্ণমানঃ",
+  "Time": "সময়ঃ",
+  "Obtained Marks": "প্রাপ্ত নম্বরঃ",
+  "Correct": "সঠিকঃ",
+  "Wrong": "ভুলঃ",
+  "Skipped": "বাদ দেওয়াঃ",
+  "Negative Marks": "নেগেটিভ নম্বরঃ",
+  "Percentage": "শতকরাঃ",
+};
+function pdfHeaderLabel(key, useLocalized) {
+  return useLocalized ? PDF_HEADER_LABELS_BN[key] : `${key}:`;
+}
+/** Localizes a duration string like "12:34" or "1:02:34" by converting
+    its digits to Bengali numerals when useLocalized is true; the H:MM:SS
+    structure itself is unchanged. */
+function localizeDuration(durationText, useLocalized) {
+  return useLocalized ? toBengaliDigits(durationText) : durationText;
+}
+/** Localizes any number/percentage for display: Bengali numerals when
+    useLocalized is true, left as-is (plain digits) otherwise. */
+function localizeNumber(value, useLocalized) {
+  return useLocalized ? toBengaliDigits(String(value)) : String(value);
+}
+/** Builds the first-page header (subject/topic on the left, a single
+    flattened logo+wordmark image on the right, and a result-stats table).
+    Returns null for continuation pages (2nd page onward) — those no
+    longer repeat the subject/topic line, so all of a continuation page's
+    vertical space goes to questions instead.
+    The old centered Marks/Time row has been removed entirely. Subject
+    and Topic get a "lang-bn" class when the exam's labels are localized
+    so the CSS can point them at --pdf-font-bn instead of --pdf-font-en.
+    The brand mark on the right is BRAND_LOCKUP_DATA_URI — a single
+    pre-rendered PNG (logo + "Examcamp" in Inter Bold, brand indigo)
+    rather than a live <img> + <span> pair, so html2canvas has nothing
+    left to mis-rasterize at print scale (see the constant's comment). */
+function buildPageHeader(exam, result, { isFirstPage, pageNumber }) {
+  if (!isFirstPage) return null;
+  const useLocalized = usesLocalizedLabels(exam.language);
+  const bnClass = useLocalized ? " lang-bn" : "";
+  const header = document.createElement("div");
+  header.className = "paper-header";
+  const negativeMarksTotal = Math.round((exam.negativeMarking || 0) * result.wrong * 100) / 100;
+  header.innerHTML = `
+    <div class="paper-header__top">
+      <div class="paper-header__titles">
+        <div class="paper-header__subject${bnClass}">${escapeHtml(exam.subject || "Exam")}</div>
+        <div class="paper-header__topic${bnClass}">${escapeHtml(exam.topic || "")}</div>
+      </div>
+      <img class="paper-header__brand" src="${BRAND_LOCKUP_DATA_URI}" alt="Examcamp" />
+    </div>
+    <div class="paper-header__stats-wrap">
+      <div class="paper-header__stats-line${bnClass}">
+        <span>${pdfHeaderLabel("Obtained Marks", useLocalized)} ${localizeNumber(result.obtainedMarks, useLocalized)}</span>
+        <span class="paper-header__stats-sep">|</span>
+        <span>${pdfHeaderLabel("Correct", useLocalized)} ${localizeNumber(result.correct, useLocalized)}</span>
+        <span class="paper-header__stats-sep">|</span>
+        <span>${pdfHeaderLabel("Wrong", useLocalized)} ${localizeNumber(result.wrong, useLocalized)}</span>
+        <span class="paper-header__stats-sep">|</span>
+        <span>${pdfHeaderLabel("Skipped", useLocalized)} ${localizeNumber(result.unanswered, useLocalized)}</span>
+        <span class="paper-header__stats-sep">|</span>
+        <span>${pdfHeaderLabel("Negative Marks", useLocalized)} ${localizeNumber(negativeMarksTotal, useLocalized)}</span>
+        <span class="paper-header__stats-sep">|</span>
+        <span>${pdfHeaderLabel("Percentage", useLocalized)} ${localizeNumber(result.percentage, useLocalized)}%</span>
+      </div>
+    </div>`;
+  return header;
+}
+
+function buildPageFooter(pageNumber, totalPages) {
+  const footer = document.createElement("div");
+  footer.className = "paper-page__footer";
+  const pad = (n) => String(n).padStart(2, "0");
+  footer.textContent = `Page ${pad(pageNumber)}/${pad(totalPages)}`;
+  return footer;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+/** Paginates the current exam session into real, page-sized .paper-page
+    sheets inside #paper-canvas. Each sheet gets its own top/bottom
+    padding and header/footer, and pages break visibly on screen and
+    when printed — instead of one continuous multi-column flow. */
+function paginateExam() {
+  const s = liveExamState.session;
+  if (!s) return;
+  const exam = s.exam, result = s.result;
+  const canvas = qs("#paper-canvas");
+  if (!canvas) return;
+
+  const settings = getStoredPdfSettings();
+
+  // Build every question block once, off-screen, so we can measure real
+  // rendered heights (font, size, and line-height already applied via
+  // the CSS custom properties on #paper-canvas). Option layout
+  // (horizontal/rectangular/vertical) is decided per-question further
+  // below, once each block is actually placed at its true column width —
+  // see chooseBestOptionLayout().
+  const blocks = exam.questions.map((q, index) => {
+    const state = getQuestionReviewState(s, q);
+    return buildQuestionBlock(q, index, state, exam.language);
+  });
+
+  // Usable content height per page = full page height minus top+bottom
+  // padding (16mm + 18mm) minus the first page's extra header height.
+  // Measured in pixels via a hidden probe so it matches actual rendering.
+  const pageDims = { A4: 297, Legal: 355.6, Letter: 279.4 };
+  const pageWidthsMm = { A4: 210, Legal: 215.9, Letter: 215.9 };
+  const pageHeightMm = pageDims[settings.paperSize] || pageDims.A4;
+  const pageWidthMm = pageWidthsMm[settings.paperSize] || pageWidthsMm.A4;
+
+  // Keep the browser's actual print page size in sync with the selected
+  // paper size, with zero @page margin (see the @media print rule above
+  // for why a nonzero margin here breaks pagination).
+  const dynamicPageSizeStyle = document.getElementById("dynamic-page-size");
+  if (dynamicPageSizeStyle) {
+    dynamicPageSizeStyle.textContent = `@page { size: ${pageWidthMm}mm ${pageHeightMm}mm; margin: 0; }`;
+  }
+
+  const mmToPx = (mm) => (mm / 25.4) * 96;
+  // Uniform 0.75in (19.05mm) margin on every side — see .paper-page.
+  const pageMarginMm = 19.05;
+  const pagePaddingMm = pageMarginMm * 2; // top + bottom sheet padding
+  // Smart footer clearance: the page already reserves a 19.05mm bottom
+  // margin, and the footer sits at `bottom: 7mm` within that margin
+  // (its ~3mm-tall text spans roughly the 7-10mm band from the page edge —
+  // see .paper-page__footer). So only a small extra gap is needed above
+  // that band, not a second large reserve stacked on top of the padding —
+  // just enough that the last line of a packed column never sits flush
+  // against the page number. This is also the hard guarantee that MCQs
+  // never encroach on the footer band: any question that would push past
+  // this reserved clearance is pushed to the next page instead (see the
+  // pagination loop below), rather than letting it overlap the footer.
+  const footerReserveMm = 7;
+  const usableHeightPx = mmToPx(pageHeightMm - pagePaddingMm - footerReserveMm);
+
+  // Real per-column width: page width minus left+right sheet margin
+  // (19.05mm each, see .paper-page) minus the inter-column gap (8mm, see
+  // .paper-columns), split across the 2 columns. Question blocks MUST be
+  // measured at this width, not the full page width — a narrower column
+  // wraps text onto more lines and is therefore taller, so measuring at
+  // full width previously underestimated real heights and let too much
+  // content get packed onto a page, overflowing the fixed-size,
+  // overflow:hidden .paper-page (the cut-off-text bug).
+  const sidePaddingMm = pageMarginMm;
+  const columnGapMm = 8;
+  const columnWidthMm = (pageWidthMm - sidePaddingMm * 2 - columnGapMm) / 2;
+
+  // Off-DOM probe to measure header + question heights at the current
+  // typography settings before committing to a page layout. Only the
+  // first page carries a header (buildPageHeader returns null for
+  // continuation pages), so continuation pages get the full usable
+  // height back for questions — no header height to account for there.
+  const probe = document.createElement("div");
+  probe.className = "paper-canvas";
+  probe.setAttribute("data-size", settings.paperSize);
+  probe.setAttribute("lang", canvas.getAttribute("lang") || (exam.language === "bn" ? "bn" : "en"));
+  probe.style.cssText = "position:absolute; visibility:hidden; pointer-events:none; left:-9999px; top:0; gap:0; padding:0;";
+  Array.from(canvas.style).forEach((prop) => {
+    if (prop.startsWith("--pdf-")) probe.style.setProperty(prop, canvas.style.getPropertyValue(prop));
+  });
+  const probePage = document.createElement("div");
+  probePage.className = "paper-page";
+  // Override the fixed page height from CSS (needed for accurate on-
+  // screen page sizing) so this probe can grow freely — otherwise
+  // overflow:hidden would clip content and heights would measure as 0.
+  probePage.style.height = "auto";
+  probePage.style.overflow = "visible";
+  const probeFirstHeader = buildPageHeader(exam, result, { isFirstPage: true, pageNumber: 1 });
+  const probeColumns = document.createElement("div");
+  probeColumns.className = "paper-columns";
+  probePage.appendChild(probeFirstHeader);
+  probePage.appendChild(probeColumns);
+  probe.appendChild(probePage);
+  document.body.appendChild(probe);
+
+  const firstHeaderHeight = probeFirstHeader.getBoundingClientRect().height
+    + (parseFloat(getComputedStyle(probeFirstHeader).marginBottom) || 0);
+  const contHeaderHeight = 0; // continuation pages have no header
+
+  // Measure each question block's real height at the true single-column
+  // width (see columnWidthMm above) — this is what actually determines
+  // how many lines its text wraps onto, and therefore its real height.
+  // getBoundingClientRect() does NOT include the block's own margin-bottom
+  // (.paper-question has margin-bottom: 5mm to space questions apart), so
+  // that margin must be added explicitly — omitting it previously made
+  // every block measure ~5mm shorter than its true footprint, and that
+  // shortfall compounded across a full column of questions until the last
+  // one on a page overran the reserved footer space (the footer-overlap
+  // bug: explanation text landing on top of "Page N/M").
+  //
+  // Each block's OWN node (not a clone) is used here, because
+  // chooseBestOptionLayout() needs to try each candidate layout and
+  // measure real text wrap at this exact column width — that decision
+  // has to stick for the block that actually ends up on the page, not
+  // get thrown away with a disposable clone.
+  probeColumns.style.display = "block";
+  probeColumns.style.width = `${columnWidthMm}mm`;
+  const heights = blocks.map((block) => {
+    probeColumns.appendChild(block);
+    const opts = qs(".paper-question__opts", block);
+    if (opts) applyOptionLayoutToWrap(opts, chooseBestOptionLayout(opts));
+    const rect = block.getBoundingClientRect();
+    const marginBottom = parseFloat(getComputedStyle(block).marginBottom) || 0;
+    const h = rect.height + marginBottom;
+    probeColumns.removeChild(block);
+    return h;
+  });
+  document.body.removeChild(probe);
+
+  // Pack questions into 2-column pages. For each page, first find the
+  // longest run of consecutive blocks (starting at the current index)
+  // whose combined height can be split between the two columns without
+  // either column exceeding the page's usable capacity — this is what
+  // actually determines how many questions land on a page, unlike a
+  // naive single-pass column fill (fill col0, then col1, then bail to a
+  // new page the instant col1's NEXT block doesn't fit). That naive
+  // version abandons whatever space is still free in col1 as soon as one
+  // block is too tall for it, even when a later, shorter block in the
+  // list would have fit there — the visible "big empty gap before the
+  // footer, then the very next question already on page 2" bug. Instead:
+  // grow the run one block at a time, and after each addition re-check
+  // that SOME split of the run-so-far into an ordered col0-prefix / col1-
+  // suffix keeps both columns within capacity (col0 always gets the
+  // first blocks, col1 the rest, so reading order — left column top to
+  // bottom, then right column — never changes). The run stops growing
+  // the moment no such split exists, which is exactly when the page is
+  // truly full, not just when one particular column happens to be full.
+  const pages = [];
+
+  // True if `runHeights` (in original order) can be split into a col0
+  // prefix and col1 suffix that each fit within `capacity`. Because
+  // column order must stay col0-then-col1 (not an arbitrary bin-packing
+  // assignment), the only free choice is WHERE the split point falls —
+  // so this just tries every split point and keeps the run balanced
+  // toward whichever split minimizes the taller column, which in
+  // practice also maximizes how much of the run fits.
+  const findBestSplit = (runHeights, capacity) => {
+    const n = runHeights.length;
+    const prefixSums = [0];
+    for (let i = 0; i < n; i++) prefixSums.push(prefixSums[i] + runHeights[i]);
+    const total = prefixSums[n];
+    let best = null; // { splitIndex, col0Height, col1Height }
+    for (let splitIndex = 0; splitIndex <= n; splitIndex++) {
+      const col0Height = prefixSums[splitIndex];
+      const col1Height = total - col0Height;
+      if (col0Height <= capacity && col1Height <= capacity) {
+        // Prefer the split that keeps both columns most evenly filled
+        // (minimizes the taller column) so pages read as visually
+        // balanced left/right rather than always cramming col0 full.
+        const tallest = Math.max(col0Height, col1Height);
+        if (!best || tallest < best.tallest) {
+          best = { splitIndex, tallest };
+        }
+      }
+    }
+    return best;
+  };
+
+  let cursor = 0;
+  let pageNumber = 0;
+  while (cursor < blocks.length) {
+    pageNumber += 1;
+    const headerHeight = pageNumber === 1 ? firstHeaderHeight : contHeaderHeight;
+    const capacity = usableHeightPx - headerHeight;
+
+    // Grow the run as long as some valid col0/col1 split still exists.
+    // Always keep at least one block on the page even if it alone
+    // exceeds capacity (matches prior behavior: never drop content).
+    let runEnd = cursor + 1;
+    let lastGoodSplit = findBestSplit(heights.slice(cursor, runEnd), capacity);
+    while (runEnd < blocks.length) {
+      const candidateSplit = findBestSplit(heights.slice(cursor, runEnd + 1), capacity);
+      if (!candidateSplit) break;
+      runEnd += 1;
+      lastGoodSplit = candidateSplit;
+    }
+
+    const runBlocks = blocks.slice(cursor, runEnd);
+    const splitIndex = lastGoodSplit ? lastGoodSplit.splitIndex : runBlocks.length;
+    pages.push({
+      col0: runBlocks.slice(0, splitIndex),
+      col1: runBlocks.slice(splitIndex),
+    });
+    cursor = runEnd;
+  }
+
+  // Commit: render the real pages into #paper-canvas, each wrapped in a
+  // .paper-page-frame so the on-screen scale-to-fit (applyPreviewScale)
+  // can shrink the visual page without leaving a blank gap beneath it.
+  // Columns are rendered as two explicit .paper-column elements matching
+  // exactly the col0/col1 split computed above — not CSS column-count
+  // auto-balancing, which could redistribute content differently than
+  // the height calculation above and overflow the page.
+  canvas.innerHTML = "";
+  const totalPages = pages.length;
+  pages.forEach((page, pageIndex) => {
+    const pageEl = document.createElement("div");
+    pageEl.className = "paper-page";
+    const pageHeader = buildPageHeader(exam, result, { isFirstPage: pageIndex === 0, pageNumber: pageIndex + 1 });
+    if (pageHeader) pageEl.appendChild(pageHeader);
+
+    const columns = document.createElement("div");
+    columns.className = "paper-columns";
+    const col0 = document.createElement("div");
+    col0.className = "paper-column";
+    page.col0.forEach((block) => col0.appendChild(block));
+    const col1 = document.createElement("div");
+    col1.className = "paper-column";
+    page.col1.forEach((block) => col1.appendChild(block));
+    columns.appendChild(col0);
+    columns.appendChild(col1);
+    pageEl.appendChild(columns);
+
+    pageEl.appendChild(buildPageFooter(pageIndex + 1, totalPages));
+
+    const frame = document.createElement("div");
+    frame.className = "paper-page-frame";
+    frame.appendChild(pageEl);
+    canvas.appendChild(frame);
+  });
+
+  applyPreviewScale();
+}
+
+/** Scales the on-screen page preview so a full A4/Legal/Letter sheet fits
+    the available viewport width without horizontal scrolling or visual
+    distortion — matching real print-preview behavior. The .paper-page
+    itself always keeps its true physical dimensions (mm); only the
+    visual presentation is scaled down, and print/export always renders
+    at true 100% size regardless of this on-screen scale. */
+function applyPreviewScale() {
+  const canvas = qs("#paper-canvas");
+  const firstPage = qs(".paper-page", canvas || undefined);
+  if (!canvas || !firstPage) return;
+
+  // Reset to natural size first so the measurement below reflects the
+  // page's true (unscaled) footprint, not a previously-applied scale.
+  canvas.style.setProperty("--pdf-preview-scale", "1");
+  const naturalWidth = firstPage.offsetWidth;
+  const naturalHeight = firstPage.offsetHeight;
+  if (!naturalWidth || !naturalHeight) return;
+
+  const horizontalPadding = 32; // matches .paper-canvas side padding on small screens
+  const availableWidth = Math.max(240, canvas.clientWidth - horizontalPadding);
+  const scale = Math.min(1, availableWidth / naturalWidth);
+
+  canvas.style.setProperty("--pdf-preview-scale", String(scale));
+  qsa(".paper-page-frame", canvas).forEach((frame) => {
+    frame.style.setProperty("--pdf-frame-w", `${naturalWidth * scale}px`);
+    frame.style.setProperty("--pdf-frame-h", `${naturalHeight * scale}px`);
+  });
+}
+
+function initPdfSettingsPanel() {
+  const modal = qs("#pdf-settings-modal");
+  if (!modal) return;
+
+  const triggers = qsa('[data-modal-open="pdf-settings-modal"]');
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      populatePdfSettingsForm(getStoredPdfSettings());
+      const note = qs("#pdf-settings-save-note");
+      if (note) note.textContent = "";
+    });
+  });
+
+  // Note: the layout cards in this panel are informational only (see the
+  // Layout section markup) — option layout is auto-detected per question,
+  // not a clickable/stored setting, so there's no click handler here.
+
+  qsa(".page-color-swatch", modal).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      qsa(".page-color-swatch", modal).forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      const custom = qs("#pdf-page-color-custom");
+      if (custom) custom.value = btn.getAttribute("data-page-color");
+      updatePdfTypographyPreview();
+      applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+    });
+  });
+  qs("#pdf-page-color-custom")?.addEventListener("input", (e) => {
+    qsa(".page-color-swatch", modal).forEach((b) => b.classList.remove("is-active"));
+    updatePdfTypographyPreview();
+    applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+  });
+
+  qsa(".font-color-swatch", modal).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      qsa(".font-color-swatch", modal).forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      const custom = qs("#pdf-font-color-custom");
+      if (custom) custom.value = btn.getAttribute("data-font-color");
+      updatePdfTypographyPreview();
+      applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+    });
+  });
+  qs("#pdf-font-color-custom")?.addEventListener("input", () => {
+    qsa(".font-color-swatch", modal).forEach((b) => b.classList.remove("is-active"));
+    updatePdfTypographyPreview();
+    applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+  });
+
+  qs("#pdf-paper-size-select")?.addEventListener("change", () => {
+    applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+  });
+
+  const fontSizeRange = qs("#pdf-font-size-range");
+  const lineHeightRange = qs("#pdf-line-height-range");
+  if (fontSizeRange) {
+    fontSizeRange.addEventListener("input", () => {
+      const val = qs("#pdf-font-size-value");
+      if (val) val.textContent = fontSizeRange.value + "pt";
+      updatePdfTypographyPreview();
+      applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+    });
+  }
+  if (lineHeightRange) {
+    lineHeightRange.addEventListener("input", () => {
+      const val = qs("#pdf-line-height-value");
+      if (val) val.textContent = lineHeightRange.value;
+      updatePdfTypographyPreview();
+      applyPdfSettingsToCanvas(readPdfSettingsFormValues());
+    });
+  }
+
+  qs("#pdf-settings-reset-btn")?.addEventListener("click", () => {
+    savePdfSettings(PDF_SETTINGS_DEFAULTS);
+    populatePdfSettingsForm(PDF_SETTINGS_DEFAULTS);
+    applyPdfSettingsToCanvas(PDF_SETTINGS_DEFAULTS);
+    const note = qs("#pdf-settings-save-note");
+    if (note) note.textContent = "Reset to defaults.";
+    showToast("PDF preview settings reset.", "info");
+  });
+
+  qs("#pdf-settings-save-btn")?.addEventListener("click", () => {
+    const values = readPdfSettingsFormValues();
+    savePdfSettings(values);
+    applyPdfSettingsToCanvas(values);
+    const note = qs("#pdf-settings-save-note");
+    if (note) note.textContent = "Settings saved.";
+    showToast("PDF preview settings saved.", "success");
+    closeModal("pdf-settings-modal");
+    // If the person opened settings via the Download button flow, resume
+    // the download automatically now that the panel has closed.
+    if (pendingPdfDownload) {
+      pendingPdfDownload = false;
+      setTimeout(() => downloadExam(), 350);
+    }
+  });
+}
+
+/* ---------- Admin: master answer sheet download ----------
+   Builds a synthetic "session" straight from a Central Live Exam's
+   pushed question bank (centralExamState.questionBank[examId]) and its
+   scheduling info, with every answer set to the correct option so the
+   paginated PDF reads as a full master answer key (all ✓, no ✕, no
+   skipped) rather than one subscriber's personal attempt. Reuses the
+   exact same paginateExam()/downloadExam() pipeline as the subscriber
+   print/download flow. */
+function buildAdminAnswerSheetSession(examId) {
+  const exam = centralExamState.exams.find((e) => e.id === examId);
+  if (!exam) return null;
+  const rawQuestions = centralExamState.questionBank[examId] || [];
+  if (!rawQuestions.length) return null;
+
+  const questions = rawQuestions.map((q, i) => ({
+    id: `question-${i + 1}`,
+    question: q.question,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    explanation: q.explanation,
+  }));
+
+  const answers = {};
+  questions.forEach((q) => { answers[q.id] = q.correctAnswer; });
+
+  const sessionExam = {
+    examId, subject: exam.subject, topic: exam.topic,
+    language: exam.language || "en",
+    duration: exam.duration,
+    marksPerQuestion: exam.marksPerQuestion ?? 1,
+    // Always the current site-wide Settings → Exam Preferences value,
+    // not whatever was saved on the exam when it was created — so
+    // changing that one setting instantly applies everywhere, including
+    // exams that already exist.
+    negativeMarking: Number(getStoredExamPrefs().negativeMarkValue ?? 0.25),
+    questionCount: questions.length,
+    questions,
+  };
+
+  const session = {
+    exam: sessionExam,
+    answers,
+    markedForReview: [],
+    currentQuestion: 0,
+    status: "completed",
+    startedAt: Date.now(),
+  };
+  session.result = calculateResult(session);
+  return session;
+}
+
+/** Opens the print/preview view pre-loaded with a Central Live Exam's
+    master answer sheet (Admin Panel → Results tab → "Download Answer
+    Sheet"). The print view's back button is retargeted to return to
+    the admin results tab instead of the subscriber Statistics page. */
+function enterAdminAnswerSheetPrint(examId) {
+  const session = buildAdminAnswerSheetSession(examId);
+  if (!session) { showToast("This Live Exam has no questions yet.", "danger"); return; }
+  liveExamState.session = session;
+  showView("print");
+  const backBtn = qs("#print-back-btn");
+  if (backBtn) backBtn.setAttribute("data-spa-nav", "live-exam-admin");
+  const settings = getStoredPdfSettings();
+  const canvas = qs("#paper-canvas");
+  if (canvas) {
+    canvas.setAttribute("data-size", settings.paperSize);
+    canvas.setAttribute("lang", usesLocalizedLabels(session.exam.language) ? "bn" : "en");
+    canvas.style.setProperty("--pdf-page-bg", settings.pageColor);
+    canvas.style.setProperty("--pdf-font-color", settings.fontColor);
+    canvas.style.setProperty("--pdf-font-en", `"${settings.fontEn}", serif`);
+    canvas.style.setProperty("--pdf-font-bn", `"${settings.fontBn}", "Noto Serif Bengali", serif`);
+    canvas.style.setProperty("--pdf-font-size", settings.fontSize + "pt");
+    canvas.style.setProperty("--pdf-line-height", String(settings.lineHeight));
+  }
+  paginateExam();
+  const quickSelect = qs("#paper-size-select-print");
+  if (quickSelect) quickSelect.value = settings.paperSize;
+}
+
+/* ---------- Print view ---------- */
+function enterPrint() {
+  const session = restoreExamSession();
+  if (!session || session.status !== "completed" || !session.result) {
+    showToast("No completed exam available to print.", "danger");
+    showView("home");
+    return;
+  }
+  // Same publish gate as enterStatistics() — the Download/Print buttons
+  // that call this live inside #stats-result-content, which is already
+  // hidden while a Live Exam's result is pending publish, so this path
+  // isn't reachable through normal clicking. But the Print view doesn't
+  // re-check anything on its own, so a stale browser-history entry (the
+  // student opened Print once, the admin later un-publishes the exam,
+  // then Back/Forward restores this view) could otherwise still show
+  // the cached score. Re-checking here closes that gap directly instead
+  // of relying solely on the buttons being hidden upstream.
+  const liveExam = session.exam.liveExamId
+    ? centralExamState.exams.find((e) => e.id === session.exam.liveExamId)
+    : null;
+  if (liveExam && !liveExam.published) {
+    enterStatistics(session); // shows the same "waiting for publish" state
+    return;
+  }
+  liveExamState.session = session;
+  showView("print");
+  const backBtn = qs("#print-back-btn");
+  if (backBtn) backBtn.setAttribute("data-spa-nav", "stats");
+  const settings = getStoredPdfSettings();
+  const canvas = qs("#paper-canvas");
+  if (canvas) {
+    canvas.setAttribute("data-size", settings.paperSize);
+    canvas.setAttribute("lang", usesLocalizedLabels(session.exam?.language) ? "bn" : "en");
+    canvas.style.setProperty("--pdf-page-bg", settings.pageColor);
+    canvas.style.setProperty("--pdf-font-color", settings.fontColor);
+    canvas.style.setProperty("--pdf-font-en", `"${settings.fontEn}", serif`);
+    canvas.style.setProperty("--pdf-font-bn", `"${settings.fontBn}", "Noto Serif Bengali", serif`);
+    canvas.style.setProperty("--pdf-font-size", settings.fontSize + "pt");
+    canvas.style.setProperty("--pdf-line-height", String(settings.lineHeight));
+  }
+  paginateExam();
+  const quickSelect = qs("#paper-size-select-print");
+  if (quickSelect) quickSelect.value = settings.paperSize;
+}
+/** True filename slug: lowercase, ASCII letters/numbers only, hyphenated. */
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "exam";
+}
+
+/** Builds and downloads a real .pdf file from the current paginated
+    #paper-canvas — no browser print dialog involved. Each already-
+    paginated .paper-page is rasterized with html2canvas at true 100%
+    scale (bypassing whatever on-screen fit-to-viewport zoom is active)
+    and placed onto its own page of a jsPDF document sized to match the
+    selected paper size, then saved directly via the browser's normal
+    file-download mechanism. */
+async function downloadExam() {
+  const canvas = qs("#paper-canvas");
+  const pageEls = canvas ? qsa(".paper-page", canvas) : [];
+  if (!canvas || !pageEls.length) {
+    showToast("Nothing to download yet.", "danger");
+    return;
+  }
+  if (typeof window.html2canvas !== "function" || !window.jspdf || !window.jspdf.jsPDF) {
+    showToast("The PDF library didn't load - check your connection and try again.", "danger");
+    return;
+  }
+
+  const btn = qs("#download-btn-print");
+  if (btn) btn.setAttribute("disabled", "true");
+  showToast("Preparing your PDF…", "info");
+
+  const settings = getStoredPdfSettings();
+  const pageDims = { A4: [210, 297], Legal: [215.9, 355.6], Letter: [215.9, 279.4] };
+  const [pageWmm, pageHmm] = pageDims[settings.paperSize] || pageDims.A4;
+
+  // Render at true 100% size for capture — the on-screen preview may be
+  // scaled down to fit the viewport (--pdf-preview-scale), which must not
+  // leak into the exported file.
+  //
+  // IMPORTANT (mobile fix): earlier versions of this mutated the live,
+  // visible .paper-page/.paper-page-frame in place (removing the scale
+  // transform, then clipping the frame with overflow:hidden) so it could
+  // capture the page at true size. But the frame's reserved footprint is
+  // still the *scaled-down* size, so clipping it to that while the page
+  // inside is un-transformed just crops the visible on-screen preview
+  // into a broken, partially-cut view for the whole capture loop — which
+  // is exactly the corruption seen on mobile. The safe fix is to never
+  // touch the visible page at all: clone each page into an off-screen
+  // container (rendered, but positioned far outside the viewport so nothing
+  // shifts, reflows, or visibly clips on screen), capture the clone at
+  // true 100% size, then discard it.
+  // The container is appended inside #paper-canvas (not document.body) so
+  // the clone still inherits the live --pdf-font-en/--pdf-font-bn/
+  // --pdf-font-color/--pdf-font-size/--pdf-line-height/--pdf-page-bg
+  // custom properties set on #paper-canvas by the PDF Settings panel —
+  // position:fixed still takes it completely out of the visible layout
+  // regardless of where in the DOM it lives.
+  const offscreen = document.createElement("div");
+  offscreen.style.position = "fixed";
+  offscreen.style.top = "0";
+  offscreen.style.left = "-99999px";
+  offscreen.style.zIndex = "-1";
+  offscreen.style.pointerEvents = "none";
+  canvas.appendChild(offscreen);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: [pageWmm, pageHmm], orientation: "portrait" });
+
+    for (let i = 0; i < pageEls.length; i++) {
+      const pageEl = pageEls[i];
+      // Clone at true 100% size (no scale-down transform, no box-shadow —
+      // both are purely on-screen preview concerns) and capture the clone,
+      // not the live page, so the visible preview is never touched.
+      const clone = pageEl.cloneNode(true);
+      clone.style.setProperty("transform", "none", "important");
+      clone.style.setProperty("box-shadow", "none", "important");
+      offscreen.innerHTML = "";
+      offscreen.appendChild(clone);
+
+      const rendered = await window.html2canvas(clone, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: settings.pageColor || "#ffffff",
+      });
+
+      const imgData = rendered.toDataURL("image/jpeg", 0.95);
+      if (i > 0) doc.addPage([pageWmm, pageHmm], "portrait");
+      doc.addImage(imgData, "JPEG", 0, 0, pageWmm, pageHmm);
+    }
+
+    const s = liveExamState.session;
+    const subject = s && s.exam && s.exam.subject ? s.exam.subject : "exam";
+    doc.save(`${slugify(subject)}-mcq-exam.pdf`);
+    showToast("PDF downloaded.", "success");
+  } catch (err) {
+    console.error("PDF export failed:", err);
+    showToast("Couldn't generate the PDF. Please try again.", "danger");
+  } finally {
+    offscreen.remove();
+    if (btn) btn.removeAttribute("disabled");
+  }
+}
+function initPrintView() {
+  qs("#download-btn-print")?.addEventListener("click", () => {
+    const modal = qs("#pdf-settings-modal");
+    if (modal && modal.classList.contains("is-open")) {
+      // Settings panel is open — close it first, then auto-download once closed.
+      pendingPdfDownload = true;
+      closeModal("pdf-settings-modal");
+      setTimeout(() => {
+        if (pendingPdfDownload) { pendingPdfDownload = false; downloadExam(); }
+      }, 350);
+    } else {
+      downloadExam();
+    }
+  });
+  // Keep the on-screen page preview correctly scaled to the viewport
+  // (e.g. rotating a tablet, resizing a desktop window).
+  window.addEventListener("resize", debounce(() => {
+    if (qs("#view-print")?.classList.contains("is-active")) applyPreviewScale();
+  }, 150));
+}
+
+/* ==========================================================================
+   SUB-PAGES — Exams / History / Statistics demo data + rendering.
+   No multi-exam history store exists yet (only one active session is
+   persisted), so these three pages render representative sample data that
+   matches the dashboard's summary numbers (12 exams, 78% avg, 1,240 qs).
+   ========================================================================== */
+/** Every exam the user has generated, in-progress or completed, read
+    straight from localStorage (see EXAM_HISTORY_KEY / upsertExamHistory).
+    No more demo/sample data — Exams, History, and Statistics below are
+    built entirely from real exam sessions. */
+function getAllExamRecords() {
+  return loadExamHistory();
+}
+
+const EXAM_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+const HISTORY_ARROW_SVG = '<svg class="record-row__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function scoreBadgeClass(score) {
+  if (score >= 80) return "badge-success";
+  if (score >= 60) return "badge-primary";
+  return "badge-danger";
+}
+
+/** Short "26 Aug 2026"-style date from a record's timestamp. */
+function formatRecordDate(rec) {
+  const ts = rec.result?.submittedAt || rec.updatedAt || rec.startedAt;
+  if (!ts) return "";
+  return new Date(ts).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+}
+
+/** Empty-state row shown when a list has nothing to display yet. */
+function emptyStateRow(message) {
+  return `<div class="record-row-empty text-secondary text-small" style="padding: var(--space-6); text-align: center;">${escapeHtml(message)}</div>`;
+}
+
+/** Clicking a record row: resume an in-progress exam, or reopen a
+    completed exam's results/analytics — without disturbing whichever
+    exam is currently "active" in SESSION_STORAGE_KEY. */
+function openExamRecord(rec) {
+  if (rec.status === "completed" && rec.result) {
+    enterStatistics(rec);
+  } else {
+    // Only the single "active session" slot can actually be resumed
+    // question-by-question, so this only works when the record clicked
+    // is that same in-progress session; otherwise there's nothing live
+    // to resume.
+    const current = restoreExamSession();
+    if (current && current.sessionId === rec.sessionId) {
+      enterLiveExam();
+    } else {
+      showToast("This exam can no longer be resumed.", "info");
+    }
+  }
+}
+
+function wireRecordRowClicks(list, records) {
+  qsa(".record-row", list).forEach((row, i) => {
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => openExamRecord(records[i]));
+  });
+}
+
+/** Renders one practice-exam record row (in-progress or completed) in
+    the shared .record-row shape — used by the History page's Practice
+    Exams tab. Kept close to the exam-mode-review flow: clicking a row
+    resumes an in-progress exam or reopens a completed one's analytics. */
+function renderPracticeExamRow(rec) {
+  const questionCount = rec.exam.questions.length;
+  const statusBadge = rec.status === "completed"
+    ? `<span class="badge badge-success"><span class="badge__dot"></span>Completed</span>`
+    : `<span class="badge badge-warning"><span class="badge__dot"></span>In Progress</span>`;
+  const answered = Object.keys(rec.answers || {}).length;
+  const sideInfo = rec.status === "completed"
+    ? `<div class="record-row__score"><div class="record-row__score-value">${rec.result.percentage}%</div><div class="record-row__score-label">Score</div></div>`
+    : `<div class="record-row__score"><div class="record-row__score-value">${answered}/${questionCount}</div><div class="record-row__score-label">Progress</div></div>`;
+  return `
+      <div class="record-row">
+        <span class="record-row__icon">${EXAM_ICON_SVG}</span>
+        <div class="record-row__body">
+          <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")}</div>
+          <div class="record-row__topic">${escapeHtml(rec.exam.topic || "")}</div>
+          <div class="record-row__meta">
+            <span>${questionCount} questions</span>
+            <span class="record-row__meta-sep">·</span>
+            <span>${formatRecordDate(rec)}</span>
+            <span class="record-row__meta-sep">·</span>
+            ${statusBadge}
+          </div>
+        </div>
+        <div class="record-row__side">
+          ${sideInfo}
+          ${HISTORY_ARROW_SVG}
+        </div>
+      </div>`;
+}
+
+/** Returns this subscriber's own results from ended, published Central
+    Live Exams — the "Live Exam" tab on the History page. Looks
+    up centralExamState.merit for a "You" row on each published exam;
+    once live exams are backed by a real server this should instead
+    read the subscriber's own per-exam attempt records. */
+function getLiveExamResultRecords() {
+  const now = Date.now();
+  return centralExamState.exams
+    .filter((exam) => exam.published && now >= exam.start + exam.duration * 60 * 1000)
+    .map((exam) => {
+      const selfRow = (centralExamState.merit || []).find((m) => m.self);
+      return {
+        exam,
+        percentage: selfRow ? selfRow.score : null,
+        submittedAt: exam.start + exam.duration * 60 * 1000,
+      };
+    })
+    .sort((a, b) => b.submittedAt - a.submittedAt);
+}
+
+/** Renders the "History" sub-page: Central Live Exam results (published
+    only) in one tab, this student's own practice exams in the other.
+    The summary strip at the top combines both sources. */
+function renderHistoryPage() {
+  const liveList = qs("#history-live-list");
+  const practiceList = qs("#history-list");
+  if (!liveList || !practiceList) return;
+
+  const completedPractice = getAllExamRecords().filter((rec) => rec.status === "completed");
+  const liveResults = getLiveExamResultRecords();
+
+  // ---- Live Exam tab ----
+  if (liveResults.length === 0) {
+    liveList.innerHTML = emptyStateRow("No published live exam results yet - they'll appear here once the admin publishes them.");
+  } else {
+    liveList.innerHTML = liveResults.map((r) => `
+      <div class="record-row">
+        <span class="record-row__icon" style="background-color: var(--color-danger-light); color: var(--color-danger);"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M6.2 6.2a8.1 8.1 0 0 0 0 11.6M17.8 6.2a8.1 8.1 0 0 1 0 11.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <div class="record-row__body">
+          <div class="record-row__title">${escapeHtml(r.exam.subject)}</div>
+          <div class="record-row__topic">${escapeHtml(r.exam.topic)}</div>
+          <div class="record-row__meta">
+            <span>${r.exam.questionCount} questions</span>
+            <span class="record-row__meta-sep">·</span>
+            <span>${new Date(r.submittedAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" })}</span>
+            <span class="record-row__meta-sep">·</span>
+            <span class="badge badge-danger">Central Live Exam</span>
+          </div>
+        </div>
+        <div class="record-row__side">
+          ${r.percentage != null ? `<span class="badge ${scoreBadgeClass(r.percentage)}">${r.percentage}%</span>` : `<span class="badge badge-neutral">-</span>`}
+        </div>
+      </div>`).join("");
+  }
+
+  // ---- Practice Exams tab ----
+  if (completedPractice.length === 0) {
+    practiceList.innerHTML = emptyStateRow("No completed practice exams yet - generate one from the Home page to see it here.");
+  } else {
+    practiceList.innerHTML = completedPractice.map(renderPracticeExamRow).join("");
+    wireRecordRowClicks(practiceList, completedPractice);
+  }
+}
+
+/** Renders the "Statistics" overview sub-page: per-subject average score
+    plus a short recent-results list, both from real completed exams. */
+function renderStatisticsPage() {
+  const bySubject = qs("#subject-breakdown-list");
+  const recent = qs("#stats-recent-list");
+  if (!bySubject || !recent) return;
+
+  const completed = getAllExamRecords().filter((rec) => rec.status === "completed");
+
+  // ---- Practice Exam tab summary ----
+  const practiceExamsEl = qs("#stats-overview-practice-exams"), practiceAvgEl = qs("#stats-overview-practice-avg"), practiceQEl = qs("#stats-overview-practice-questions");
+  const practiceAvg = completed.length ? Math.round(completed.reduce((a, r) => a + r.result.percentage, 0) / completed.length) : 0;
+  const practiceQuestions = completed.reduce((a, r) => a + r.exam.questions.length, 0);
+  if (practiceExamsEl) practiceExamsEl.textContent = completed.length;
+  if (practiceAvgEl) practiceAvgEl.textContent = `${practiceAvg}%`;
+  if (practiceQEl) practiceQEl.textContent = practiceQuestions.toLocaleString();
+
+  // ---- Live Exam tab summary ----
+  const liveResults = getLiveExamResultRecords();
+  const liveExamsEl = qs("#stats-overview-live-exams"), liveAvgEl = qs("#stats-overview-live-avg"), liveQEl = qs("#stats-overview-live-questions");
+  const liveScored = liveResults.filter((r) => r.percentage != null);
+  const liveAvg = liveScored.length ? Math.round(liveScored.reduce((a, r) => a + r.percentage, 0) / liveScored.length) : 0;
+  const liveQuestions = liveResults.reduce((a, r) => a + (r.exam.questionCount || 0), 0);
+  if (liveExamsEl) liveExamsEl.textContent = liveResults.length;
+  if (liveAvgEl) liveAvgEl.textContent = `${liveAvg}%`;
+  if (liveQEl) liveQEl.textContent = liveQuestions.toLocaleString();
+
+  if (completed.length === 0) {
+    bySubject.innerHTML = emptyStateRow("No data yet - complete an exam to see your subject breakdown.");
+    recent.innerHTML = emptyStateRow("No completed exams yet.");
+    return;
+  }
+
+  const grouped = {};
+  completed.forEach((rec) => {
+    const subject = rec.exam.subject || "General";
+    if (!grouped[subject]) grouped[subject] = [];
+    grouped[subject].push(rec.result.percentage);
+  });
+  const subjects = Object.keys(grouped).map((name) => {
+    const scores = grouped[name];
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    return { name, avg };
+  }).sort((a, b) => b.avg - a.avg);
+
+  bySubject.innerHTML = subjects.map((s) => `
+    <div class="subject-breakdown-row">
+      <span class="subject-breakdown-row__name">${escapeHtml(s.name)}</span>
+      <span class="subject-breakdown-row__bar-track"><span class="subject-breakdown-row__bar-fill" style="width:${s.avg}%;"></span></span>
+      <span class="subject-breakdown-row__value">${s.avg}%</span>
+    </div>`).join("");
+
+  const recentRecords = completed.slice(0, 5);
+  recent.innerHTML = recentRecords.map((rec) => `
+    <div class="record-row record-row--compact-stats">
+      <span class="record-row__icon">${EXAM_ICON_SVG}</span>
+      <div class="record-row__body">
+        <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")}</div>
+        <div class="record-row__topic">${escapeHtml(rec.exam.topic || "")}</div>
+      </div>
+      <div class="record-row__side">
+        <span class="badge ${scoreBadgeClass(rec.result.percentage)}">${rec.result.percentage}%</span>
+      </div>
+    </div>`).join("");
+  wireRecordRowClicks(recent, recentRecords);
+}
+
+/* ==========================================================================
+   CENTRAL LIVE EXAM — subscriber hub + admin panel.
+   Demo/local-only data model for now: everything lives in
+   centralExamState and is persisted to localStorage, mirroring how
+   the rest of this single-file app works before a backend exists.
+   Swap CENTRAL_EXAM_STORAGE_KEY's contents for real Firestore reads
+   once the Admin Panel's actions are wired to the server.
+   ========================================================================== */
+const LIVE_EXAM_ADMIN_EMAILS = ["rifat.webflow@gmail.com"];
+// Practice Admin Panel is intentionally stricter than Live Exam's: no
+// assistant-admin tier, no per-subject access — a single hardcoded owner
+// email, matching the same account already used for Live Exam's primary
+// admin. See isPracticeAdmin() below.
+const PRACTICE_ADMIN_EMAILS = ["rifat.webflow@gmail.com"];
+// Base URL of the Cloudflare Worker fronting the R2 bucket that stores
+// Practice Mode's question banks (see /worker/worker.js and its README
+// for deployment). PLACEHOLDER — replace with the real
+// "https://examcamp-practice-api.<your-subdomain>.workers.dev" once the
+// Worker is deployed; every call site below builds off this one constant
+// so that's the only edit needed.
+const PRACTICE_API_BASE = "https://damp-field-441cexamcamp-practice-api.rifat-webflow.workers.dev";
+
+/* PRACTICE_API_BASE readiness check — fails loudly instead of silently
+   faking success. This file previously had a localStorage-backed mock
+   here that intercepted every call to PRACTICE_API_BASE; it has been
+   removed because a mock that "just works" is exactly what lets a
+   never-deployed Worker slip into production unnoticed. This replacement
+   does nothing to actual requests — it only warns once if the placeholder
+   URL is still set, so the real failure (network error / 404) surfaces
+   normally instead of being masked. Delete this block once you've
+   deployed the Worker per /worker/README.md and updated PRACTICE_API_BASE
+   above — the condition can never be true again after that, so it
+   becomes dead code. */
+if (PRACTICE_API_BASE.includes("YOUR-SUBDOMAIN")) {
+  console.error(
+    "[Practice] PRACTICE_API_BASE is still the placeholder URL — Practice Mode " +
+    "reads/writes will fail until you deploy the Worker and update this constant. " +
+    "See /worker/README.md."
+  );
+}
+
+/** Fetches one topic's question bank from the Worker/R2.
+    Returns the saved-shape question array ({question, options,
+    correctAnswer, explanation}[]) — the same shape createMCQBuilder's
+    loadExam() already knows how to convert into its editor draft shape,
+    so callers can feed the result straight into that same conversion. */
+async function fetchPracticeTopicQuestions(subjectId, topicId) {
+  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`);
+  if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data.questions) ? data.questions : [];
+}
+
+/** Overwrites one topic's question bank in R2 via the Worker. Admin-only:
+    the Worker itself checks the Firebase ID token, but a signed-in check
+    here avoids a pointless network round-trip for a request that would
+    just come back 401. Throws on any failure so callers (PracticeMCQBuilder's
+    pushQuestions) can surface a real error instead of silently "succeeding". */
+async function pushPracticeTopicQuestions(subjectId, topicId, questions) {
+  if (!isSignedIn()) throw new Error("Not signed in.");
+  const idToken = await firebase.auth().currentUser.getIdToken();
+  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+    body: JSON.stringify({ questions }),
+  });
+  if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
+  return res.json();
+}
+
+/** Deletes one topic's question bank file from R2 via the Worker — used
+    when the topic itself is deleted in the Subjects tab, so R2 doesn't
+    keep an orphaned file around. Best-effort: a failure here shouldn't
+    block the topic from being removed locally, so callers should treat
+    this as fire-and-forget with a logged/toasted warning, not a hard stop. */
+async function deletePracticeTopicQuestions(subjectId, topicId) {
+  if (!isSignedIn()) throw new Error("Not signed in.");
+  const idToken = await firebase.auth().currentUser.getIdToken();
+  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${idToken}` },
+  });
+  if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
+  return res.json();
+}
+
+/* ---------- Practice question-bank in-memory cache ----------
+   topic.questions no longer holds the real data (R2/Worker does) — this
+   Map caches per-topic fetches for the current page session so switching
+   between the student hub, practice runner, and admin editor doesn't
+   re-fetch the same topic repeatedly. Keyed the same way as
+   practiceProgressKey: `${subjectId}::${topicId}`. Cleared/updated
+   whenever the admin pushes new questions or deletes a topic, so nothing
+   ever reads stale data after an edit made in the same session. */
+const practiceQuestionCache = new Map();
+async function getPracticeTopicQuestions(subjectId, topicId, { forceRefresh = false } = {}) {
+  const key = `${subjectId}::${topicId}`;
+  if (!forceRefresh && practiceQuestionCache.has(key)) return practiceQuestionCache.get(key);
+  const questions = await fetchPracticeTopicQuestions(subjectId, topicId);
+  practiceQuestionCache.set(key, questions);
+  return questions;
+}
+function setPracticeTopicQuestionsCache(subjectId, topicId, questions) {
+  practiceQuestionCache.set(`${subjectId}::${topicId}`, questions);
+}
+function clearPracticeTopicQuestionsCache(subjectId, topicId) {
+  practiceQuestionCache.delete(`${subjectId}::${topicId}`);
+}
+
+const CENTRAL_EXAM_STORAGE_KEY = "mcq-central-exam-state-v1";
+
+function loadCentralExamState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CENTRAL_EXAM_STORAGE_KEY) || "null");
+    // One-time cleanup: earlier versions of this app seeded localStorage
+    // with sample placeholder exams (ids le1..le5). If those are still
+    // sitting in a real user's saved state, drop them so only genuinely
+    // admin-created exams remain.
+    if (saved && Array.isArray(saved.exams)) {
+      const placeholderIds = new Set(["le1", "le2", "le3", "le4", "le5"]);
+      saved.exams = saved.exams.filter((e) => !placeholderIds.has(e.id));
+      if (saved.questionBank) placeholderIds.forEach((id) => delete saved.questionBank[id]);
+    }
+    // One-time migration: subjects used to be a flat array of name strings
+    // ["Agronomy", ...]. They're now Subject/Campaign objects
+    // {id, name, startDate, endDate} so each subject can carry its own
+    // campaign date range and be edited/deleted independently.
+    if (saved && Array.isArray(saved.subjects) && saved.subjects.some((s) => typeof s === "string")) {
+      saved.subjects = saved.subjects.map((s) => (typeof s === "string" ? { id: "sub_" + s.toLowerCase().replace(/[^a-z0-9]+/g, "_"), name: s, startDate: "", endDate: "" } : s));
+    }
+    // One-time migration: members used to have no per-subject access list,
+    // meaning every subscriber could join every Subject Campaign's live
+    // exams. Give existing members an explicit `subjects` array so the
+    // new per-subject access control has something to check. Admins/
+    // Assistant Admins keep full access regardless of this list (see
+    // memberHasSubjectAccess).
+    if (saved && saved.subscribers && Array.isArray(saved.subscribers.members)) {
+      saved.subscribers.members.forEach((m) => {
+        if (!Array.isArray(m.subjects)) m.subjects = [];
+      });
+    }
+    // Ensure the "Enroll Now" popup has somewhere to write to on state
+    // saved before this feature existed.
+    if (saved && !Array.isArray(saved.enrollmentRequests)) {
+      saved.enrollmentRequests = [];
+    }
+    if (saved) return saved;
+  } catch (e) { /* fall through to clean defaults */ }
+
+  return {
+    campaign: {
+      name: "Live Exam Campaign",
+      subjectsCount: 0,
+      startDate: "",
+    },
+    exams: [],
+    subjects: [],
+    self: { rank: 0, given: 0, avgPercent: 0 },
+    merit: [],
+    subscribers: {
+      total: 1, active: 1, assistantAdmins: 0,
+      members: [
+        { email: LIVE_EXAM_ADMIN_EMAILS[0], role: "admin", subjects: [] },
+      ],
+    },
+    questionBank: {},
+    // Public "Enroll Now" popup submissions, awaiting admin review in the
+    // Subscribers tab. Each: { id, name, phone, email, courses: [names],
+    // mfsProvider, mfsTransactionId, submittedAt }. Approving one in the
+    // admin panel creates/updates the matching Member with subject access
+    // and removes it from this list; dismissing just removes it.
+    enrollmentRequests: [],
+  };
+}
+let centralExamState = loadCentralExamState();
+function saveCentralExamState() {
+  localStorage.setItem(CENTRAL_EXAM_STORAGE_KEY, JSON.stringify(centralExamState));
+}
+saveCentralExamState(); // persist any one-time placeholder cleanup immediately
+
+/* ==========================================================================
+   CENTRAL LIVE EXAM — Supabase sync layer.
+   `centralExamState` (above) stays exactly as it was: the in-memory/
+   localStorage cache every existing render/admin function already reads
+   and mutates directly. This section adds a Supabase-backed source of
+   truth on top of it, in three parts:
+     1. pullCentralExamStateFromSupabase() — fetches all rows on load and
+        rebuilds centralExamState from them (falls back to whatever was
+        already in localStorage if the network/query fails).
+     2. Table-specific save* functions — call these (instead of only
+        saveCentralExamState()) at each admin mutation site so the change
+        is written through to Supabase, not just localStorage.
+     3. subscribeCentralExamRealtime() — listens for Postgres changes on
+        live_exams / live_exam_questions / live_exam_submissions /
+        enrollment_requests so every open browser tab (subscriber and
+        admin alike) sees updates live, matching the old comment's goal
+        of "real Firestore reads" — now real Supabase reads.
+   ========================================================================== */
+
+/** Maps one row from public.subjects → the app's Subject/Campaign shape. */
+function subjectRowToApp(row) {
+  return { id: row.id, name: row.name, startDate: row.start_date || "", endDate: row.end_date || "" };
+}
+/** Maps one row from public.live_exams → the app's exam shape. */
+function examRowToApp(row) {
+  return {
+    id: row.id,
+    subject: row.subject,
+    topic: row.topic,
+    language: row.language,
+    start: new Date(row.start_at).getTime(),
+    duration: row.duration_minutes,
+    marksPerQuestion: Number(row.marks_per_question),
+    negativeMarking: Number(row.negative_marking),
+    status: row.status,
+    published: row.published,
+    questionCount: row.question_count,
+    subscriberCount: centralExamState.subscribers ? centralExamState.subscribers.total : 1,
+  };
+}
+/** Maps one row from public.members → the app's Member shape. */
+function memberRowToApp(row) {
+  return { email: row.email, name: row.name || "", phone: row.phone || "", role: row.role, subjects: row.subjects || [] };
+}
+/** Maps one row from public.enrollment_requests → the app's shape. */
+function enrollmentRowToApp(row) {
+  return {
+    id: String(row.id),
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    courses: row.courses || [],
+    mfsProvider: row.mfs_provider || "",
+    mfsTransactionId: row.mfs_transaction_id || "",
+    submittedAt: new Date(row.submitted_at).getTime(),
+  };
+}
+
+/** Fetches every Live Exam table from Supabase and rebuilds
+    centralExamState in place, then re-renders whatever's on screen. Call
+    once on startup (see the bottom of this app) and again after realtime
+    events if you want a full resync instead of a targeted patch. */
+async function pullCentralExamStateFromSupabase() {
+  try {
+    // SECURITY: live_exam_questions (which includes correct_answer for
+    // every question of every exam, including ones that haven't started
+    // and ones the current visitor isn't even enrolled in) is only fetched
+    // in bulk for admins. A non-admin's questionBank starts empty and is
+    // filled in one exam at a time, on demand, by fetchExamQuestionBank()
+    // below — called right before that specific exam is actually opened
+    // (join button / countdown-expiry auto-open), never speculatively.
+    // This is what the hard constraint "never expose correct answers
+    // during an active live exam" actually requires: not just hiding them
+    // in the UI, but never putting them in this visitor's browser at all
+    // for exams they aren't taking.
+    const isAdmin = isLiveExamAdmin();
+    const baseFetches = [
+      supabaseClient.from("subjects").select("*").order("created_at"),
+      supabaseClient.from("live_exams").select("*").order("start_at"),
+      supabaseClient.from("members").select("*"),
+      supabaseClient.from("enrollment_requests").select("*").eq("status", "pending").order("submitted_at"),
+    ];
+    if (isAdmin) {
+      baseFetches.push(supabaseClient.from("live_exam_questions").select("*").order("position"));
+    }
+    const results = await Promise.all(baseFetches);
+    const [subjectsRes, examsRes, membersRes, enrollRes, questionsRes] = results;
+    [subjectsRes, examsRes, membersRes, enrollRes, questionsRes].forEach((r) => {
+      if (r && r.error) throw r.error;
+    });
+
+    centralExamState.subjects = (subjectsRes.data || []).map(subjectRowToApp);
+    centralExamState.exams = (examsRes.data || []).map(examRowToApp);
+
+    if (isAdmin) {
+      const bank = {};
+      (questionsRes.data || []).forEach((q) => {
+        if (!bank[q.exam_id]) bank[q.exam_id] = [];
+        bank[q.exam_id].push({
+          question: q.question_html,
+          options: q.options,
+          correctAnswer: q.correct_answer,
+          explanation: q.explanation_html || "",
+        });
+      });
+      centralExamState.questionBank = bank;
+    } else {
+      // Keep any exam banks already fetched on demand this session
+      // (see fetchExamQuestionBank) rather than wiping them on every
+      // realtime resync.
+      centralExamState.questionBank = centralExamState.questionBank || {};
+    }
+
+    const members = (membersRes.data || []).map(memberRowToApp);
+    centralExamState.subscribers.members = members.length
+      ? members
+      : [{ email: LIVE_EXAM_ADMIN_EMAILS[0], role: "admin", subjects: [] }];
+    centralExamState.subscribers.total = members.length || 1;
+    centralExamState.subscribers.assistantAdmins = members.filter((m) => m.role === "assistant").length;
+
+    centralExamState.enrollmentRequests = (enrollRes.data || []).map(enrollmentRowToApp);
+
+    await refreshMeritFromSupabase();
+
+    saveCentralExamState(); // keep localStorage as an instant-load fallback
+    if (typeof renderCentralLiveExamHub === "function" && document.querySelector("#view-live-exam"))
+      renderCentralLiveExamHub();
+    // Only re-render the admin panel here if the user is actually looking
+    // at it right now (data-page === "live-exam-admin") — otherwise this
+    // fires on every realtime sync for EVERY visitor regardless of which
+    // view they're on, and for a non-admin that would trigger the
+    // "restricted" toast + redirect over and over in the background.
+    if (
+      typeof renderLiveExamAdminPanel === "function" &&
+      document.body.getAttribute("data-page") === "live-exam-admin"
+    )
+      renderLiveExamAdminPanel();
+  } catch (err) {
+    console.error("Could not load Live Exam data from Supabase — using local cache instead.", err);
+  }
+}
+
+/** Fetches ONE exam's question bank (with correct answers) from Supabase
+    and stores it into centralExamState.questionBank[examId], for callers
+    that don't already have it — i.e. non-admins, who no longer get every
+    exam's answers loaded in bulk (see pullCentralExamStateFromSupabase).
+    Safe/idempotent to call for an admin too: it's a no-op if already
+    cached. Callers (the join-exam click handler, and anywhere else that
+    is about to read centralExamState.questionBank[examId] for a specific
+    exam a visitor is actually entitled to take) must await this first. */
+async function fetchExamQuestionBank(examId) {
+  if (centralExamState.questionBank[examId]) return centralExamState.questionBank[examId];
+  const { data, error } = await supabaseClient
+    .from("live_exam_questions")
+    .select("*")
+    .eq("exam_id", examId)
+    .order("position");
+  if (error) {
+    console.error(`Could not load questions for exam ${examId}:`, error);
+    return [];
+  }
+  const bank = (data || []).map((q) => ({
+    question: q.question_html,
+    options: q.options,
+    correctAnswer: q.correct_answer,
+    explanation: q.explanation_html || "",
+  }));
+  centralExamState.questionBank[examId] = bank;
+  return bank;
+}
+
+/** Recomputes centralExamState.merit (leaderboard) and centralExamState.self
+    (this user's rank/given/avgPercent) from real submission rows, instead
+    of the old hardcoded demo array. Ranking is by each member's average
+    score-percent across all their submitted live exams. Only submissions
+    for exams the admin has actually published (exam.published === true)
+    are counted — otherwise a student's own rank/avg (and the merit list)
+    would reveal their result the moment they submit, before the admin
+    has chosen to publish it. */
+async function refreshMeritFromSupabase() {
+  const { data, error } = await supabaseClient.from("live_exam_submissions").select("exam_id, member_email, member_name, score_percent");
+  if (error) { console.error("Could not load merit data:", error); return; }
+
+  const publishedExamIds = new Set(centralExamState.exams.filter((e) => e.published).map((e) => e.id));
+
+  const byMember = new Map();
+  (data || []).filter((row) => publishedExamIds.has(row.exam_id)).forEach((row) => {
+    const entry = byMember.get(row.member_email) || { name: row.member_name, scores: [] };
+    entry.scores.push(Number(row.score_percent));
+    byMember.set(row.member_email, entry);
+  });
+
+  const myEmail = currentMemberEmail();
+  const merit = [...byMember.entries()].map(([email, entry]) => {
+    const avg = entry.scores.reduce((a, b) => a + b, 0) / entry.scores.length;
+    return { email, name: entry.name, score: Math.round(avg * 10) / 10, self: email === myEmail };
+  }).sort((a, b) => b.score - a.score);
+
+  centralExamState.merit = merit;
+
+  const mine = merit.find((m) => m.email === myEmail);
+  const myRank = mine ? merit.indexOf(mine) + 1 : 0;
+  const myEntry = byMember.get(myEmail);
+  centralExamState.self = {
+    rank: myRank,
+    given: myEntry ? myEntry.scores.length : 0,
+    avgPercent: mine ? mine.score : 0,
+  };
+}
+
+/** Saves one Subject (insert or update) to Supabase. Call this alongside
+    saveCentralExamState() at the admin "Save subject" action. */
+async function saveSubjectToSupabase(subject) {
+  const { error } = await supabaseClient.from("subjects").upsert({
+    id: subject.id, name: subject.name, start_date: subject.startDate || null, end_date: subject.endDate || null,
+  }, { onConflict: "id" });
+  if (error) console.error("Could not save subject:", error);
+}
+async function deleteSubjectFromSupabase(subjectId) {
+  const { error } = await supabaseClient.from("subjects").delete().eq("id", subjectId);
+  if (error) console.error("Could not delete subject:", error);
+}
+/** Renames a subject everywhere it's referenced (exams keep pointing at
+    it via a foreign key with ON UPDATE CASCADE, so only the subjects row
+    itself needs updating). */
+async function renameSubjectInSupabase(subjectId, newName) {
+  const { error } = await supabaseClient.from("subjects").update({ name: newName }).eq("id", subjectId);
+  if (error) console.error("Could not rename subject:", error);
+}
+
+/** Saves one Live Exam (insert or update) to Supabase. */
+async function saveLiveExamToSupabase(exam) {
+  const { error } = await supabaseClient.from("live_exams").upsert({
+    id: exam.id,
+    subject: exam.subject,
+    topic: exam.topic,
+    language: exam.language,
+    start_at: new Date(exam.start).toISOString(),
+    duration_minutes: exam.duration,
+    marks_per_question: exam.marksPerQuestion,
+    negative_marking: exam.negativeMarking,
+    status: exam.status || "scheduled",
+    published: !!exam.published,
+    question_count: exam.questionCount || 0,
+  }, { onConflict: "id" });
+  if (error) console.error("Could not save live exam:", error);
+}
+async function deleteLiveExamFromSupabase(examId) {
+  const { error } = await supabaseClient.from("live_exams").delete().eq("id", examId);
+  if (error) console.error("Could not delete live exam:", error);
+}
+
+/** Replaces every question for one exam in Supabase (delete-then-insert,
+    simplest correct way to handle reordering/edits from the builder). */
+async function saveQuestionBankToSupabase(examId, questions) {
+  const del = await supabaseClient.from("live_exam_questions").delete().eq("exam_id", examId);
+  if (del.error) { console.error("Could not clear old questions:", del.error); return; }
+  if (!questions.length) return;
+  const rows = questions.map((q, i) => ({
+    exam_id: examId,
+    position: i,
+    question_html: q.question,
+    options: q.options,
+    correct_answer: q.correctAnswer,
+    explanation_html: q.explanation || "",
+  }));
+  const { error } = await supabaseClient.from("live_exam_questions").insert(rows);
+  if (error) console.error("Could not save questions:", error);
+  else supabaseClient.from("live_exams").update({ question_count: questions.length }).eq("id", examId).then(() => {});
+}
+
+/** Saves one Member (insert or update) to Supabase. */
+async function saveMemberToSupabase(member) {
+  const { error } = await supabaseClient.from("members").upsert({
+    email: member.email, name: member.name || null, phone: member.phone || null,
+    role: member.role, subjects: member.subjects || [],
+  }, { onConflict: "email" });
+  if (error) console.error("Could not save member:", error);
+}
+async function deleteMemberFromSupabase(email) {
+  const { error } = await supabaseClient.from("members").delete().eq("email", email);
+  if (error) console.error("Could not delete member:", error);
+}
+
+/** Inserts a new public "Enroll Now" submission. */
+async function submitEnrollmentToSupabase(request) {
+  const { data, error } = await supabaseClient.from("enrollment_requests").insert({
+    name: request.name, phone: request.phone, email: request.email,
+    courses: request.courses || [], mfs_provider: request.mfsProvider || null,
+    mfs_transaction_id: request.mfsTransactionId || null,
+  }).select().single();
+  if (error) { console.error("Could not submit enrollment:", error); return null; }
+  return enrollmentRowToApp(data);
+}
+/** Marks an enrollment request approved/dismissed (soft-delete via status,
+    so the admin has an audit trail instead of hard-deleting the row). */
+async function resolveEnrollmentInSupabase(id, status) {
+  const { error } = await supabaseClient.from("enrollment_requests").update({ status }).eq("id", id);
+  if (error) console.error("Could not update enrollment request:", error);
+}
+
+/** Records a completed Live Exam submission (score) — this is what makes
+    the Merit/leaderboard tab and each member's rank/given/avgPercent
+    real instead of a hardcoded demo. Call this when a subscriber finishes
+    a live exam. */
+async function submitLiveExamResultToSupabase(examId, memberEmail, memberName, answers, obtainedMarks, totalMarks) {
+  const scorePercent = totalMarks > 0 ? Math.round((obtainedMarks / totalMarks) * 1000) / 10 : 0;
+  const { error } = await supabaseClient.from("live_exam_submissions").upsert({
+    exam_id: examId, member_email: memberEmail, member_name: memberName,
+    answers, score_percent: scorePercent, obtained_marks: obtainedMarks, total_marks: totalMarks,
+  }, { onConflict: "exam_id,member_email" });
+  if (error) { console.error("Could not submit live exam result:", error); return; }
+  await refreshMeritFromSupabase();
+  saveCentralExamState();
+  if (typeof renderLiveMerit === "function") renderLiveMerit();
+}
+
+/** Subscribes to Postgres realtime changes so every open tab sees Live
+    Exam updates (new exams, pushed questions, incoming submissions, new
+    enrollment requests) without a manual refresh. Safe to call once on
+    startup — Supabase free plan allows up to 200 concurrent realtime
+    connections, one per open tab here. */
+// A single push (e.g. PUSH LIVE with 40 questions) fans out into a burst
+// of separate realtime events: one DELETE + ~40 INSERTs on
+// live_exam_questions, plus an UPDATE on live_exams. Each event used to
+// call pullCentralExamStateFromSupabase() -> renderLiveExamAdminPanel()
+// -> MCQBuilder.render() on its own, which wipes and rebuilds the whole
+// #mcqp-questions-list DOM every time — visible as the Questions tab
+// "jumping" repeatedly while a push is in progress. Debouncing collapses
+// an entire burst into a single re-render once things settle.
+const debouncedPullCentralExamState = debounce(() => pullCentralExamStateFromSupabase(), 400);
+
+// While this admin's own pushIntoLive()/save* calls are writing to
+// Supabase, the local centralExamState is already correct (it was
+// updated locally before the write). There's no need to re-pull and
+// re-render in response to the realtime echo of our own writes — doing
+// so is what causes the Questions list to reset/jump mid-push. Any
+// change from ANOTHER tab/admin during this window is simply picked up
+// by the debounced pull right after the flag clears.
+let suppressRealtimeSelfEcho = false;
+
+function subscribeCentralExamRealtime() {
+  const pullUnlessSelfEcho = () => {
+    if (suppressRealtimeSelfEcho) return;
+    debouncedPullCentralExamState();
+  };
+  supabaseClient
+    .channel("live-exam-changes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, pullUnlessSelfEcho)
+    .on("postgres_changes", { event: "*", schema: "public", table: "members" }, pullUnlessSelfEcho)
+    .on("postgres_changes", { event: "*", schema: "public", table: "live_exams" }, pullUnlessSelfEcho)
+    .on("postgres_changes", { event: "*", schema: "public", table: "live_exam_questions" }, pullUnlessSelfEcho)
+    .on("postgres_changes", { event: "*", schema: "public", table: "live_exam_submissions" }, () => {
+      refreshMeritFromSupabase().then(() => {
+        saveCentralExamState();
+        if (typeof renderLiveMerit === "function") renderLiveMerit();
+        if (typeof renderCentralLiveExamHub === "function" && document.querySelector("#view-live-exam")) renderCentralLiveExamHub();
+      });
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "enrollment_requests" }, () => pullCentralExamStateFromSupabase())
+    .subscribe();
+}
+
+function isLiveExamAdmin() {
+  const email = (window.currentUserEmail || (firebase.auth().currentUser && firebase.auth().currentUser.email) || "").toLowerCase();
+  if (!email) return false;
+  if (LIVE_EXAM_ADMIN_EMAILS.map((e) => e.toLowerCase()).includes(email)) return true;
+  return (centralExamState.subscribers.members || []).some((m) => m.email.toLowerCase() === email && (m.role === "admin" || m.role === "assistant"));
+}
+// Practice Admin: exact-match only against PRACTICE_ADMIN_EMAILS — unlike
+// isLiveExamAdmin() above, there's no assistant-admin fallback here, per
+// spec ("শুধুমাত্র rifat.webflow@gmail.com" — no other account, ever).
+function isPracticeAdmin() {
+  const email = (window.currentUserEmail || (firebase.auth().currentUser && firebase.auth().currentUser.email) || "").toLowerCase();
+  if (!email) return false;
+  return PRACTICE_ADMIN_EMAILS.map((e) => e.toLowerCase()).includes(email);
+}
+function currentMemberEmail() {
+  return (window.currentUserEmail || (firebase.auth().currentUser && firebase.auth().currentUser.email) || "").toLowerCase();
+}
+function findCurrentMember() {
+  const email = currentMemberEmail();
+  if (!email) return null;
+  return (centralExamState.subscribers.members || []).find((m) => m.email.toLowerCase() === email) || null;
+}
+/** Per-Subject-Campaign access control for Live Exams.
+    A subscriber who subscribed to the "Bangla" campaign can only join
+    Bangla live exams; a subscriber who subscribed to both "Bangla" and
+    "English" can join both. Admins and Assistant Admins always have
+    access to every subject, since they run the campaigns. This gates
+    PARTICIPATION only (the Join button) — every routine/countdown
+    card is still visible to everyone regardless of subscription, so
+    non-subscribers can see what's coming and get the "buy this
+    subject's package" prompt.
+    `subjectName` is matched against exam.subject / subject.name (both
+    are the same string key used throughout this file). */
+function memberHasSubjectAccess(member, subjectName) {
+  if (!member) return false;
+  if (member.role === "admin" || member.role === "assistant") return true;
+  return Array.isArray(member.subjects) && member.subjects.includes(subjectName);
+}
+/** Whether the currently signed-in user may actually JOIN/take a live
+    exam for the given subject. Falls back to false (no access) if we
+    can't identify the user as a member yet, so unknown visitors can't
+    take exams they haven't subscribed to — they can still see the
+    exam card and countdown, just not press Join. */
+function currentUserHasSubjectAccess(subjectName) {
+  if (isLiveExamAdmin()) return true;
+  const member = findCurrentMember();
+  return memberHasSubjectAccess(member, subjectName);
+}
+/** Shared "● Live" markup: a pulsing red dot + the word "Live" (the
+    word auto-hides on narrow screens via CSS). Used anywhere we
+    previously showed a plain "Live now" badge/label, so the same
+    visual language appears in the routine, the admin panel, and the
+    global navbar. */
+function liveBadgeHTML(extraClass) {
+  return `<span class="live-pulse-badge${extraClass ? " " + extraClass : ""}"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span></span>`;
+}
+/** Whether ANY Central Live Exam is currently in progress (used to
+    show/hide the global navbar live indicator on every page). */
+function isAnyExamCurrentlyLive() {
+  const now = Date.now();
+  return centralExamState.exams.some((exam) => now >= exam.start && now < exam.start + exam.duration * 60 * 1000);
+}
+/** Shows/hides the "● Live" mark next to the Examcamp logo in every
+    page header (main site-header + the 4 subpage-header brand blocks)
+    based on whether any Central Live Exam is in progress right now.
+    Runs on load and on a 1s tick so it flips on/off automatically as
+    exams start and end, without needing a page refresh. */
+function refreshBrandLiveIndicators() {
+  const live = isAnyExamCurrentlyLive();
+  ["home", "live-exam", "live-exam-admin", "history", "statistics", "exam", "practice", "practice-mode", "practice-admin"].forEach((id) => {
+    const el = document.getElementById(`brand-live-indicator-${id}`);
+    if (!el) return;
+    el.hidden = !live;
+    // The pill/capsule chrome (background, border, padding) lives on
+    // .brand-live-indicator itself, so only the dot + label go inside
+    // it directly — nesting the full .live-pulse-badge wrapper here
+    // would double up the gap/padding.
+    if (live) el.innerHTML = `<span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span>`;
+  });
+}
+/** Every scheduled/live exam — one countdown card each — regardless of
+    subscription. Seeing the routine/countdown is open to everyone;
+    subscription only gates whether the Join button on that card is
+    usable (see currentUserHasSubjectAccess / renderLiveCampaignCards). */
+/** Exams eligible for the Central Live Exam campaign panel — i.e. the
+    subject/topic cards with a countdown + Join button. Once an exam's
+    duration has fully elapsed it drops out of this panel — it's only
+    findable afterwards via History → Live Exam. */
+function upcomingExamsForCurrentUser() {
+  const now = Date.now();
+  return centralExamState.exams
+    .filter((e) => (e.status === "scheduled" || e.status === "live") && now < e.start + e.duration * 60 * 1000)
+    .sort((a, b) => a.start - b.start);
+}
+
+/* ---------- Countdown ---------- */
+let liveCountdownInterval = null;
+const LIVE_CAMPAIGN_CARD_HUES = ["hue-1", "hue-2", "hue-3", "hue-4", "hue-5"];
+/** Deterministic subject -> color mapping: the same subject name
+    always lands on the same hue class (so "English Literature" is
+    always e.g. blue everywhere it appears), while different subjects
+    spread across the palette instead of all sharing one color. */
+function subjectColorClass(subjectName) {
+  let hash = 0;
+  const name = String(subjectName || "");
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  }
+  const index = Math.abs(hash) % LIVE_CAMPAIGN_CARD_HUES.length;
+  return "live-campaign-card--" + LIVE_CAMPAIGN_CARD_HUES[index];
+}
+/** Renders one card per subscribed exam into #live-campaign-cards, each
+    with its own "Central Live Exam / Subject / Topic" header and an
+    independent countdown + join button, then starts a single shared
+    interval that ticks every card's countdown each second. Replaces the
+    old single-banner-for-the-whole-campaign layout. */
+function renderLiveCampaignCards() {
+  clearInterval(liveCountdownInterval);
+  const container = qs("#live-campaign-cards");
+  if (!container) return;
+
+  const exams = upcomingExamsForCurrentUser();
+  if (exams.length === 0) {
+    container.innerHTML = `<div class="card live-campaign-empty">No upcoming live exam yet - enroll in a Subject Course from the admin, or check back later.</div>`;
+    return;
+  }
+
+  container.innerHTML = exams.map((exam) => {
+    const totalMarks = Math.round((exam.marksPerQuestion || 1) * (exam.questionCount || 0) * 100) / 100;
+    const d = new Date(exam.start);
+    const dateTimeLabel = `${d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })} · ${d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+    // Card + countdown are shown to everyone; subscription only
+    // controls whether Join is usable. Each subject gets its own
+    // mixed-gradient color via subjectColorClass, so different
+    // subjects are visually distinct at a glance. The corner slot
+    // (top-right) is empty unless the exam is currently live, in
+    // which case tick() fills it with the pulsing "Live" capsule.
+    const hasAccess = currentUserHasSubjectAccess(exam.subject);
+    const hueClass = subjectColorClass(exam.subject);
+    return `
+    <section class="card live-campaign-card ${hueClass}${hasAccess ? "" : " live-campaign-card--locked"}" data-exam-card="${exam.id}">
+      <div class="live-campaign-card__corner" data-campaign-corner="${exam.id}"></div>
+      <div class="live-campaign-card__subject">${escapeHtml(exam.subject)}</div>
+      <div class="live-campaign-card__topic">${escapeHtml(exam.topic)}</div>
+      <div class="live-campaign-card__submeta">
+        <span>${escapeHtml(dateTimeLabel)}</span>
+        <span class="live-campaign-card__submeta-sep">·</span>
+        <span>${exam.duration} min</span>
+        <span class="live-campaign-card__submeta-sep">·</span>
+        <span>${totalMarks || "TBA"} Marks</span>
+      </div>
+      <div class="live-campaign-card__row">
+        <div class="live-countdown live-countdown--full" data-countdown-for="${exam.id}">
+          <div class="live-countdown__label" data-countdown-label>Upcoming Live Countdown</div>
+          <div class="live-countdown__digits">
+            <div class="live-countdown__unit"><span data-cd-days>00</span><small>Days</small></div>
+            <div class="live-countdown__unit"><span data-cd-hours>00</span><small>Hours</small></div>
+            <div class="live-countdown__unit"><span data-cd-mins>00</span><small>Min</small></div>
+            <div class="live-countdown__unit"><span data-cd-secs>00</span><small>Sec</small></div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg live-join-btn" data-join-exam="${exam.id}" data-requires-subscription="${hasAccess ? "false" : "true"}" data-enroll-subject="${escapeHtml(exam.subject)}" ${hasAccess ? "disabled" : ""}>
+          <span data-join-btn-label>${hasAccess ? "Exam not started yet" : "Enroll Now"}</span>
+        </button>
+      </div>
+    </section>`;
+  }).join("");
+
+  qsa("[data-join-exam]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const examId = btn.getAttribute("data-join-exam");
+      const exam = centralExamState.exams.find((e) => e.id === examId);
+      // Not enrolled in this subject yet: the button doubles as an
+      // "Enroll Now" CTA instead of a disabled placeholder — open the
+      // Enrollment popup pre-selected to this subject rather than
+      // attempting to join.
+      if (!exam || !currentUserHasSubjectAccess(exam.subject)) {
+        openEnrollModal(btn.getAttribute("data-enroll-subject") || (exam ? exam.subject : undefined));
+        return;
+      }
+      const now = Date.now();
+      const end = exam.start + exam.duration * 60 * 1000;
+      if (!(now >= exam.start && now < end)) return;
+      // Fetched here (not in the bulk sync) so correct answers only ever
+      // reach this browser once the visitor is actually joining an exam
+      // that is live right now and they're enrolled in.
+      const bank = await fetchExamQuestionBank(exam.id);
+      if (!bank.length) {
+        showToast("This live exam has no questions yet, check back once the admin publishes them.", "danger");
+        return;
+      }
+      // A member can only submit once per live exam (unique exam_id +
+      // member_email in Supabase) — block re-entry client-side too so
+      // they don't burn time on a session that can't be scored.
+      const myEmail = currentMemberEmail();
+      if (myEmail && (liveExamSubmittedIds || []).includes(exam.id)) {
+        showToast("You've already submitted this live exam.", "info");
+        return;
+      }
+      const builtExam = buildExamFromLiveExam(exam);
+      createExamSession(builtExam);
+      showToast("Joining the live exam - this reuses your existing Exam Mode player.", "success");
+      showView("exam", { resetHistory: true });
+      enterLiveExam();
+    });
+  });
+
+  function tick() {
+    const now = Date.now();
+    exams.forEach((exam) => {
+      const card = qs(`[data-countdown-for="${exam.id}"]`);
+      const btn = qs(`[data-join-exam="${exam.id}"]`);
+      const corner = qs(`[data-campaign-corner="${exam.id}"]`);
+      if (!card || !btn) return;
+      const label = qs("[data-countdown-label]", card);
+      const btnLabel = qs("[data-join-btn-label]", btn);
+      const end = exam.start + exam.duration * 60 * 1000;
+      const isLive = now >= exam.start && now < end;
+      const diff = isLive ? end - now : exam.start - now;
+
+      card.classList.toggle("is-live", isLive);
+      // The static "Central Live Exam" label was removed. The pulsing
+      // "Live" capsule now appears in the card's top-right corner —
+      // the same spot the old "Enroll Now" badge used to occupy —
+      // instead of the top-left, and is empty (collapsed via :empty
+      // in CSS) whenever the exam isn't currently live.
+      label.textContent = isLive ? "Remaining Time" : "Upcoming Live Countdown";
+      if (corner) {
+        corner.innerHTML = isLive
+          ? `<span class="live-pulse-badge"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span><span class="live-pulse-badge__label">Live</span></span>`
+          : "";
+      }
+
+      const remaining = Math.max(0, diff);
+      const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
+      const h = Math.floor((remaining / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((remaining / (1000 * 60)) % 60);
+      const s = Math.floor((remaining / 1000) % 60);
+      qs("[data-cd-days]", card).textContent = String(d).padStart(2, "0");
+      qs("[data-cd-hours]", card).textContent = String(h).padStart(2, "0");
+      qs("[data-cd-mins]", card).textContent = String(m).padStart(2, "0");
+      qs("[data-cd-secs]", card).textContent = String(s).padStart(2, "0");
+
+      // Not-yet-enrolled cards keep the "Enroll Now" button always
+      // enabled (it opens the Enrollment popup regardless of whether
+      // this exam is live or upcoming) — enrolled cards keep the
+      // normal countdown-gated Join behavior.
+      const requiresSubscription = btn.getAttribute("data-requires-subscription") === "true";
+      if (requiresSubscription) {
+        btn.disabled = false;
+        btnLabel.textContent = "Enroll Now";
+      } else {
+        btn.disabled = !isLive;
+        btnLabel.textContent = isLive ? "Join Live Exam" : "Exam not started yet";
+      }
+    });
+  }
+  tick();
+  liveCountdownInterval = setInterval(tick, 1000);
+}
+
+/* ---------- Hub renderers ---------- */
+// Tracks which Subject group is currently expanded on the Routine
+// tab (only one at a time — see globalDropdowns), keyed by subject
+// name, so re-renders (e.g. the periodic tick or a live-status change)
+// don't collapse a group the student just opened.
+const liveRoutineOpenGroups = new Set();
+
+registerGlobalDropdown("live-routine-accordion", () => {
+  if (!liveRoutineOpenGroups.size) return;
+  liveRoutineOpenGroups.clear();
+  renderLiveRoutine();
+});
+
+function renderLiveRoutine() {
+  const list = qs("#live-routine-list");
+  if (!list) return;
+  const now = Date.now();
+  const sorted = [...centralExamState.exams].sort((a, b) => a.start - b.start);
+
+  // Group exams by Subject, preserving each subject's first-seen order
+  // (i.e. earliest-starting exam within that subject, since `sorted`
+  // is already ordered by start time).
+  const groups = [];
+  const groupBySubject = new Map();
+  sorted.forEach((exam) => {
+    let group = groupBySubject.get(exam.subject);
+    if (!group) {
+      group = { subject: exam.subject, exams: [] };
+      groupBySubject.set(exam.subject, group);
+      groups.push(group);
+    }
+    group.exams.push(exam);
+  });
+
+  if (!groups.length) {
+    list.innerHTML = `<p class="text-secondary" style="padding: var(--space-4) 0;">No routine has been published yet.</p>`;
+    return;
+  }
+
+  list.innerHTML = groups.map((group) => {
+    const hasAccess = currentUserHasSubjectAccess(group.subject);
+    const isLiveNow = group.exams.some((exam) => now >= exam.start && now < exam.start + exam.duration * 60 * 1000);
+    const upcomingCount = group.exams.filter((exam) => now < exam.start).length;
+    const isOpen = liveRoutineOpenGroups.has(group.subject);
+    const groupClass = [isOpen ? "is-open" : "", hasAccess ? "live-routine-group--subscribed" : ""].filter(Boolean).join(" ");
+    const subtitleParts = [`${group.exams.length} Topic${group.exams.length === 1 ? "" : "s"}`];
+    if (isLiveNow) subtitleParts.push("Live Now");
+    else if (upcomingCount) subtitleParts.push(`${upcomingCount} Upcoming`);
+    else subtitleParts.push("All Ended");
+
+    const rowsHtml = group.exams.map((exam) => {
+      const end = exam.start + exam.duration * 60 * 1000;
+      const isLive = now >= exam.start && now < end;
+      const isDone = now >= end;
+      const d = new Date(exam.start);
+      // Subscribed rows get a brand-colored border instead of a separate
+      // "Not subscribed" badge - access is visible at a glance from the
+      // border alone, and every row still shows its real live/upcoming
+      // status regardless of subscription.
+      const rowClass = [isLive ? "live-routine-row--live" : isDone ? "live-routine-row--done" : "", hasAccess ? "live-routine-row--subscribed" : ""].filter(Boolean).join(" ");
+      const statusBadge = isLive ? `<span class="badge badge-danger">${liveBadgeHTML()}</span>` : isDone ? '<span class="badge badge-neutral">Ended</span>' : '<span class="badge badge-info">Upcoming</span>';
+      return `
+      <div class="live-routine-row ${rowClass}">
+        <div class="live-routine-row__date">
+          <span class="live-routine-row__date-day">${d.getDate()}</span>
+          <span class="live-routine-row__date-month">${d.toLocaleString("en-US", { month: "short" })}</span>
+        </div>
+        <div class="live-routine-row__body">
+          <div class="live-routine-row__title">${escapeHtml(exam.subject)}</div>
+          <div class="live-routine-row__topic">${escapeHtml(exam.topic)}</div>
+          <div class="live-routine-row__meta">${d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} · ${exam.duration} Min · ${exam.questionCount || "TBA"} Ques</div>
+        </div>
+        ${statusBadge}
+      </div>`;
+    }).join("");
+
+    return `
+    <div class="live-routine-group ${groupClass}" data-routine-group="${escapeHtml(group.subject)}">
+      <button type="button" class="live-routine-group__header" data-routine-group-toggle="${escapeHtml(group.subject)}" aria-expanded="${isOpen ? "true" : "false"}">
+        ${isLiveNow ? '<span class="live-routine-group__live-dot"><span class="live-pulse-dot live-pulse-dot--sm" aria-hidden="true"></span></span>' : ""}
+        <div class="live-routine-group__title-wrap">
+          <div class="live-routine-group__title">${escapeHtml(group.subject)}</div>
+          <div class="live-routine-group__subtitle">${subtitleParts.join(" · ")}</div>
+        </div>
+        <i data-lucide="chevron-down" class="live-routine-group__chevron"></i>
+      </button>
+      <div class="live-routine-group__body">
+        <div class="live-routine-group__body-inner">
+          <div class="live-routine-list">${rowsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // (Re)bind each subject header's expand/collapse toggle every time
+  // the list is re-rendered (innerHTML above wipes any previous
+  // listeners).
+  qsa("[data-routine-group-toggle]", list).forEach((header) => {
+    header.addEventListener("click", () => {
+      const subject = header.getAttribute("data-routine-group-toggle");
+      const groupEl = header.closest(".live-routine-group");
+      const nowOpen = !liveRoutineOpenGroups.has(subject);
+      if (nowOpen) {
+        closeOtherGlobalDropdowns("live-routine-accordion");
+        liveRoutineOpenGroups.clear();
+        liveRoutineOpenGroups.add(subject);
+      } else {
+        liveRoutineOpenGroups.delete(subject);
+      }
+      // Other groups may have just been force-closed above — refresh
+      // every header's expanded state, not just the one that was clicked.
+      qsa("[data-routine-group-toggle]", list).forEach((h) => {
+        const s = h.getAttribute("data-routine-group-toggle");
+        const el = h.closest(".live-routine-group");
+        const open = liveRoutineOpenGroups.has(s);
+        if (el) el.classList.toggle("is-open", open);
+        h.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  });
+  if (window.lucide && typeof window.lucide.createIcons === "function") {
+    window.lucide.createIcons();
+  }
+}
+
+function renderLiveSubjects() {
+  const grid = qs("#live-subject-grid");
+  if (!grid) return;
+  if (!centralExamState.subjects.length) {
+    grid.innerHTML = `<p class="text-secondary" style="padding: var(--space-4) 0;">No courses are running right now, please check back soon.</p>`;
+    return;
+  }
+  grid.innerHTML = centralExamState.subjects.map((s) => {
+    const examsForSubject = centralExamState.exams.filter((e) => e.subject === s.name);
+    const hasAccess = currentUserHasSubjectAccess(s.name);
+    const action = hasAccess
+      ? `<span class="badge badge-success">Enrolled</span>`
+      : `<button type="button" class="btn btn-primary btn-sm" data-enroll-subject="${escapeHtml(s.name)}">Enroll Now</button>`;
+    return `
+    <div class="live-subject-row ${hasAccess ? "live-subject-row--subscribed" : ""}">
+      <div class="live-subject-row__body">
+        <div class="live-subject-row__name">${escapeHtml(s.name)}</div>
+        <div class="live-subject-row__meta">${examsForSubject.length} live exam${examsForSubject.length === 1 ? "" : "s"} in this campaign</div>
+      </div>
+      <div class="live-subject-row__action">${action}</div>
+    </div>`;
+  }).join("");
+
+  // (Re)bind every "Enroll Now" button each time the list re-renders
+  // (innerHTML above wipes any previous listeners) — opens the
+  // Enrollment popup pre-selected to this subject.
+  qsa("[data-enroll-subject]", grid).forEach((btn) => {
+    btn.addEventListener("click", () => openEnrollModal(btn.getAttribute("data-enroll-subject")));
+  });
+}
+
+function renderLiveMerit() {
+  const list = qs("#live-merit-list");
+  if (!list) return;
+  const sorted = [...centralExamState.merit].sort((a, b) => b.score - a.score);
+  list.innerHTML = sorted.map((row, i) => {
+    const rank = i + 1;
+    const topClass = rank <= 3 ? `live-merit-row--top${rank}` : "";
+    const selfClass = row.self ? "live-merit-row--self" : "";
+    return `
+    <div class="live-merit-row ${topClass} ${selfClass}">
+      <span class="live-merit-row__rank">${rank}</span>
+      <span class="live-merit-row__name">${escapeHtml(row.name)}</span>
+      <span class="live-merit-row__score">${row.score}%</span>
+    </div>`;
+  }).join("");
+}
+
+function renderCentralLiveExamHub() {
+  qs("#live-summary-rank").textContent = "#" + centralExamState.self.rank;
+  qs("#live-summary-given").textContent = centralExamState.self.given;
+  qs("#live-summary-avg").textContent = centralExamState.self.avgPercent + "%";
+
+  // Admin entry button on the Live Exam hub: only visible to the campaign's
+  // admins/assistant admins (isLiveExamAdmin), everyone else never even
+  // sees the entry point into the admin panel.
+  const adminEntry = qs("#live-exam-admin-entry");
+  if (adminEntry) adminEntry.hidden = !isLiveExamAdmin();
+
+  renderLiveCampaignCards();
+  renderLiveRoutine();
+  renderLiveSubjects();
+  renderLiveMerit();
+}
+
+/* ---------- Admin panel renderers ---------- */
+function formatExamStatus(exam) {
+  const now = Date.now();
+  const end = exam.start + exam.duration * 60 * 1000;
+  if (now >= exam.start && now < end) return { text: liveBadgeHTML(), cls: "badge-danger" };
+  if (now >= end) return { text: exam.published ? "Published" : "Ended", cls: exam.published ? "badge-success" : "badge-warning" };
+  return { text: "Scheduled", cls: "badge-info" };
+}
+
+/** Renders the Campaigns tab: one card per Subject, each listing its own
+    Live Exams (grouped by exam.subject === subject.name), with per-subject
+    "New Live Exam" plus Edit/Delete for both subjects and exams. */
+function renderAdminSubjectList() {
+  const container = qs("#admin-subject-list");
+  if (!container) return;
+
+  if (!centralExamState.subjects.length) {
+    container.innerHTML = `<div class="card text-center text-secondary" style="padding: var(--space-8);">No subjects yet - click "New Subject" to start a campaign (e.g. "English Grammar"), then add Live Exams under it for each topic.</div>`;
+    return;
+  }
+
+  container.innerHTML = centralExamState.subjects.map((subject) => {
+    const examsForSubject = centralExamState.exams
+      .filter((e) => e.subject === subject.name)
+      .sort((a, b) => a.start - b.start);
+
+    const dateRange = subject.startDate && subject.endDate
+      ? `${new Date(subject.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} – ${new Date(subject.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+      : "No campaign date range set";
+
+    const examRows = examsForSubject.length
+      ? examsForSubject.map((exam) => {
+          const status = formatExamStatus(exam);
+          const d = new Date(exam.start);
+          return `
+          <div class="live-admin-exam-row">
+            <div class="live-admin-exam-row__body">
+              <div class="live-admin-exam-row__title">${escapeHtml(exam.topic || "Untitled topic")}</div>
+              <div class="live-admin-exam-row__meta">${d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} · ${exam.duration} min · ${exam.questionCount} questions · ${exam.subscriberCount} enrolled</div>
+            </div>
+            <span class="badge ${status.cls}">${status.text}</span>
+            <div class="live-admin-exam-row__actions">
+              <button type="button" class="btn btn-outline btn-sm" data-admin-edit-exam="${exam.id}">Edit</button>
+              <button type="button" class="btn btn-outline btn-sm" data-admin-delete-exam="${exam.id}">Delete</button>
+            </div>
+          </div>`;
+        }).join("")
+      : `<div class="admin-subject-card__empty">No Live Exams yet under "${escapeHtml(subject.name)}" - add one for a topic like Noun or Tense.</div>`;
+
+    return `
+    <div class="card admin-subject-card">
+      <div class="admin-subject-card__header">
+        <div>
+          <div class="admin-subject-card__name">${escapeHtml(subject.name)}</div>
+          <div class="admin-subject-card__meta">${dateRange} · ${examsForSubject.length} live exam${examsForSubject.length === 1 ? "" : "s"}</div>
+        </div>
+        <div class="admin-subject-card__actions">
+          <button type="button" class="btn btn-primary btn-sm" data-admin-new-exam-for="${escapeHtml(subject.name)}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            New Live Exam
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" data-admin-edit-subject="${subject.id}">Edit</button>
+          <button type="button" class="btn btn-outline btn-sm" data-admin-delete-subject="${subject.id}">Delete</button>
+        </div>
+      </div>
+      <div class="admin-subject-card__exams">${examRows}</div>
+    </div>`;
+  }).join("");
+
+  qsa("[data-admin-new-exam-for]").forEach((btn) => {
+    btn.addEventListener("click", () => openAdminExamForm(null, btn.getAttribute("data-admin-new-exam-for")));
+  });
+  qsa("[data-admin-edit-exam]").forEach((btn) => {
+    btn.addEventListener("click", () => openAdminExamForm(btn.getAttribute("data-admin-edit-exam")));
+  });
+  qsa("[data-admin-delete-exam]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-admin-delete-exam");
+      const exam = centralExamState.exams.find((e) => e.id === id);
+      if (!exam) return;
+      if (!confirm(`Delete the Live Exam "${exam.topic || exam.subject}"? This also removes its question bank. This can't be undone.`)) return;
+      centralExamState.exams = centralExamState.exams.filter((e) => e.id !== id);
+      delete centralExamState.questionBank[id];
+      deleteLiveExamFromSupabase(id).catch((err) => { // cascades to its questions via FK
+        console.error("Could not delete live exam:", err);
+        showToast("Removed locally, but the server delete failed – it may reappear on next sync. Check your connection.", "danger");
+      });
+      saveCentralExamState();
+      renderAdminSubjectList();
+      renderAdminQuestionBank();
+      renderAdminResultsList();
+      showToast("Live exam deleted.", "success");
+    });
+  });
+  qsa("[data-admin-edit-subject]").forEach((btn) => {
+    btn.addEventListener("click", () => openAdminSubjectForm(btn.getAttribute("data-admin-edit-subject")));
+  });
+  qsa("[data-admin-delete-subject]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-admin-delete-subject");
+      const subject = centralExamState.subjects.find((s) => s.id === id);
+      if (!subject) return;
+      const examsUnder = centralExamState.exams.filter((e) => e.subject === subject.name);
+      if (examsUnder.length && !confirm(`"${subject.name}" has ${examsUnder.length} Live Exam(s) under it. Deleting the subject also deletes all of them and their questions. Continue?`)) return;
+      if (!examsUnder.length && !confirm(`Delete the subject "${subject.name}"?`)) return;
+      examsUnder.forEach((e) => delete centralExamState.questionBank[e.id]);
+      centralExamState.exams = centralExamState.exams.filter((e) => e.subject !== subject.name);
+      centralExamState.subjects = centralExamState.subjects.filter((s) => s.id !== id);
+      deleteSubjectFromSupabase(id).catch((err) => { // cascades to its exams (FK) and their questions
+        console.error("Could not delete subject:", err);
+        showToast("Removed locally, but the server delete failed – it may reappear on next sync. Check your connection.", "danger");
+      });
+      saveCentralExamState();
+      renderAdminSubjectList();
+      renderAdminQuestionBank();
+      renderAdminResultsList();
+      showToast("Subject and its live exams deleted.", "success");
+    });
+  });
+}
+
+function openAdminSubjectForm(subjectId) {
+  const card = qs("#admin-subject-form-card");
+  const subject = subjectId ? centralExamState.subjects.find((s) => s.id === subjectId) : null;
+  qs("#admin-subject-form-title").textContent = subject ? "Edit subject" : "New subject";
+  qs("#admin-subject-name").value = subject ? subject.name : "";
+  qs("#admin-subject-start").value = subject ? subject.startDate || "" : "";
+  qs("#admin-subject-end").value = subject ? subject.endDate || "" : "";
+  card.dataset.editingId = subjectId || "";
+  card.hidden = false;
+  card.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Opens the "New Member" form (Name, Phone, Email + Assistant Admin
+    checkbox + Subject Campaign picker) and resets its fields, replacing
+    the old chained prompt()/confirm() flow. */
+function openAdminMemberForm() {
+  const card = qs("#admin-member-form-card");
+  if (!card) return;
+  qs("#admin-member-name").value = "";
+  qs("#admin-member-phone").value = "";
+  qs("#admin-member-email").value = "";
+  qs("#admin-member-as-assistant").checked = false;
+
+  const picker = qs("#admin-member-subject-picker");
+  const subjects = centralExamState.subjects || [];
+  if (subjects.length === 0) {
+    picker.innerHTML = "";
+    picker.style.display = "none";
+  } else {
+    picker.innerHTML = subjects.map((s) => `
+      <label class="member-subject-editor__option">
+        <input type="checkbox" value="${escapeHtml(s.name)}" />
+        ${escapeHtml(s.name)}
+      </label>`).join("");
+    picker.style.display = "flex";
+  }
+
+  card.hidden = false;
+  card.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderAdminResultsList() {
+  const list = qs("#admin-results-list");
+  if (!list) return;
+  const now = Date.now();
+  const ended = centralExamState.exams.filter((e) => now >= e.start + e.duration * 60 * 1000);
+  if (!ended.length) {
+    list.innerHTML = `<div class="card text-center text-secondary" style="padding: var(--space-8);">No ended exams yet - results appear here once a live exam finishes.</div>`;
+    return;
+  }
+
+  // Group ended exams by subject so a whole campaign's results can be
+  // reviewed and published together, while each Live Exam still has its
+  // own individual Publish/Unpublish control.
+  const bySubject = {};
+  ended.forEach((exam) => {
+    if (!bySubject[exam.subject]) bySubject[exam.subject] = [];
+    bySubject[exam.subject].push(exam);
+  });
+
+  list.innerHTML = Object.keys(bySubject).map((subjectName) => {
+    const exams = bySubject[subjectName];
+    const allPublished = exams.every((e) => e.published);
+    const rows = exams.map((exam) => `
+      <div class="live-admin-exam-row">
+        <div class="live-admin-exam-row__body">
+          <div class="live-admin-exam-row__title">${escapeHtml(exam.topic || "Untitled topic")}</div>
+          <div class="live-admin-exam-row__meta">${exam.subscriberCount} attempts · ${exam.published ? "Visible on users' Statistics card" : "Not visible to users yet"}</div>
+        </div>
+        <span class="badge ${exam.published ? "badge-success" : "badge-warning"}">${exam.published ? "Published" : "Draft"}</span>
+        <div class="live-admin-exam-row__actions">
+          <button type="button" class="btn btn-outline btn-sm" data-admin-download-answers="${exam.id}">Download</button>
+          <button type="button" class="btn ${exam.published ? "btn-outline" : "btn-primary"} btn-sm" data-admin-toggle-publish="${exam.id}">${exam.published ? "Unpublish" : "Publish Result"}</button>
+        </div>
+      </div>`).join("");
+    return `
+    <div class="card admin-subject-card">
+      <div class="admin-subject-card__header">
+        <div>
+          <div class="admin-subject-card__name">${escapeHtml(subjectName)}</div>
+          <div class="admin-subject-card__meta">${exams.length} ended exam${exams.length === 1 ? "" : "s"}</div>
+        </div>
+        <div class="admin-subject-card__actions">
+          <button type="button" class="btn btn-outline btn-sm" data-admin-toggle-publish-subject="${escapeHtml(subjectName)}">${allPublished ? "Unpublish All" : "Publish All"}</button>
+        </div>
+      </div>
+      <div class="admin-subject-card__exams">${rows}</div>
+    </div>`;
+  }).join("");
+
+  qsa("[data-admin-toggle-publish]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-admin-toggle-publish");
+      const exam = centralExamState.exams.find((e) => e.id === id);
+      if (!exam) return;
+      exam.published = !exam.published;
+      saveCentralExamState();
+      saveLiveExamToSupabase(exam).catch((err) => {
+        console.error("Could not sync publish state:", err);
+        showToast("Publish state changed locally, but didn't sync to the server. Check your connection.", "danger");
+      });
+      renderAdminResultsList();
+      showToast(exam.published ? "Result published to users." : "Result unpublished.", "success");
+    });
+  });
+  qsa("[data-admin-download-answers]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-admin-download-answers");
+      enterAdminAnswerSheetPrint(id);
+    });
+  });
+  qsa("[data-admin-toggle-publish-subject]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const subjectName = btn.getAttribute("data-admin-toggle-publish-subject");
+      const examsInSubject = ended.filter((e) => e.subject === subjectName);
+      const shouldPublish = !examsInSubject.every((e) => e.published);
+      examsInSubject.forEach((e) => { e.published = shouldPublish; });
+      saveCentralExamState();
+      Promise.all(examsInSubject.map((e) => saveLiveExamToSupabase(e))).catch((err) => {
+        console.error("Could not sync publish state:", err);
+        showToast("Publish state changed locally, but didn't fully sync to the server. Check your connection.", "danger");
+      });
+      renderAdminResultsList();
+      showToast(shouldPublish ? `All results in "${subjectName}" published.` : `All results in "${subjectName}" unpublished.`, "success");
+    });
+  });
+}
+
+function renderAdminMemberList() {
+  qs("#admin-sub-total").textContent = centralExamState.subscribers.total;
+  qs("#admin-sub-active").textContent = centralExamState.subscribers.active;
+  qs("#admin-sub-assistants").textContent = centralExamState.subscribers.assistantAdmins;
+
+  const list = qs("#admin-member-list");
+  if (!list) return;
+  const subjects = centralExamState.subjects || [];
+  list.innerHTML = centralExamState.subscribers.members.map((m) => {
+    const isFullAccess = m.role === "admin" || m.role === "assistant";
+    const mySubjects = Array.isArray(m.subjects) ? m.subjects : [];
+    // Admins/Assistant Admins run every campaign, so they always have
+    // access — show that plainly instead of a per-subject chip list.
+    const subjectChips = isFullAccess
+      ? `<span class="live-member-row__subject-chip">All subjects (${m.role === "admin" ? "Admin" : "Assistant Admin"})</span>`
+      : subjects.length === 0
+        ? `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">No Subject Courses yet</span>`
+        : mySubjects.length === 0
+          ? `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">Not enrolled in any subject</span>`
+          : mySubjects.map((name) => `<span class="live-member-row__subject-chip">${escapeHtml(name)}</span>`).join("");
+    return `
+    <div class="live-member-row" style="flex-wrap: wrap;">
+      <div class="live-member-row__avatar">${escapeHtml((m.name || m.email)[0].toUpperCase())}</div>
+      <div class="live-member-row__body">
+        <div class="live-member-row__email">${m.name ? `${escapeHtml(m.name)} <span class="text-secondary" style="font-weight: var(--font-weight-normal);">· ${escapeHtml(m.email)}</span>` : escapeHtml(m.email)}</div>
+        <div class="live-member-row__meta">${m.role === "admin" ? "Admin" : m.role === "assistant" ? "Assistant Admin" : "User"}${m.phone ? ` · ${escapeHtml(m.phone)}` : ""}</div>
+        <div class="live-member-row__subjects">${subjectChips}</div>
+      </div>
+      <div class="live-member-row__actions">
+        ${!isFullAccess && subjects.length > 0 ? `<button type="button" class="btn btn-outline btn-sm" data-admin-edit-subjects="${escapeHtml(m.email)}">Subjects</button>` : ""}
+        ${m.role === "subscriber" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-promote-member="${escapeHtml(m.email)}">Add Admin</button>` : ""}
+        ${m.role === "assistant" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-demote-member="${escapeHtml(m.email)}">Remove Assistant Admin</button>` : ""}
+        ${m.role !== "admin" ? `<button type="button" class="btn btn-outline btn-sm" data-admin-remove-member="${escapeHtml(m.email)}">Remove</button>` : ""}
+      </div>
+      <div class="member-subject-editor" data-subject-editor-for="${escapeHtml(m.email)}" style="display: none; width: 100%;">
+        ${subjects.map((s) => `
+          <label class="member-subject-editor__option">
+            <input type="checkbox" data-subject-checkbox="${escapeHtml(m.email)}" value="${escapeHtml(s.name)}" ${mySubjects.includes(s.name) ? "checked" : ""} />
+            ${escapeHtml(s.name)}
+          </label>`).join("")}
+        <button type="button" class="btn btn-primary btn-sm" data-admin-save-subjects="${escapeHtml(m.email)}">Save</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  qsa("[data-admin-promote-member]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.getAttribute("data-admin-promote-member");
+      const m = centralExamState.subscribers.members.find((x) => x.email === email);
+      if (!m) return;
+      m.role = "assistant";
+      centralExamState.subscribers.assistantAdmins += 1;
+      saveCentralExamState();
+      saveMemberToSupabase(m).catch((err) => {
+        console.error("Could not sync member role:", err);
+        showToast("Role changed locally, but didn't sync to the server. Check your connection.", "danger");
+      });
+      renderAdminMemberList();
+      showToast(`${email} is now an Assistant Admin.`, "success");
+    });
+  });
+  qsa("[data-admin-demote-member]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.getAttribute("data-admin-demote-member");
+      const m = centralExamState.subscribers.members.find((x) => x.email === email);
+      if (!m) return;
+      m.role = "subscriber";
+      centralExamState.subscribers.assistantAdmins = Math.max(0, centralExamState.subscribers.assistantAdmins - 1);
+      saveCentralExamState();
+      saveMemberToSupabase(m).catch((err) => {
+        console.error("Could not sync member role:", err);
+        showToast("Role changed locally, but didn't sync to the server. Check your connection.", "danger");
+      });
+      renderAdminMemberList();
+      showToast(`${email} is no longer an Assistant Admin.`, "success");
+    });
+  });
+  qsa("[data-admin-remove-member]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.getAttribute("data-admin-remove-member");
+      const m = centralExamState.subscribers.members.find((x) => x.email === email);
+      if (m && m.role === "assistant") centralExamState.subscribers.assistantAdmins = Math.max(0, centralExamState.subscribers.assistantAdmins - 1);
+      centralExamState.subscribers.members = centralExamState.subscribers.members.filter((m) => m.email !== email);
+      centralExamState.subscribers.total = Math.max(0, centralExamState.subscribers.total - 1);
+      saveCentralExamState();
+      deleteMemberFromSupabase(email).catch((err) => {
+        console.error("Could not sync member removal:", err);
+        showToast("Removed locally, but the server delete failed – they may reappear on next sync. Check your connection.", "danger");
+      });
+      renderAdminMemberList();
+      showToast("Member removed.", "success");
+    });
+  });
+
+  // Toggle the inline "which Subject Campaigns is this member subscribed
+  // to" checkbox editor for one member at a time.
+  qsa("[data-admin-edit-subjects]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.getAttribute("data-admin-edit-subjects");
+      qsa("[data-subject-editor-for]").forEach((el) => {
+        el.style.display = el.getAttribute("data-subject-editor-for") === email
+          ? (el.style.display === "none" ? "flex" : "none")
+          : "none";
+      });
+    });
+  });
+
+  // Save this member's subject subscriptions. A member only gets live-
+  // exam access to the Subject Campaigns checked here — matching the
+  // rule that a Bangla subscriber can't open English exams and vice
+  // versa, while a member checked into both gets both.
+  qsa("[data-admin-save-subjects]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.getAttribute("data-admin-save-subjects");
+      const m = centralExamState.subscribers.members.find((x) => x.email === email);
+      if (!m) return;
+      const editor = btn.closest(".member-subject-editor");
+      const checked = qsa("[data-subject-checkbox]", editor).filter((cb) => cb.checked).map((cb) => cb.value);
+      m.subjects = checked;
+      saveCentralExamState();
+      saveMemberToSupabase(m).catch((err) => {
+        console.error("Could not sync member subjects:", err);
+        showToast("Access changed locally, but didn't sync to the server. Check your connection.", "danger");
+      });
+      renderAdminMemberList();
+      showToast(`Updated ${email}'s subject access.`, "success");
+    });
+  });
+}
+
+/* ==========================================================================
+   MCQ QUESTION BUILDER — Admin Panel → Questions tab
+   Generalized into a factory (createMCQBuilder) so the exact same builder
+   — rich-text editor, layout picker, AI Mode, PUSH LIVE/PUSH — can run
+   twice on the same page against two independent data sources: the Live
+   Exam Admin Panel's `centralExamState` (instance: MCQBuilder) and the
+   Practice Admin Panel's `practiceState` (instance: PracticeMCQBuilder).
+   `cfg` supplies the DOM id prefix (so the two instances never collide —
+   both admin views stay permanently in the DOM, just hidden) plus small
+   data-access functions so this module never references centralExamState
+   or practiceState by name itself.
+   AI Mode reuses this site's own stored Gemini config (Settings → AI), via
+   generateQuestionsWithGemini(), the same function Exam Mode's AI
+   generator already calls — so there is no separate Gemini key/model
+   panel in this builder.
+   Data shape kept identical to the rest of the app:
+   { question, options: [string,string,string,string], correctAnswer: 0-3, explanation }
+   ========================================================================== */
+function createMCQBuilder(cfg) {
+  // cfg: {
+  //   idPrefix: string e.g. "mcqp" or "pa-mcqp" — every DOM id this
+  //     instance touches is `${idPrefix}-...`, matching the markup.
+  //   getItems(): [{ id, label }] — the picker's option list (Live Exam:
+  //     one row per exam; Practice: one row per Subject > Topic).
+  //   getBank(itemId): question[] — reads the saved question bank.
+  //   setBank(itemId, question[]): void — writes it back + persists.
+  //   getItemMeta(itemId): { subject, topic, language } — used for the AI
+  //     prompt placeholder and to decide the pushed language.
+  //   setItemLanguage(itemId, lang): void — only called when the item's
+  //     own language is still unset/default, same rule as Live Exam.
+  //   afterPush(itemId): void — called after a successful push so the
+  //     caller can re-render its own subject/topic list.
+  //   pushedToast(count): string — success message after pushing.
+  // }
+  const id = (suffix) => `#${cfg.idPrefix}-${suffix}`;
+
+  let questions = [];       // working (unsaved) draft for the selected item
+  let lang = "en";
+  let currentItemId = null;
+  let activeEditorEl = null;
+  let activeSavedRange = null;
+
+  const MATH_SYMBOLS = [
+    "²", "³", "⁴", "½", "⅓", "¼", "√", "∛", "∑", "∫", "∞", "≈",
+    "≠", "≤", "≥", "±", "×", "÷", "α", "β", "γ", "δ", "θ", "π",
+    "λ", "μ", "Ω", "Δ", "∂", "∇", "→", "⇌", "°", "‰", "·", "…",
+    "⅔", "⅕", "⅖", "⅗", "⅘", "⅙", "⅚", "⅛", "⅜", "⅝", "⅞", "∝",
+  ];
+
+  // LaTeX quick-insert templates (rendered via the same KaTeX pipeline
+  // used for AI-generated questions — see renderMathIn()). These cover
+  // the two things the plain Unicode MATH_SYMBOLS above can't: arbitrary
+  // fractions (only a fixed handful of glyphs like ½ ⅓ ¼ exist in
+  // Unicode) and chemical reaction equations with coefficients/subscripts
+  // that read correctly left-to-right. "cursorAt" is the index inside
+  // "text" where the caret should land after insertion — normally between
+  // the {} of the first editable slot — so the person can start typing
+  // the numerator/first term immediately instead of hunting for it.
+  const MATH_TEMPLATES = [
+    { key: "fraction", label: "Fraction (a⁄b)", display: "a/b", text: "$\\frac{}{}$", cursorAt: 7 },
+    { key: "reaction", label: "Chemical equation", display: "A→B", text: "$ \\rightarrow $", cursorAt: 1 },
+  ];
+
+  function uid() { return "q_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
+
+  function stripHtml(html) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html || "";
+    return (tmp.textContent || tmp.innerText || "").trim();
+  }
+
+  function sanitizeHtml(html) {
+    if (window.DOMPurify) {
+      return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "sup", "sub", "span", "br", "ul", "ol", "li", "font", "div"],
+        ALLOWED_ATTR: ["style", "class"],
+      });
+    }
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    tmp.querySelectorAll("script, style, iframe, object, embed").forEach((el) => el.remove());
+    tmp.querySelectorAll("*").forEach((el) => { [...el.attributes].forEach((attr) => { if (/^on/i.test(attr.name)) el.removeAttribute(attr.name); }); });
+    return tmp.innerHTML;
+  }
+
+  function debounce(fn, wait) {
+    let t = null;
+    return function debounced(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
+  }
+
+  function optionLabel(index) {
+    const EN = ["A", "B", "C", "D"];
+    const BN = ["ক", "খ", "গ", "ঘ"];
+    return (lang === "bn" ? BN : EN)[index] || String(index + 1);
+  }
+
+  // Device-aware default option layout: desktop screens default to the
+  // rectangular (grid) layout since there's room for a 2x2 arrangement;
+  // narrow/mobile screens default to vertical (stacked) since a grid would
+  // cramp each option. Only applies while nothing has been typed yet /
+  // nothing has been manually chosen — see layoutLocked and
+  // computeAutoLayout's totalLen===0 case.
+  function defaultOptionsLayout() {
+    return window.matchMedia("(max-width: 640px)").matches ? "vertical" : "grid";
+  }
+
+  /* ---------- question model ---------- */
+  function freshQuestion() {
+    return {
+      id: uid(),
+      questionHtml: "",
+      optionsLayout: defaultOptionsLayout(),
+      layoutLocked: false,
+      explanationHtml: "",
+      options: [
+        { id: "a", html: "" }, { id: "b", html: "" }, { id: "c", html: "" }, { id: "d", html: "" },
+      ],
+      correctIndex: -1,
+    };
+  }
+
+  function isEmpty(q) {
+    return stripHtml(q.questionHtml) === "" && q.options.every((o) => stripHtml(o.html) === "");
+  }
+
+  function ensureTrailingEmpty() {
+    if (!questions.length || !isEmpty(questions[questions.length - 1])) {
+      questions.push(freshQuestion());
+      return true;
+    }
+    return false;
+  }
+
+  // Auto-picks a layout (vertical / horizontal / grid) based on option text
+  // lengths, same heuristic as mcq-pro.html — only for questions whose
+  // layout hasn't been manually chosen (see layoutLocked).
+  function computeAutoLayout(q) {
+    const lengths = q.options.map((o) => stripHtml(o.html).length);
+    const maxLen = Math.max(0, ...lengths);
+    const totalLen = lengths.reduce((a, b) => a + b, 0);
+    if (totalLen === 0) return defaultOptionsLayout();
+    if (maxLen <= 6 && totalLen <= 20) return "horizontal";
+    if (maxLen <= 18 && totalLen <= 56) return "grid";
+    return "vertical";
+  }
+
+  function currentItem() {
+    const items = cfg.getItems();
+    return items.find((it) => it.id === currentItemId) || null;
+  }
+
+  /* ---------- item picker ---------- */
+  function populateExamSelect(preferredItemId) {
+    const select = qs(id("exam-select"));
+    if (!select) return;
+    const previous = select.value;
+    const items = cfg.getItems();
+    select.innerHTML = items.map((it) => `<option value="${it.id}">${escapeHtml(it.label)}</option>`).join("");
+    const wanted = preferredItemId || previous || currentItemId;
+    if (wanted && items.some((it) => it.id === wanted)) select.value = wanted;
+    else if (items.length) select.value = items[0].id;
+
+    const hasItems = items.length > 0;
+    qs(id("no-exam-msg")).style.display = hasItems ? "none" : "";
+    qs(id("builder-root")).style.display = hasItems ? "" : "none";
+    if (!hasItems) { currentItemId = null; return; }
+
+    select.onchange = () => loadExam(select.value);
+    loadExam(select.value);
+  }
+
+  // Guards against a race when the user switches topics while a previous
+  // getBank() fetch (Practice's is a real network call now) is still in
+  // flight — only the most recent loadExam call is allowed to apply its
+  // result, so a slow first fetch can't overwrite a faster second one.
+  let loadExamToken = 0;
+
+  async function loadExam(itemId) {
+    currentItemId = itemId;
+    const item = currentItem();
+    if (!item) return;
+    const token = ++loadExamToken;
+
+    // getBank() is synchronous for Live Exam's MCQBuilder and a network
+    // call for Practice's — awaiting works for both either way.
+    let bank;
+    try {
+      bank = (await cfg.getBank(itemId)) || [];
+    } catch (e) {
+      console.error(e);
+      if (token !== loadExamToken) return;
+      showToast("Couldn't load this topic's questions. Check your connection and try again.", "danger");
+      bank = [];
+    }
+    if (token !== loadExamToken) return; // a newer loadExam call has since taken over
+
+    // Load a working draft from the saved bank (converted to the builder's
+    // richer internal shape), or start fresh with one empty question box.
+    questions = bank.map((q) => {
+      const opts = (q.options || ["", "", "", ""]).slice(0, 4);
+      while (opts.length < 4) opts.push("");
+      return {
+        id: uid(),
+        questionHtml: escapeHtml(q.question || ""),
+        optionsLayout: defaultOptionsLayout(),
+        layoutLocked: false,
+        explanationHtml: escapeHtml(q.explanation || ""),
+        options: opts.map((t, i) => ({ id: ["a", "b", "c", "d"][i], html: escapeHtml(t) })),
+        correctIndex: typeof q.correctAnswer === "number" ? q.correctAnswer : -1,
+      };
+    });
+    renderQuestions();
+  }
+
+  /* ---------- question list rendering ---------- */
+  function renderQuestions() {
+    ensureTrailingEmpty();
+    const list = qs(id("questions-list"));
+    list.innerHTML = "";
+    questions.forEach((q, i) => list.appendChild(buildQuestionCard(q, i)));
+    updateQuestionCountLabel();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function updateQuestionCountLabel() {
+    const realCount = questions.filter((q) => !isEmpty(q)).length;
+    qs(id("question-count")).textContent = `${realCount} question${realCount === 1 ? "" : "s"}`;
+  }
+
+  // When the user types into what is currently the last MCQ box, a new
+  // empty box is appended below it automatically.
+  function appendTrailingCardIfNeeded(questionId) {
+    const idx = questions.findIndex((q) => q.id === questionId);
+    if (idx === -1 || idx !== questions.length - 1) return;
+    if (!ensureTrailingEmpty()) return;
+    const newQ = questions[questions.length - 1];
+    const list = qs(id("questions-list"));
+    list.appendChild(buildQuestionCard(newQ, questions.length - 1));
+    updateQuestionCountLabel();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function setEditorContent(el, html) { el.innerHTML = html || ""; toggleEmptyState(el); }
+  function toggleEmptyState(el) { el.classList.toggle("is-empty", stripHtml(el.innerHTML) === ""); }
+
+  function bindEditableEvents(el, onChange) {
+    const debounced = debounce(() => onChange(sanitizeHtml(el.innerHTML)), 180);
+    el.addEventListener("input", () => { toggleEmptyState(el); debounced(); });
+    el.addEventListener("focus", () => { activeEditorEl = el; });
+    el.addEventListener("keyup", () => rememberSelection(el));
+    el.addEventListener("mouseup", () => rememberSelection(el));
+    el.addEventListener("keydown", (e) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (key === "b") { e.preventDefault(); execCommand("bold"); }
+      else if (key === "i") { e.preventDefault(); execCommand("italic"); }
+      else if (key === "u") { e.preventDefault(); execCommand("underline"); }
+    });
+  }
+
+  // Only bother building/updating a preview when the raw text actually
+  // contains a $...$ / $$...$$ segment — cheap check that keeps the
+  // preview box hidden (and skips a KaTeX pass entirely) for the vast
+  // majority of questions that use plain text, sup/sub, or the Unicode
+  // symbol picker and never touch LaTeX at all.
+  function hasMathMarkup(text) { return /\$[^$]+\$/.test(text || ""); }
+
+  // Wires a read-only preview box to an editor area: whenever the editor's
+  // raw text contains $...$/$$...$$, re-render just that preview node
+  // through the same KaTeX helper (renderMathIn) used at exam time, so
+  // the person sees the typeset fraction/equation while still editing
+  // the plain-text template. The editor's own contenteditable HTML is
+  // never touched by KaTeX — only this separate node is.
+  function bindMathPreview(editorEl, previewEl) {
+    const label = document.createElement("span");
+    label.className = "mcqp2-math-preview__label";
+    label.textContent = lang === "bn" ? "প্রিভিউ" : "Preview";
+    previewEl.appendChild(label);
+    const body = document.createElement("span");
+    previewEl.appendChild(body);
+    const update = debounce(() => {
+      const raw = stripHtml(editorEl.innerHTML);
+      if (!hasMathMarkup(raw)) { previewEl.classList.remove("is-visible"); return; }
+      body.textContent = raw;
+      previewEl.classList.add("is-visible");
+      renderMathIn(previewEl);
+    }, 180);
+    editorEl.addEventListener("input", update);
+    update();
+  }
+
+  function rememberSelection(el) {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0 && el.contains(sel.anchorNode)) activeSavedRange = sel.getRangeAt(0).cloneRange();
+  }
+  function restoreSelection() {
+    if (!activeSavedRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(activeSavedRange);
+  }
+  function execCommand(cmd, value = null) {
+    if (!activeEditorEl) return;
+    activeEditorEl.focus();
+    restoreSelection();
+    try { document.execCommand(cmd, false, value); } catch (err) {
+      document.execCommand("styleWithCSS", false, true);
+      try { document.execCommand(cmd, false, value); } catch (e2) { /* no-op */ }
+    }
+    rememberSelection(activeEditorEl);
+    toggleEmptyState(activeEditorEl);
+    activeEditorEl.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  // cursorOffset (optional): distance in characters BACK from the end of
+  // the just-inserted text where the caret should end up — used by the
+  // fraction/chemical-equation templates so typing continues inside the
+  // template's first editable slot (e.g. right after "\frac{") instead of
+  // after the whole "$\frac{}{}$" the person would otherwise have to
+  // click back into by hand.
+  function insertTextAtCursor(el, text, cursorOffset) {
+    if (!el) return;
+    el.focus();
+    restoreSelection();
+    document.execCommand("insertText", false, text);
+    if (typeof cursorOffset === "number") {
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        // Selection is currently collapsed right after the inserted text
+        // (a plain text node from insertText), so walking back
+        // `cursorOffset` characters within that same node lands inside
+        // the template as intended.
+        const node = range.startContainer;
+        const pos = range.startOffset;
+        if (node.nodeType === Node.TEXT_NODE && pos - cursorOffset >= 0) {
+          range.setStart(node, pos - cursorOffset);
+          range.setEnd(node, pos - cursorOffset);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    }
+    rememberSelection(el);
+    toggleEmptyState(el);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  /* ---------- question card (ported from mcq-pro.html) ---------- */
+  function buildQuestionCard(q, index) {
+    const card = document.createElement("div");
+    card.className = "mcqp2-qcard";
+    card.dataset.id = q.id;
+
+    const layout = q.optionsLayout || "vertical";
+
+    const head = document.createElement("div");
+    head.className = "mcqp2-qcard__head";
+
+    const numSpan = document.createElement("span");
+    numSpan.className = "mcqp2-qcard__number";
+    numSpan.textContent = lang === "bn" ? `প্রশ্ন ${toBengaliDigits(index + 1)}` : `MCQ ${index + 1}`;
+    head.appendChild(numSpan);
+
+    const controls = document.createElement("div");
+    controls.className = "mcqp2-qcard__controls";
+
+    /* --- Inline rich-text toolbar --- */
+    const toolbar = document.createElement("div");
+    toolbar.className = "mcqp2-toolbar";
+    toolbar.setAttribute("role", "toolbar");
+
+    const tools = [
+      { cmd: "bold", icon: "bold", label: "Bold" },
+      { cmd: "italic", icon: "italic", label: "Italic" },
+      { cmd: "underline", icon: "underline", label: "Underline" },
+      { sep: true },
+      { cmd: "superscript", text: "x²", label: "Superscript" },
+      { cmd: "subscript", text: "x₂", label: "Subscript" },
+      { sep: true },
+      { cmd: "insertUnorderedList", icon: "list", label: "Bullet list" },
+      { cmd: "insertOrderedList", icon: "list-ordered", label: "Numbered list" },
+      { sep: true },
+    ];
+    tools.forEach((t) => {
+      if (t.sep) { const sep = document.createElement("span"); sep.className = "rt-sep"; toolbar.appendChild(sep); return; }
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = "rt-btn"; btn.dataset.cmd = t.cmd;
+      btn.setAttribute("aria-label", t.label); btn.title = t.label;
+      if (t.icon) { const i = document.createElement("i"); i.setAttribute("data-lucide", t.icon); btn.appendChild(i); }
+      else if (t.text) { btn.textContent = t.text; }
+      toolbar.appendChild(btn);
+    });
+
+    // Math dropdown
+    const mathDropdown = document.createElement("div");
+    mathDropdown.className = "rt-dropdown";
+    const mathBtn = document.createElement("button");
+    mathBtn.type = "button"; mathBtn.className = "rt-btn";
+    mathBtn.setAttribute("aria-label", "Insert math symbol"); mathBtn.title = "Math & symbols";
+    const mathIcon = document.createElement("i"); mathIcon.setAttribute("data-lucide", "sigma"); mathBtn.appendChild(mathIcon);
+    mathDropdown.appendChild(mathBtn);
+    const mathPanel = document.createElement("div");
+    mathPanel.className = "rt-dropdown__panel"; mathPanel.hidden = true;
+    // Template row first (fraction / chemical equation) — these span the
+    // full grid width and carry a text label since, unlike the single
+    // glyphs below, their meaning isn't obvious from one character alone.
+    MATH_TEMPLATES.forEach((tpl) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "rt-math-template"; b.dataset.template = tpl.key;
+      b.title = tpl.label; b.setAttribute("aria-label", tpl.label);
+      b.textContent = tpl.display;
+      mathPanel.appendChild(b);
+    });
+    const templateSep = document.createElement("span");
+    templateSep.className = "rt-math-template-sep";
+    mathPanel.appendChild(templateSep);
+    MATH_SYMBOLS.forEach((sym) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "rt-math-symbol"; b.dataset.symbol = sym; b.textContent = sym;
+      mathPanel.appendChild(b);
+    });
+    mathDropdown.appendChild(mathPanel);
+    toolbar.appendChild(mathDropdown);
+
+    const colorSep = document.createElement("span"); colorSep.className = "rt-sep"; toolbar.appendChild(colorSep);
+    const colorLabel = document.createElement("label");
+    colorLabel.className = "rt-color"; colorLabel.title = "Text color";
+    const colorIcon = document.createElement("i"); colorIcon.setAttribute("data-lucide", "palette"); colorLabel.appendChild(colorIcon);
+    const colorInput = document.createElement("input");
+    colorInput.type = "color"; colorInput.dataset.cmd = "foreColor"; colorInput.value = "#111111";
+    colorInput.setAttribute("aria-label", "Text color");
+    colorLabel.appendChild(colorInput);
+    toolbar.appendChild(colorLabel);
+
+    const clearSep = document.createElement("span"); clearSep.className = "rt-sep"; toolbar.appendChild(clearSep);
+    const eraseBtn = document.createElement("button");
+    eraseBtn.type = "button"; eraseBtn.className = "rt-btn"; eraseBtn.dataset.cmd = "removeFormat";
+    eraseBtn.setAttribute("aria-label", "Clear formatting"); eraseBtn.title = "Clear formatting";
+    const eraseIcon = document.createElement("i"); eraseIcon.setAttribute("data-lucide", "eraser"); eraseBtn.appendChild(eraseIcon);
+    toolbar.appendChild(eraseBtn);
+
+    const closeSep = document.createElement("span"); closeSep.className = "rt-sep"; toolbar.appendChild(closeSep);
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button"; closeBtn.className = "rt-close"; closeBtn.setAttribute("aria-label", "Close formatting tools");
+    closeBtn.title = "Close toolbar"; closeBtn.textContent = "×";
+    toolbar.appendChild(closeBtn);
+
+    controls.appendChild(toolbar);
+
+    // Pencil toggle
+    const toggleBtn = document.createElement("button");
+    toggleBtn.type = "button"; toggleBtn.className = "mcqp2-format-toggle";
+    toggleBtn.setAttribute("aria-label", "Toggle formatting tools"); toggleBtn.title = "Formatting tools";
+    const toggleIcon = document.createElement("i"); toggleIcon.setAttribute("data-lucide", "pencil"); toggleBtn.appendChild(toggleIcon);
+    controls.appendChild(toggleBtn);
+
+    // Layout picker
+    const layoutPicker = document.createElement("div");
+    layoutPicker.className = "mcqp2-layout-picker"; layoutPicker.setAttribute("role", "group");
+    [
+      { value: "vertical", icon: "rows-3", label: "Vertical" },
+      { value: "horizontal", icon: "columns-3", label: "Horizontal" },
+      { value: "grid", icon: "grid-2x2", label: "Rectangular" },
+    ].forEach((l) => {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = `mcqp2-qc-btn${layout === l.value ? " is-active" : ""}`;
+      btn.dataset.layout = l.value; btn.setAttribute("aria-label", l.label); btn.title = l.label;
+      const i = document.createElement("i"); i.setAttribute("data-lucide", l.icon); btn.appendChild(i);
+      layoutPicker.appendChild(btn);
+    });
+    controls.appendChild(layoutPicker);
+
+    const div1 = document.createElement("span"); div1.className = "mcqp2-qc-divider"; controls.appendChild(div1);
+
+    const moveUp = document.createElement("button");
+    moveUp.type = "button"; moveUp.className = "mcqp2-qc-btn"; moveUp.dataset.action = "move-up";
+    moveUp.setAttribute("aria-label", "Move question up"); moveUp.title = "Move up";
+    const upIcon = document.createElement("i"); upIcon.setAttribute("data-lucide", "chevron-up"); moveUp.appendChild(upIcon);
+    controls.appendChild(moveUp);
+
+    const moveDown = document.createElement("button");
+    moveDown.type = "button"; moveDown.className = "mcqp2-qc-btn"; moveDown.dataset.action = "move-down";
+    moveDown.setAttribute("aria-label", "Move question down"); moveDown.title = "Move down";
+    const downIcon = document.createElement("i"); downIcon.setAttribute("data-lucide", "chevron-down"); moveDown.appendChild(downIcon);
+    controls.appendChild(moveDown);
+
+    const dupBtn = document.createElement("button");
+    dupBtn.type = "button"; dupBtn.className = "mcqp2-qc-btn"; dupBtn.dataset.action = "duplicate";
+    dupBtn.setAttribute("aria-label", "Duplicate question"); dupBtn.title = "Duplicate";
+    const dupIcon = document.createElement("i"); dupIcon.setAttribute("data-lucide", "copy"); dupBtn.appendChild(dupIcon);
+    controls.appendChild(dupBtn);
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button"; delBtn.className = "mcqp2-qc-btn mcqp2-qc-btn--danger"; delBtn.dataset.action = "delete";
+    delBtn.setAttribute("aria-label", "Delete question"); delBtn.title = "Delete";
+    const delIcon = document.createElement("i"); delIcon.setAttribute("data-lucide", "trash-2"); delBtn.appendChild(delIcon);
+    controls.appendChild(delBtn);
+
+    head.appendChild(controls);
+    card.appendChild(head);
+
+    /* --- Body --- */
+    const body = document.createElement("div");
+    body.className = "mcqp2-qcard__body";
+
+    const qEditor = document.createElement("div");
+    qEditor.className = "mcqp2-editor-area mcqp2-question-editor";
+    qEditor.contentEditable = "true"; qEditor.dataset.role = "question";
+    qEditor.dataset.placeholder = lang === "bn" ? "প্রশ্ন লিখুন..." : "Type your question...";
+    qEditor.setAttribute("aria-label", "Question text");
+    setEditorContent(qEditor, q.questionHtml);
+    body.appendChild(qEditor);
+    const qPreview = document.createElement("div");
+    qPreview.className = "mcqp2-math-preview";
+    body.appendChild(qPreview);
+    bindMathPreview(qEditor, qPreview);
+
+    const optionsList = document.createElement("div");
+    optionsList.className = `mcqp2-options-list layout-${layout}`;
+    q.options.forEach((opt, oi) => {
+      optionsList.appendChild(buildOptionRow(q, opt, oi, (anyCorrect) => {
+        explBox.classList.toggle("is-correct-picked", anyCorrect);
+        if (anyCorrect) setTimeout(() => explEditor.focus(), 0);
+        else setEditorContent(explEditor, "");
+      }));
+    });
+    body.appendChild(optionsList);
+
+    const explBox = document.createElement("div");
+    explBox.className = "mcqp2-option-explanation" + (q.correctIndex >= 0 ? " is-correct-picked" : "");
+    const explLabel = document.createElement("span");
+    explLabel.className = "mcqp2-option-explanation__label";
+    explLabel.textContent = lang === "bn" ? "ব্যাখ্যা.." : "Explanation..";
+    explBox.appendChild(explLabel);
+    const explEditor = document.createElement("div");
+    explEditor.className = "mcqp2-editor-area mcqp2-option-explanation__editor";
+    explEditor.contentEditable = "true"; explEditor.dataset.role = "explanation";
+    explEditor.dataset.placeholder = lang === "bn" ? "সঠিক উত্তরের ব্যাখ্যা লিখুন..." : "Explain why this answer is correct...";
+    explEditor.setAttribute("aria-label", "Explanation");
+    setEditorContent(explEditor, q.explanationHtml);
+    explBox.appendChild(explEditor);
+    bindEditableEvents(explEditor, (html) => { q.explanationHtml = html; });
+    const explPreview = document.createElement("div");
+    explPreview.className = "mcqp2-math-preview";
+    explBox.appendChild(explPreview);
+    bindMathPreview(explEditor, explPreview);
+    body.appendChild(explBox);
+    card.appendChild(body);
+
+    /* --- Events --- */
+    bindEditableEvents(qEditor, (html) => {
+      q.questionHtml = html;
+      appendTrailingCardIfNeeded(q.id);
+      updateQuestionCountLabel();
+    });
+
+    layoutPicker.querySelectorAll(".mcqp2-qc-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        q.optionsLayout = btn.dataset.layout;
+        q.layoutLocked = true;
+        layoutPicker.querySelectorAll(".mcqp2-qc-btn").forEach((b) => b.classList.toggle("is-active", b === btn));
+        optionsList.className = `mcqp2-options-list layout-${q.optionsLayout}`;
+      });
+    });
+
+    controls.querySelectorAll(".mcqp2-qc-btn[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.action;
+        const idx = questions.findIndex((x) => x.id === q.id);
+        if (action === "delete") {
+          if (questions.length === 1) { questions[0] = freshQuestion(); }
+          else { questions.splice(idx, 1); }
+          renderQuestions();
+        } else if (action === "duplicate") {
+          const copy = JSON.parse(JSON.stringify(q));
+          copy.id = uid();
+          questions.splice(idx + 1, 0, copy);
+          renderQuestions();
+          showToast("Question duplicated", "success");
+        } else if (action === "move-up") {
+          if (idx > 0) { const [item] = questions.splice(idx, 1); questions.splice(idx - 1, 0, item); renderQuestions(); }
+        } else if (action === "move-down") {
+          if (idx < questions.length - 1) { const [item] = questions.splice(idx, 1); questions.splice(idx + 1, 0, item); renderQuestions(); }
+        }
+      });
+    });
+
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toolbar.classList.toggle("is-visible");
+      toggleBtn.classList.toggle("is-active");
+      if (!toolbar.classList.contains("is-visible")) mathPanel.hidden = true;
+    });
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toolbar.classList.remove("is-visible");
+      toggleBtn.classList.remove("is-active");
+      mathPanel.hidden = true;
+    });
+
+    function positionMathPanel() {
+      const margin = 8;
+      const toolbarRect = toolbar.getBoundingClientRect();
+      const mathBtnRect = mathBtn.getBoundingClientRect();
+      mathPanel.style.left = "0px"; mathPanel.style.top = "0px"; mathPanel.style.bottom = "auto"; mathPanel.style.transform = "none";
+      const panelW = Math.min(mathPanel.offsetWidth || 190, window.innerWidth - margin * 2);
+      const panelH = mathPanel.offsetHeight || 180;
+      const spaceAbove = toolbarRect.top;
+      const spaceBelow = window.innerHeight - toolbarRect.bottom;
+      let top;
+      mathPanel.classList.remove("is-below");
+      if (spaceAbove >= panelH + margin || spaceAbove >= spaceBelow) {
+        top = toolbarRect.top - panelH - margin;
+        if (top < margin) top = margin;
+      } else {
+        top = toolbarRect.bottom + margin;
+        mathPanel.classList.add("is-below");
+        const maxTop = window.innerHeight - panelH - margin;
+        if (top > maxTop) top = Math.max(margin, maxTop);
+      }
+      let left = mathBtnRect.left + (mathBtnRect.width / 2) - (panelW / 2);
+      left = Math.max(margin, Math.min(left, window.innerWidth - panelW - margin));
+      const maxAvailableH = window.innerHeight - margin * 2;
+      mathPanel.style.maxHeight = panelH > maxAvailableH ? `${maxAvailableH}px` : "";
+      mathPanel.style.left = `${left}px`;
+      mathPanel.style.top = `${top}px`;
+    }
+
+    mathBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!toolbar.classList.contains("is-visible")) { toolbar.classList.add("is-visible"); toggleBtn.classList.add("is-active"); }
+      const isHidden = mathPanel.hidden;
+      mathPanel.hidden = !isHidden;
+      if (!mathPanel.hidden) positionMathPanel();
+    });
+
+    card.addEventListener("focusin", () => {
+      qsa(".mcqp2-qcard.is-focused").forEach((c) => c.classList.remove("is-focused"));
+      card.classList.add("is-focused");
+    });
+
+    card._positionMathPanel = positionMathPanel;
+    card._mathPanel = mathPanel;
+    card._mathDropdown = mathDropdown;
+
+    return card;
+  }
+
+  function buildOptionRow(q, opt, index, onCorrectToggle) {
+    // Wrapper holds the flex option-row plus its full-width preview strip
+    // beneath it — the preview can't live inside .mcqp2-option-row itself
+    // since that row is a flex container (label + editor side by side);
+    // a wide preview box in there would squeeze the editor rather than
+    // sitting under it.
+    const wrap = document.createElement("div");
+    wrap.className = "mcqp2-option-row-wrap";
+
+    const row = document.createElement("div");
+    row.className = "mcqp2-option-row";
+
+    const label = document.createElement("button");
+    label.type = "button";
+    label.className = "mcqp2-option-row__label" + (q.correctIndex === index ? " is-correct" : "");
+    label.textContent = optionLabel(index);
+    label.title = "Mark as correct answer";
+    label.setAttribute("aria-pressed", q.correctIndex === index ? "true" : "false");
+    label.setAttribute("aria-label", `Mark correct answer: ${optionLabel(index)}`);
+    row.appendChild(label);
+
+    const editor = document.createElement("div");
+    editor.className = "mcqp2-editor-area";
+    editor.contentEditable = "true";
+    editor.dataset.role = "option";
+    editor.dataset.placeholder = lang === "bn" ? "অপশন লিখুন..." : "Option text...";
+    editor.setAttribute("aria-label", `Option ${optionLabel(index)}`);
+    setEditorContent(editor, opt.html);
+    row.appendChild(editor);
+    wrap.appendChild(row);
+    const optPreview = document.createElement("div");
+    optPreview.className = "mcqp2-math-preview";
+    wrap.appendChild(optPreview);
+    bindMathPreview(editor, optPreview);
+
+    bindEditableEvents(editor, (html) => {
+      opt.html = html;
+      if (!q.layoutLocked) {
+        q.optionsLayout = computeAutoLayout(q);
+        const list = wrap.parentElement;
+        if (list) list.className = `mcqp2-options-list layout-${q.optionsLayout}`;
+      }
+      appendTrailingCardIfNeeded(q.id);
+      updateQuestionCountLabel();
+    });
+
+    // Single-correct-answer semantics: picking one option unmarks any other.
+    label.addEventListener("click", () => {
+      const wasCorrect = q.correctIndex === index;
+      q.correctIndex = wasCorrect ? -1 : index;
+      const card = row.closest(".mcqp2-qcard");
+      if (card) {
+        card.querySelectorAll(".mcqp2-option-row").forEach((r, ri) => {
+          const isNowCorrect = q.correctIndex === ri;
+          const l = r.querySelector(".mcqp2-option-row__label");
+          if (l) { l.classList.toggle("is-correct", isNowCorrect); l.setAttribute("aria-pressed", isNowCorrect ? "true" : "false"); }
+        });
+      }
+      if (onCorrectToggle) onCorrectToggle(q.correctIndex >= 0);
+    });
+
+    return wrap;
+  }
+
+  /* ---------- global toolbar/math-panel wiring (event delegation) ---------- */
+  function initToolbar() {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(`${id("questions-list")} .mcqp2-toolbar .rt-btn[data-cmd]`);
+      if (btn) { e.preventDefault(); execCommand(btn.dataset.cmd); }
+      const symbolBtn = e.target.closest(`${id("questions-list")} .mcqp2-toolbar .rt-math-symbol[data-symbol]`);
+      if (symbolBtn) { e.preventDefault(); insertTextAtCursor(activeEditorEl, symbolBtn.dataset.symbol); }
+      const templateBtn = e.target.closest(`${id("questions-list")} .mcqp2-toolbar .rt-math-template[data-template]`);
+      if (templateBtn) {
+        e.preventDefault();
+        const tpl = MATH_TEMPLATES.find((t) => t.key === templateBtn.dataset.template);
+        if (tpl) insertTextAtCursor(activeEditorEl, tpl.text, tpl.cursorAt);
+      }
+    });
+    document.addEventListener("input", (e) => {
+      const input = e.target.closest(`${id("questions-list")} .mcqp2-toolbar .rt-color input[type="color"]`);
+      if (input) {
+        document.execCommand("styleWithCSS", false, true);
+        execCommand(input.dataset.cmd, input.value);
+      }
+    });
+    document.addEventListener("click", (e) => {
+      const toolbar = e.target.closest(".mcqp2-toolbar");
+      const toggle = e.target.closest(".mcqp2-format-toggle");
+      const card = e.target.closest(".mcqp2-qcard");
+      if (!toggle && !toolbar && !card) {
+        qsa(".mcqp2-toolbar.is-visible").forEach((tb) => {
+          tb.classList.remove("is-visible");
+          const parentToggle = tb.closest(".mcqp2-qcard__controls")?.querySelector(".mcqp2-format-toggle");
+          if (parentToggle) parentToggle.classList.remove("is-active");
+          const mathPanel = tb.querySelector(".rt-dropdown__panel");
+          if (mathPanel) mathPanel.hidden = true;
+        });
+      }
+    });
+    window.addEventListener("resize", () => {
+      qsa(".mcqp2-qcard").forEach((card) => { if (card._mathPanel && !card._mathPanel.hidden) card._positionMathPanel(); });
+    });
+    window.addEventListener("scroll", () => {
+      qsa(".mcqp2-qcard").forEach((card) => { if (card._mathPanel && !card._mathPanel.hidden) card._positionMathPanel(); });
+    }, true);
+    document.addEventListener("click", (e) => {
+      qsa(".mcqp2-qcard").forEach((card) => {
+        if (card._mathDropdown && card._mathPanel && !card._mathDropdown.contains(e.target) && !card._mathPanel.contains(e.target)) {
+          card._mathPanel.hidden = true;
+        }
+      });
+    });
+  }
+
+  /* ---------- PUSH LIVE ---------- */
+  /* ---------- PUSH LIVE / PUSH ---------- */
+  async function pushIntoLive() {
+    if (!currentItemId) return;
+    const real = questions.filter((q) => !isEmpty(q));
+    if (!real.length) { showToast("Add at least one question before pushing.", "danger"); return; }
+    const invalid = real.some((q) => q.options.some((o) => stripHtml(o.html) === "") || q.correctIndex < 0);
+    if (invalid) { showToast("Every question needs all 4 options filled in and a correct answer marked.", "danger"); return; }
+
+    const converted = real.map((q) => ({
+      id: q.id || uid(),
+      question: sanitizeHtml(q.questionHtml).trim(),
+      options: q.options.map((o) => sanitizeHtml(o.html).trim()),
+      correctAnswer: q.correctIndex,
+      explanation: sanitizeHtml(q.explanationHtml).trim(),
+    }));
+
+    // Practice's pushQuestions now does a real network PUT to the Worker,
+    // which can fail (offline, auth expired, etc.) — don't claim success
+    // if it throws. Live Exam's pushQuestions is local-only and never
+    // throws, so this try/catch is a no-op for that path.
+    try {
+      await cfg.pushQuestions(currentItemId, converted, lang);
+    } catch (e) {
+      console.error(e);
+      showToast("Couldn't save - check your connection and try again.", "danger");
+      return;
+    }
+
+    // No loadExam()/renderQuestions() here: converted is exactly what's
+    // already on screen (it's what we just derived questions from), so
+    // rebuilding the list would only recreate identical DOM and cause
+    // another visible jump for no visual change. updateQuestionCountLabel
+    // keeps the "N questions" count accurate without touching the cards.
+    updateQuestionCountLabel();
+    showToast(cfg.pushedToast(converted.length), "success");
+  }
+
+  /* ---------- AI Mode (reuses this site's own Gemini config — no
+     separate Gemini API panel here) ---------- */
+  function openAiModal() {
+    if (!currentItemId) { showToast(cfg.selectFirstMessage, "danger"); return; }
+    const aiConfig = getStoredAiConfig();
+    const exam = cfg.getItemMeta(currentItemId);
+    const overlay = document.createElement("div");
+    overlay.className = "mcqp-modal-overlay";
+    overlay.id = "mcqp-ai-overlay";
+    overlay.innerHTML = `
+      <div class="mcqp-modal" role="dialog" aria-modal="true" aria-labelledby="mcqp-ai-title">
+        <div class="mcqp-modal__head">
+          <h3 id="mcqp-ai-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Generate MCQs with AI
+          </h3>
+          <button type="button" class="icon-btn" id="mcqp-ai-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="mcqp-modal__body">
+          ${!aiConfig.apiKey ? `<p class="mcqp-hint" style="color: var(--color-danger);">No AI key configured yet - add one in Settings → AI to use AI Mode.</p>` : ""}
+          <div class="mcqp-field">
+            <label for="mcqp-ai-prompt">Instruction for MCQ Generation</label>
+            <textarea id="mcqp-ai-prompt" class="mcqp-ai-textarea" placeholder="Generate 10 MCQs on ${escapeHtml(exam ? exam.topic : "this topic")}, medium difficulty."></textarea>
+          </div>
+          <div class="capture-upload-row">
+            <button type="button" class="btn btn-outline" id="mcqp-ai-capture-btn">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1-2h7l1 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg>
+              <span>Capture</span>
+            </button>
+            <button type="button" class="btn btn-outline" id="mcqp-ai-upload-btn">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span>Upload</span>
+            </button>
+            <!-- Capture: camera-only via the capture attribute so mobile browsers
+                 open the device camera directly instead of a general picker. Mirrors
+                 the Home AI Mode card's same two-input pattern (see
+                 initCaptureUpload/[data-capture-input] there) so behavior stays
+                 identical between the two AI Mode entry points. -->
+            <input type="file" id="mcqp-ai-capture-input" class="visually-hidden" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1" />
+            <!-- Upload: general file picker, multi-select, restricted to the
+                 accepted study-material types (images, PDF, Word, PowerPoint). -->
+            <input type="file" id="mcqp-ai-file-input" class="visually-hidden" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" multiple aria-hidden="true" tabindex="-1" />
+          </div>
+          <div class="attachment-list" id="mcqp-ai-attachment-list" hidden></div>
+          <div class="mcqp-ai-row">
+            <div class="mcqp-field">
+              <label for="mcqp-ai-count">Number of questions</label>
+              <input type="number" class="form-control no-spinner" id="mcqp-ai-count" min="1" max="50" value="10">
+            </div>
+            <div class="mcqp-field">
+              <label for="mcqp-ai-difficulty">Difficulty</label>
+              <select class="form-control" id="mcqp-ai-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div class="mcqp-field">
+            <label for="mcqp-ai-insert">On generate</label>
+            <select class="form-control" id="mcqp-ai-insert">
+              <option value="append">Append to existing questions</option>
+              <option value="replace">Replace all questions</option>
+            </select>
+          </div>
+          <p class="mcqp-ai-status" id="mcqp-ai-status"></p>
+        </div>
+        <div class="mcqp-modal__foot">
+          <button type="button" class="btn btn-secondary" id="mcqp-ai-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="mcqp-ai-generate">
+            <svg id="mcqp-ai-generate-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span id="mcqp-ai-generate-label">Generate MCQs</span>
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    /* Attachments state for THIS modal instance only — deliberately a
+       fresh local array rather than reusing the Home page's global
+       aiModeAttachments, since that list belongs to a different form
+       that may not even exist in the DOM right now, and a second,
+       independent picker here shouldn't share or clobber it. Recreated
+       (and any object URLs revoked) every time the modal opens/closes,
+       matching the lifetime of the overlay element itself. */
+    const modalAttachments = [];
+
+    function renderModalAttachmentList() {
+      const list = qs("#mcqp-ai-attachment-list", overlay);
+      if (!list) return;
+      list.innerHTML = "";
+      list.hidden = modalAttachments.length === 0;
+
+      modalAttachments.forEach((att) => {
+        const row = document.createElement("div");
+        row.className = "attachment-item";
+        row.dataset.attachmentId = att.id;
+
+        const icon = document.createElement("div");
+        icon.className = "attachment-item__icon";
+        if (att.kind === "image" && att.previewUrl) {
+          const img = document.createElement("img");
+          img.src = att.previewUrl;
+          img.alt = "";
+          icon.appendChild(img);
+        } else {
+          icon.innerHTML = ATTACHMENT_KIND_ICON[att.kind] || ATTACHMENT_KIND_ICON.other;
+        }
+
+        const body = document.createElement("div");
+        body.className = "attachment-item__body";
+        const nameEl = document.createElement("div");
+        nameEl.className = "attachment-item__name";
+        nameEl.textContent = att.name;
+        const metaEl = document.createElement("div");
+        metaEl.className = "attachment-item__meta";
+        metaEl.textContent = formatFileSize(att.size);
+        body.appendChild(nameEl);
+        body.appendChild(metaEl);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "attachment-item__remove";
+        removeBtn.setAttribute("aria-label", "Remove");
+        removeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+        removeBtn.addEventListener("click", () => {
+          const idx = modalAttachments.findIndex((a) => a.id === att.id);
+          if (idx === -1) return;
+          const [removed] = modalAttachments.splice(idx, 1);
+          if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+          renderModalAttachmentList();
+        });
+
+        row.appendChild(icon);
+        row.appendChild(body);
+        row.appendChild(removeBtn);
+        list.appendChild(row);
+      });
+
+      if (modalAttachments.length > 0) {
+        const addMoreBtn = document.createElement("button");
+        addMoreBtn.type = "button";
+        addMoreBtn.className = "btn-add-more";
+        addMoreBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Add More</span>';
+        addMoreBtn.addEventListener("click", () => qs("#mcqp-ai-file-input", overlay)?.click());
+        list.appendChild(addMoreBtn);
+      }
+    }
+
+    function addModalAttachments(fileList) {
+      const files = Array.from(fileList || []);
+      let addedCount = 0;
+      files.forEach((file) => {
+        if (!ATTACHMENT_ACCEPTED_EXT.test(file.name) && !(file.type || "").startsWith("image/") && file.type !== "application/pdf") {
+          showToast(`"${file.name}" - Unsupported file type.`, "danger");
+          return;
+        }
+        if (file.size > ATTACHMENT_MAX_BYTES) {
+          showToast(`"${file.name}" - File is too large (max 15 MB).`, "danger");
+          return;
+        }
+        const att = {
+          id: `mcqp_att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          name: file.name,
+          size: file.size,
+          mimeType: file.type || "",
+          kind: attachmentKindFor(file),
+          previewUrl: null,
+          base64: null,
+        };
+        if (att.kind === "image") att.previewUrl = URL.createObjectURL(file);
+        modalAttachments.push(att);
+        addedCount += 1;
+      });
+      if (addedCount > 0) renderModalAttachmentList();
+    }
+
+    function revokeModalAttachmentPreviews() {
+      modalAttachments.forEach((att) => {
+        if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+      });
+    }
+
+    const captureBtn = qs("#mcqp-ai-capture-btn", overlay);
+    const captureInput = qs("#mcqp-ai-capture-input", overlay);
+    const uploadBtn = qs("#mcqp-ai-upload-btn", overlay);
+    const fileInput = qs("#mcqp-ai-file-input", overlay);
+    captureBtn.addEventListener("click", () => captureInput.click());
+    captureInput.addEventListener("change", () => {
+      if (captureInput.files && captureInput.files.length > 0) addModalAttachments(captureInput.files);
+      captureInput.value = ""; // allow capturing the same shot again back-to-back
+    });
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files.length > 0) addModalAttachments(fileInput.files);
+      fileInput.value = ""; // allow re-selecting the same file later
+    });
+
+    const close = () => { revokeModalAttachmentPreviews(); overlay.remove(); };
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    qs("#mcqp-ai-close", overlay).addEventListener("click", close);
+    qs("#mcqp-ai-cancel", overlay).addEventListener("click", close);
+    qs("#mcqp-ai-generate", overlay).addEventListener("click", async () => {
+      const statusEl = qs("#mcqp-ai-status", overlay);
+      const btn = qs("#mcqp-ai-generate", overlay);
+      const iconEl = qs("#mcqp-ai-generate-icon", overlay);
+      const labelEl = qs("#mcqp-ai-generate-label", overlay);
+      const originalIconHtml = iconEl.outerHTML;
+      const freshCfg = getStoredAiConfig();
+      if (!freshCfg.apiKey) {
+        statusEl.textContent = "Add your AI key in Settings → AI first.";
+        statusEl.className = "mcqp-ai-status is-error";
+        return;
+      }
+      const promptText = qs("#mcqp-ai-prompt", overlay).value.trim();
+      const count = parseInt(qs("#mcqp-ai-count", overlay).value, 10) || 10;
+      const difficulty = qs("#mcqp-ai-difficulty", overlay).value;
+      const insertMode = qs("#mcqp-ai-insert", overlay).value;
+      btn.disabled = true;
+      iconEl.outerHTML = '<span class="mcqp-ai-spinner" id="mcqp-ai-generate-icon" role="status" aria-label="Generating"></span>';
+      labelEl.textContent = "Generating…";
+      statusEl.textContent = "Generating questions…";
+      statusEl.className = "mcqp-ai-status is-loading";
+      try {
+        const result = await generateQuestionsWithGemini({
+          subject: exam ? exam.subject : "",
+          topic: exam ? exam.topic : "",
+          prompt: promptText,
+          questionCount: count,
+          difficulty,
+          language: lang,
+          attachments: modalAttachments,
+        });
+        const converted = result.map((q) => {
+          // Run every AI-populated field through the same stray-LaTeX
+          // auto-wrap used by the Homepage AI flow (sanitizeQuestionMath)
+          // BEFORE escaping to HTML. Without this, math/chemistry that
+          // Gemini emitted without $...$ delimiters never gets picked up
+          // by KaTeX's auto-render in Exam Mode, Results & Analysis, or
+          // the Preview page.
+          const clean = sanitizeQuestionMath(q);
+          const opts = (Array.isArray(clean.options) ? clean.options : ["", "", "", ""]).slice(0, 4).map((o) => String(o || "").trim());
+          while (opts.length < 4) opts.push("");
+          return {
+            id: uid(),
+            questionHtml: escapeHtml(String(clean.question || "").trim()),
+            optionsLayout: defaultOptionsLayout(),
+            layoutLocked: false,
+            explanationHtml: escapeHtml(clean.explanation ? String(clean.explanation).trim() : ""),
+            options: opts.map((t, i) => ({ id: ["a", "b", "c", "d"][i], html: escapeHtml(t) })),
+            correctIndex: Number.isInteger(clean.correctAnswer) ? clean.correctAnswer : -1,
+          };
+        }).filter((q) => stripHtml(q.questionHtml));
+
+        if (!converted.length) throw new Error("EMPTY");
+
+        if (insertMode === "replace") {
+          questions = converted;
+        } else {
+          const onlyBlank = questions.length === 1 && isEmpty(questions[0]);
+          if (onlyBlank) questions = converted;
+          else questions = questions.filter((q) => !isEmpty(q)).concat(converted);
+        }
+        renderQuestions();
+        statusEl.textContent = "";
+        close();
+        showToast(`${converted.length} question${converted.length === 1 ? "" : "s"} generated.`, "success");
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = String(e.message || e).includes("NO_API_KEY")
+          ? "Add your AI key in Settings → AI first."
+          : "Something went wrong generating questions. Please try again.";
+        statusEl.className = "mcqp-ai-status is-error";
+      } finally {
+        btn.disabled = false;
+        const currentIcon = qs("#mcqp-ai-generate-icon", overlay);
+        if (currentIcon) currentIcon.outerHTML = originalIconHtml;
+        const currentLabel = qs("#mcqp-ai-generate-label", overlay);
+        if (currentLabel) currentLabel.textContent = "Generate MCQs";
+      }
+    });
+  }
+
+  /* ---------- Import from Practice ----------
+     Lets the admin pull an existing Practice topic's questions straight
+     into this Live Exam's builder, covering every case from "one topic"
+     to "the whole syllabus" with the same checkbox tree — ticking every
+     subject/topic is just the "whole syllabus" case, no separate mode
+     needed. Imported questions are copies: once pulled in here, editing
+     them (or pushing live) never writes back to the Practice topic they
+     came from, and re-importing the same topic later pulls its current
+     state again rather than staying in sync automatically. */
+  function openPracticeImportModal() {
+    if (!currentItemId) { showToast(cfg.selectFirstMessage, "danger"); return; }
+    if (!practiceState.subjects.length) {
+      showToast("No Practice subjects exist yet - add some in the Practice Admin Panel first.", "danger");
+      return;
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "mcqp-modal-overlay";
+    overlay.id = "mcqp-import-overlay";
+    overlay.innerHTML = `
+      <div class="mcqp-modal" role="dialog" aria-modal="true" aria-labelledby="mcqp-import-title">
+        <div class="mcqp-modal__head">
+          <h3 id="mcqp-import-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Import from Practice
+          </h3>
+          <button type="button" class="icon-btn" id="mcqp-import-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="mcqp-modal__body">
+          <p class="mcqp-hint">Pick any mix of subjects/topics — one topic, several, whole subjects, or everything. Every selected topic's questions get copied in below (as new copies, not linked to Practice).</p>
+          <div class="mcqp-import-tree" id="mcqp-import-tree"></div>
+        </div>
+        <div class="mcqp-modal__foot">
+          <span class="mcqp-import-count" id="mcqp-import-count">0 topics selected</span>
+          <div style="flex:1"></div>
+          <button type="button" class="btn btn-secondary" id="mcqp-import-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="mcqp-import-confirm" disabled>Import</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = () => {
+      document.removeEventListener("keydown", onKeydown);
+      overlay.remove();
+    };
+    const onKeydown = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKeydown);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    qs("#mcqp-import-close", overlay).addEventListener("click", close);
+    qs("#mcqp-import-cancel", overlay).addEventListener("click", close);
+
+    // ---- tree: one collapsible block per subject, a checkbox per topic,
+    // plus a subject-level "select all its topics" checkbox. Topics with
+    // zero questions are shown but disabled (nothing useful to import). ----
+    const tree = qs("#mcqp-import-tree", overlay);
+    practiceState.subjects.forEach((subject) => {
+      const block = document.createElement("div");
+      block.className = "mcqp-import-subject";
+
+      const head = document.createElement("label");
+      head.className = "mcqp-import-subject__head";
+      const subjectCb = document.createElement("input");
+      subjectCb.type = "checkbox";
+      subjectCb.dataset.subjectToggle = subject.id;
+      head.appendChild(subjectCb);
+      const subjectName = document.createElement("span");
+      subjectName.textContent = subject.name;
+      head.appendChild(subjectName);
+      block.appendChild(head);
+
+      const topicList = document.createElement("div");
+      topicList.className = "mcqp-import-topic-list";
+      subject.topics.forEach((topic) => {
+        // Question content lives in R2 now, so we can't know a topic's
+        // count synchronously while building this tree. Show every row
+        // enabled at first (cached ones get the right state immediately,
+        // via the same practiceQuestionCache the admin list reads), then
+        // patchImportTreeQuestionCounts() below disables/labels any that
+        // turn out empty once each topic's fetch resolves.
+        const cacheKey = `${subject.id}::${topic.id}`;
+        const cached = practiceQuestionCache.get(cacheKey);
+        const hasQuestions = cached ? cached.length > 0 : true;
+        const row = document.createElement("label");
+        row.className = "mcqp-import-topic-row" + (hasQuestions ? "" : " is-disabled");
+        row.dataset.importTopicRow = cacheKey;
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.dataset.subjectId = subject.id;
+        cb.dataset.topicId = topic.id;
+        cb.disabled = !hasQuestions;
+        row.appendChild(cb);
+        const label = document.createElement("span");
+        label.textContent = hasQuestions ? topic.name : `${topic.name} (no questions yet)`;
+        row.appendChild(label);
+        topicList.appendChild(row);
+      });
+      block.appendChild(topicList);
+      tree.appendChild(block);
+
+      // Subject-level checkbox: ticking it ticks every enabled topic
+      // under it (an indeterminate state if only some are picked, e.g.
+      // when the user manually ticked a couple before touching the
+      // subject box) — same three-state pattern used by the Members
+      // subject picker elsewhere in this Admin Panel.
+      const topicCbs = () => qsa("input[type=checkbox]:not(:disabled)", topicList);
+      subjectCb.addEventListener("change", () => {
+        topicCbs().forEach((cb) => { cb.checked = subjectCb.checked; });
+        updateCount();
+      });
+      topicList.addEventListener("change", (e) => {
+        if (!e.target.matches("input[type=checkbox]")) return;
+        const all = topicCbs();
+        const checkedCount = all.filter((cb) => cb.checked).length;
+        subjectCb.checked = checkedCount > 0 && checkedCount === all.length;
+        subjectCb.indeterminate = checkedCount > 0 && checkedCount < all.length;
+        updateCount();
+      });
+    });
+
+    const countEl = qs("#mcqp-import-count", overlay);
+    const confirmBtn = qs("#mcqp-import-confirm", overlay);
+    function selectedTopics() {
+      return qsa("input[type=checkbox][data-topic-id]:checked", overlay).map((cb) => ({
+        subjectId: cb.dataset.subjectId,
+        topicId: cb.dataset.topicId,
+      }));
+    }
+    function updateCount() {
+      const n = selectedTopics().length;
+      countEl.textContent = `${n} topic${n === 1 ? "" : "s"} selected`;
+      confirmBtn.disabled = n === 0;
+    }
+
+    // Resolve each topic's real question count from R2/cache now that the
+    // tree exists, disabling/relabeling any that turn out empty (rows we
+    // couldn't know about synchronously when the tree was first built).
+    // A row already checked gets unchecked if it turns out empty, so the
+    // selection never silently includes a topic with nothing to import.
+    qsa("[data-import-topic-row]", overlay).forEach(async (row) => {
+      const [subjectId, topicId] = row.getAttribute("data-import-topic-row").split("::");
+      if (practiceQuestionCache.has(`${subjectId}::${topicId}`)) return; // already accurate
+      try {
+        const questions = await getPracticeTopicQuestions(subjectId, topicId);
+        if (questions.length > 0) return; // stays enabled, label stays as topic name
+        const cb = qs("input[type=checkbox]", row);
+        const label = qs("span", row);
+        const wasChecked = cb.checked;
+        cb.checked = false;
+        cb.disabled = true;
+        row.classList.add("is-disabled");
+        label.textContent = `${label.textContent} (no questions yet)`;
+        // Disabling/unchecking this box can leave its subject's own
+        // "select all" checkbox showing a stale checked/indeterminate
+        // state (it was computed against a topicCbs() list that still
+        // included this box). That recompute logic already lives in the
+        // topicList's own "change" listener above, which checks
+        // e.target.matches("input[type=checkbox]") — so the event must
+        // be dispatched on the checkbox itself (and bubble up), not on
+        // topicList directly, or that guard rejects it.
+        if (wasChecked) cb.dispatchEvent(new Event("change", { bubbles: true }));
+        updateCount();
+      } catch (e) {
+        console.error(e);
+        // Leave it enabled on a fetch failure — the import itself
+        // (allSettled below) will report the real failure if the user
+        // tries to import it, rather than us guessing here.
+      }
+    });
+
+    confirmBtn.addEventListener("click", async () => {
+      const picks = selectedTopics();
+      if (!picks.length) return;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Importing…";
+      try {
+        // Fetch every picked topic's questions in parallel — each is an
+        // independent GET against the Worker (public, no auth needed for
+        // reads), so a slow/failed one topic doesn't need to block the
+        // others. allSettled means one bad topic (network hiccup, a file
+        // that got deleted from R2 after this modal opened) doesn't
+        // throw away every other successful import.
+        const results = await Promise.allSettled(
+          picks.map((p) => getPracticeTopicQuestions(p.subjectId, p.topicId))
+        );
+        let importedCount = 0;
+        let failedCount = 0;
+        const converted = [];
+        results.forEach((r, i) => {
+          if (r.status !== "fulfilled") { failedCount++; return; }
+          r.value.forEach((q) => {
+            const opts = (q.options || ["", "", "", ""]).slice(0, 4);
+            while (opts.length < 4) opts.push("");
+            converted.push({
+              id: uid(),
+              questionHtml: escapeHtml(q.question || ""),
+              optionsLayout: defaultOptionsLayout(),
+              layoutLocked: false,
+              explanationHtml: escapeHtml(q.explanation || ""),
+              options: opts.map((t, idx) => ({ id: ["a", "b", "c", "d"][idx], html: escapeHtml(t) })),
+              correctIndex: typeof q.correctAnswer === "number" ? q.correctAnswer : -1,
+            });
+            importedCount++;
+          });
+        });
+
+        if (!importedCount) {
+          showToast("Couldn't import - check your connection and try again.", "danger");
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = "Import";
+          return;
+        }
+
+        // Same append pattern as AI Mode's insert (see the insertMode
+        // handling above openAiModal's generate handler): replace a
+        // single still-blank starter question if that's all there is,
+        // otherwise append after the existing real questions.
+        const onlyBlank = questions.length === 1 && isEmpty(questions[0]);
+        if (onlyBlank) questions = converted;
+        else questions = questions.filter((q) => !isEmpty(q)).concat(converted);
+        renderQuestions();
+        close();
+        showToast(
+          failedCount
+            ? `${importedCount} question${importedCount === 1 ? "" : "s"} imported - ${failedCount} topic${failedCount === 1 ? "" : "s"} failed to load.`
+            : `${importedCount} question${importedCount === 1 ? "" : "s"} imported from ${picks.length} topic${picks.length === 1 ? "" : "s"}.`,
+          failedCount ? "danger" : "success"
+        );
+      } catch (e) {
+        console.error(e);
+        showToast("Something went wrong importing questions. Please try again.", "danger");
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Import";
+      }
+    });
+  }
+
+  /* ---------- init / event wiring ---------- */
+  function bindEvents() {
+    qs(id("add-question-btn"))?.addEventListener("click", () => {
+      questions.push(freshQuestion());
+      renderQuestions();
+    });
+    qs(id("ai-mode-btn"))?.addEventListener("click", openAiModal);
+    qs("#mcqp-import-practice-btn")?.addEventListener("click", openPracticeImportModal);
+    qs(id("push-live-btn"))?.addEventListener("click", pushIntoLive);
+
+    qsa(`${id("builder-root")} .mcqp-lang-switch__btn`).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        lang = btn.getAttribute("data-mcqp-lang");
+        qsa(`${id("builder-root")} .mcqp-lang-switch__btn`).forEach((b) => b.classList.toggle("is-active", b === btn));
+        renderQuestions();
+      });
+    });
+
+    initToolbar();
+  }
+
+  function render(preferredItemId) {
+    populateExamSelect(preferredItemId);
+  }
+
+  return { render, bindEvents };
+}
+
+const MCQBuilder = createMCQBuilder({
+  idPrefix: "mcqp",
+  selectFirstMessage: "Select or create a Live Exam first.",
+  getItems() {
+    return centralExamState.exams.map((e) => ({ id: e.id, label: `${e.subject} - ${e.topic}` }));
+  },
+  getItemMeta(itemId) {
+    const e = centralExamState.exams.find((x) => x.id === itemId);
+    return e ? { subject: e.subject, topic: e.topic, language: e.language } : null;
+  },
+  getBank(itemId) {
+    return centralExamState.questionBank[itemId];
+  },
+  async pushQuestions(itemId, converted, lang) {
+    centralExamState.questionBank[itemId] = converted;
+    const exam = centralExamState.exams.find((e) => e.id === itemId);
+    if (exam) {
+      exam.questionCount = converted.length;
+      // Keep the exam's stored language in sync with whichever EN/বাংলা
+      // toggle was active in this builder when the questions were written
+      // — this is what the Preview/Download Answer Sheet page (and the
+      // subscriber's exam player) use to decide ক/খ/গ/ঘ vs A/B/C/D option
+      // labels and the Bengali vs English PDF font. Only overwrite it if
+      // the exam form's own Language dropdown was left on the default
+      // "en" — an explicit "bn"/"en-bn" choice made there is respected.
+      if (!exam.language || exam.language === "en") {
+        exam.language = lang;
+      }
+    }
+
+    // Pushing writes to live_exam_questions (a delete + up to dozens of
+    // inserts) and live_exams (an update), each of which fires its own
+    // realtime event back at this same tab. Without suppression, every
+    // one of those echoes triggers a full re-pull + re-render of this
+    // Questions list mid-push, which is what caused the repeated
+    // "jumping". The local state above is already authoritative, so we
+    // hold off on reacting to our own echo until every write settles.
+    suppressRealtimeSelfEcho = true;
+    try {
+      const writes = [saveQuestionBankToSupabase(itemId, converted)];
+      if (exam) writes.push(saveLiveExamToSupabase(exam));
+      await Promise.all(writes);
+    } finally {
+      // Small delay so any realtime events already in flight from these
+      // writes finish arriving (and get ignored) before we lift the
+      // suppression — otherwise a late echo could still sneak through.
+      setTimeout(() => { suppressRealtimeSelfEcho = false; }, 500);
+    }
+
+    saveCentralExamState();
+    renderAdminSubjectList();
+  },
+  pushedToast(count) {
+    return `${count} question${count === 1 ? "" : "s"} pushed into the Live Exam.`;
+  },
+});
+
+function renderAdminQuestionBank(preferredExamId) {
+  MCQBuilder.render(preferredExamId);
+}
+
+function openAdminExamForm(examId, preferredSubjectName) {
+  const card = qs("#admin-exam-form-card");
+  const exam = examId ? centralExamState.exams.find((e) => e.id === examId) : null;
+  qs("#admin-exam-form-title").textContent = exam ? "Edit Live Exam" : "New Live Exam"; // "Live Exam" is a feature name, kept capitalized
+
+  const subjectSelect = qs("#admin-exam-subject");
+  if (!centralExamState.subjects.length) {
+    subjectSelect.innerHTML = `<option value="">Add a Subject first</option>`;
+  } else {
+    subjectSelect.innerHTML = centralExamState.subjects.map((s) => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join("");
+    const wantSubject = exam ? exam.subject : preferredSubjectName;
+    if (wantSubject && centralExamState.subjects.some((s) => s.name === wantSubject)) subjectSelect.value = wantSubject;
+  }
+
+  qs("#admin-exam-topic").value = exam ? exam.topic : "";
+  qs("#admin-exam-language").value = exam ? (exam.language || "en") : "en";
+  qs("#admin-exam-duration").value = exam ? exam.duration : 60;
+  qs("#admin-exam-marks").value = exam ? (exam.marksPerQuestion || 1) : 1;
+  // Negative marking is no longer a per-exam field — it always mirrors
+  // the single site-wide "Negative mark per wrong answer" value from
+  // Settings → Exam Preferences. Just reflect that value here so the
+  // admin can see what will apply before saving.
+  const negNote = qs("#admin-exam-negative-mark-value");
+  if (negNote) negNote.textContent = String(getStoredExamPrefs().negativeMarkValue ?? 0.25);
+  if (exam) {
+    const d = new Date(exam.start);
+    const pad = (n) => String(n).padStart(2, "0");
+    qs("#admin-exam-start").value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } else {
+    qs("#admin-exam-start").value = "";
+  }
+  qs("#admin-exam-qcount").textContent = exam ? `${exam.questionCount} questions from Question Bank` : "0 questions from Question Bank";
+
+  card.dataset.editingId = examId || "";
+  card.hidden = false;
+  card.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ==========================================================================
+   "ENROLL NOW" POPUP (public form) + Admin: Enrollment Requests
+   Opened from a locked Live Campaign card's "Enroll Now" badge
+   (data-enroll-subject, bound in renderLiveCampaignCards()). Submissions
+   are stored in centralExamState.enrollmentRequests for the admin to
+   review under Subscribers → Enrollment Requests; approving one there
+   creates/updates a Member with access to the requested subject(s),
+   matching the existing "Add Member" flow so there's a single source of
+   truth for who has live-exam access.
+   ========================================================================== */
+const ENROLL_DRAFT_KEY = "mcq-enroll-draft-v1";
+
+/** Reads the currently-checked course names out of the popup's picker. */
+function enrollSelectedCourses() {
+  return qsa("#enroll-course-picker input[type=checkbox]").filter((cb) => cb.checked).map((cb) => cb.value);
+}
+
+/** Saves whatever the student has typed/checked so far to localStorage,
+    so closing the popup (including the browser's own tab close) without
+    submitting doesn't make them start over next time. */
+function saveEnrollDraft() {
+  try {
+    const draft = {
+      name: qs("#enroll-name")?.value || "",
+      phone: qs("#enroll-phone")?.value || "",
+      email: qs("#enroll-email")?.value || "",
+      courses: enrollSelectedCourses(),
+      mfsProvider: qs("#enroll-mfs-provider")?.value || "Bkash",
+      mfsTransactionId: qs("#enroll-mfs-txn")?.value || "",
+    };
+    localStorage.setItem(ENROLL_DRAFT_KEY, JSON.stringify(draft));
+  } catch (e) { /* localStorage unavailable — draft simply won't persist */ }
+}
+
+function loadEnrollDraft() {
+  try {
+    return JSON.parse(localStorage.getItem(ENROLL_DRAFT_KEY) || "null");
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Opens the Enroll Now popup, pre-selecting `preselectSubject` (the
+    subject whose "Enroll Now" badge was clicked) if given, restoring any
+    previously-saved draft on top of that. */
+function openEnrollModal(preselectSubject) {
+  const picker = qs("#enroll-course-picker");
+  const subjects = centralExamState.subjects || [];
+  const draft = loadEnrollDraft() || {};
+  const draftCourses = Array.isArray(draft.courses) ? draft.courses : [];
+
+  if (subjects.length === 0) {
+    picker.innerHTML = `<span class="enroll-course-picker__empty">No courses are running right now, please check back soon.</span>`;
+  } else {
+    picker.innerHTML = subjects.map((s) => {
+      const checked = draftCourses.includes(s.name) || s.name === preselectSubject;
+      return `
+      <label class="enroll-course-picker__option">
+        <input type="checkbox" value="${escapeHtml(s.name)}" ${checked ? "checked" : ""} />
+        ${escapeHtml(s.name)}
+      </label>`;
+    }).join("");
+  }
+
+  qs("#enroll-name").value = draft.name || "";
+  qs("#enroll-phone").value = draft.phone || "";
+  qs("#enroll-email").value = draft.email || "";
+  qs("#enroll-mfs-provider").value = draft.mfsProvider || "Bkash";
+  qs("#enroll-mfs-txn").value = draft.mfsTransactionId || "";
+
+  // Clear any leftover invalid-state styling from a previous attempt.
+  qsa("#enroll-form .is-invalid").forEach((el) => el.classList.remove("is-invalid"));
+  qsa("#enroll-form .form-error.is-visible").forEach((el) => el.classList.remove("is-visible"));
+
+  openModal("enroll-modal");
+}
+
+function validateEnrollForm() {
+  let isValid = true;
+
+  const name = qs("#enroll-name");
+  const nameError = qs("#enroll-name-error");
+  const nameEmpty = name.value.trim().length === 0;
+  name.classList.toggle("is-invalid", nameEmpty);
+  nameError.classList.toggle("is-visible", nameEmpty);
+  if (nameEmpty) isValid = false;
+
+  const phone = qs("#enroll-phone");
+  const phoneError = qs("#enroll-phone-error");
+  const phoneEmpty = phone.value.trim().length === 0;
+  phone.classList.toggle("is-invalid", phoneEmpty);
+  phoneError.classList.toggle("is-visible", phoneEmpty);
+  if (phoneEmpty) isValid = false;
+
+  const email = qs("#enroll-email");
+  const emailError = qs("#enroll-email-error");
+  const emailValue = email.value.trim();
+  const emailInvalid = !emailValue || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
+  email.classList.toggle("is-invalid", emailInvalid);
+  emailError.classList.toggle("is-visible", emailInvalid);
+  if (emailInvalid) isValid = false;
+
+  const coursesError = qs("#enroll-courses-error");
+  const coursesEmpty = enrollSelectedCourses().length === 0;
+  coursesError.classList.toggle("is-visible", coursesEmpty);
+  if (coursesEmpty) isValid = false;
+
+  const txn = qs("#enroll-mfs-txn");
+  const txnError = qs("#enroll-mfs-txn-error");
+  const txnEmpty = txn.value.trim().length === 0;
+  txn.classList.toggle("is-invalid", txnEmpty);
+  txnError.classList.toggle("is-visible", txnEmpty);
+  if (txnEmpty) isValid = false;
+
+  return isValid;
+}
+
+function initEnrollModal() {
+  // Re-clearing invalid state as the student fixes each field, matching
+  // the AI Mode form's inline-validation pattern.
+  [
+    ["#enroll-name", "#enroll-name-error"],
+    ["#enroll-phone", "#enroll-phone-error"],
+    ["#enroll-email", "#enroll-email-error"],
+    ["#enroll-mfs-txn", "#enroll-mfs-txn-error"],
+  ].forEach(([fieldSel, errorSel]) => {
+    const field = qs(fieldSel);
+    const error = qs(errorSel);
+    if (!field || !error) return;
+    field.addEventListener("input", () => {
+      if (field.classList.contains("is-invalid")) {
+        field.classList.remove("is-invalid");
+        error.classList.remove("is-visible");
+      }
+    });
+  });
+
+  // The course picker is rebuilt each time the popup opens, so its
+  // "select at least one" error needs its own live listener bound here.
+  const coursesError = qs("#enroll-courses-error");
+  qs("#enroll-course-picker")?.addEventListener("change", (e) => {
+    if (e.target.matches('input[type="checkbox"]') && enrollSelectedCourses().length > 0) {
+      coursesError?.classList.remove("is-visible");
+    }
+  });
+
+  // Any change anywhere in the form (including course checkboxes, which
+  // are re-created each time the popup opens) autosaves the draft.
+  const form = qs("#enroll-form");
+  if (form) {
+    form.addEventListener("input", saveEnrollDraft);
+    form.addEventListener("change", saveEnrollDraft);
+  }
+
+  // Closing without submitting (X button, Cancel, backdrop, Escape) must
+  // still keep the draft — openModal/closeModal don't clear localStorage
+  // themselves, so no extra work is needed here beyond the autosave above.
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!validateEnrollForm()) {
+      showToast("Please fill in the required fields before submitting.", "danger");
+      const firstInvalid = qs(".is-invalid", form) || qs("#enroll-courses-error.is-visible");
+      if (firstInvalid && firstInvalid.focus) firstInvalid.focus();
+      return;
+    }
+
+    const draftRequest = {
+      name: qs("#enroll-name").value.trim(),
+      phone: qs("#enroll-phone").value.trim(),
+      email: qs("#enroll-email").value.trim(),
+      courses: enrollSelectedCourses(),
+      mfsProvider: qs("#enroll-mfs-provider").value,
+      mfsTransactionId: qs("#enroll-mfs-txn").value.trim(),
+    };
+    const saved = await submitEnrollmentToSupabase(draftRequest);
+    const request = saved || { ...draftRequest, id: "enr_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8), submittedAt: Date.now() };
+    if (!Array.isArray(centralExamState.enrollmentRequests)) centralExamState.enrollmentRequests = [];
+    centralExamState.enrollmentRequests.push(request);
+    saveCentralExamState();
+
+    // Submitted successfully — clear the draft so re-opening the popup
+    // later starts fresh instead of resurfacing this now-submitted data.
+    try { localStorage.removeItem(ENROLL_DRAFT_KEY); } catch (e) { /* ignore */ }
+
+    renderAdminEnrollmentRequests();
+    closeModal("enroll-modal");
+    showToast("Thanks! We've received your enrollment request and will activate your access after confirming the payment.", "success");
+  });
+}
+
+/** Admin: Subscribers tab → Enrollment Requests list. Each row shows the
+    student's details + requested course(s) with Approve / Dismiss. */
+function renderAdminEnrollmentRequests() {
+  const wrap = qs("#admin-enroll-requests-wrap");
+  const list = qs("#admin-enroll-requests-list");
+  if (!wrap || !list) return;
+  const requests = centralExamState.enrollmentRequests || [];
+
+  wrap.style.display = requests.length ? "" : "none";
+  const countEl = qs("#admin-enroll-requests-count");
+  if (countEl) countEl.textContent = String(requests.length);
+
+  list.innerHTML = requests.map((r) => `
+    <div class="enroll-request-row">
+      <div class="enroll-request-row__body">
+        <div class="enroll-request-row__name">${escapeHtml(r.name)}</div>
+        <div class="enroll-request-row__meta">${escapeHtml(r.phone)} · ${escapeHtml(r.email)}</div>
+        <div class="enroll-request-row__meta">${escapeHtml(r.mfsProvider)} Transaction ID: <strong>${escapeHtml(r.mfsTransactionId)}</strong></div>
+        <div class="enroll-request-row__courses">
+          ${(r.courses || []).map((c) => `<span class="live-member-row__subject-chip">${escapeHtml(c)}</span>`).join("") || `<span class="live-member-row__subject-chip live-member-row__subject-chip--none">No course selected</span>`}
+        </div>
+      </div>
+      <div class="enroll-request-row__actions">
+        <button type="button" class="btn btn-primary btn-sm" data-enroll-approve="${r.id}">Approve</button>
+        <button type="button" class="btn btn-outline btn-sm" data-enroll-dismiss="${r.id}">Dismiss</button>
+      </div>
+    </div>`).join("");
+
+  qsa("[data-enroll-approve]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-enroll-approve");
+      const request = (centralExamState.enrollmentRequests || []).find((r) => r.id === id);
+      if (!request) return;
+
+      // Reuse the existing Member record for this email if one already
+      // exists (e.g. they enrolled in a second course later), otherwise
+      // create a new Subscriber — same shape "Add Member" produces, so
+      // both flows feed the same access-control logic everywhere else.
+      let member = centralExamState.subscribers.members.find((m) => m.email.toLowerCase() === request.email.toLowerCase());
+      if (member) {
+        const merged = new Set([...(member.subjects || []), ...request.courses]);
+        member.subjects = Array.from(merged);
+        if (!member.name) member.name = request.name;
+        if (!member.phone) member.phone = request.phone;
+      } else {
+        member = { name: request.name, phone: request.phone, email: request.email, role: "subscriber", subjects: [...request.courses] };
+        centralExamState.subscribers.members.push(member);
+        centralExamState.subscribers.total += 1;
+      }
+
+      centralExamState.enrollmentRequests = centralExamState.enrollmentRequests.filter((r) => r.id !== id);
+      Promise.all([
+        saveMemberToSupabase(member),
+        resolveEnrollmentInSupabase(id, "approved"),
+      ]).catch((err) => {
+        console.error("Could not sync enrollment approval:", err);
+        showToast("Approved locally, but couldn't sync to the server. Check your connection.", "danger");
+      });
+      saveCentralExamState();
+      renderAdminEnrollmentRequests();
+      renderAdminMemberList();
+      showToast(`${request.name} approved and given access to ${request.courses.join(", ") || "no courses"}.`, "success");
+    });
+  });
+
+  qsa("[data-enroll-dismiss]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-enroll-dismiss");
+      centralExamState.enrollmentRequests = (centralExamState.enrollmentRequests || []).filter((r) => r.id !== id);
+      resolveEnrollmentInSupabase(id, "dismissed").catch((err) => {
+        console.error("Could not sync enrollment dismissal:", err);
+        showToast("Dismissed locally, but couldn't sync to the server. It may reappear on next sync.", "danger");
+      });
+      saveCentralExamState();
+      renderAdminEnrollmentRequests();
+      showToast("Enrollment request dismissed.", "info");
+    });
+  });
+}
+
+function initCentralLiveExam() {
+  // Global "live now" mark next to the Examcamp brand logo, on every
+  // page — reflects whether ANY Central Live Exam is currently running.
+  refreshBrandLiveIndicators();
+  setInterval(refreshBrandLiveIndicators, 1000);
+
+  // Tabs — History page (Live Exam / Practice Exams)
+  qsa("[data-history-tab]").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => {
+      qsa("[data-history-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+      tabBtn.classList.add("is-active");
+      tabBtn.setAttribute("aria-selected", "true");
+      const target = tabBtn.getAttribute("data-history-tab");
+      qsa(".history-tab-panel").forEach((p) => (p.style.display = "none"));
+      qs(`#history-panel-${target}`).style.display = "";
+    });
+  });
+
+  // Tabs — Statistics page (Live Exam / Practice Exam)
+  qsa("[data-stats-tab]").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => {
+      qsa("[data-stats-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+      tabBtn.classList.add("is-active");
+      tabBtn.setAttribute("aria-selected", "true");
+      const target = tabBtn.getAttribute("data-stats-tab");
+      qsa(".stats-tab-panel").forEach((p) => (p.style.display = "none"));
+      qs(`#stats-panel-${target}`).style.display = "";
+    });
+  });
+
+  // Tabs — hub
+  qsa("[data-live-tab]").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => {
+      qsa("[data-live-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+      tabBtn.classList.add("is-active");
+      tabBtn.setAttribute("aria-selected", "true");
+      const target = tabBtn.getAttribute("data-live-tab");
+      qsa(".live-tab-panel").forEach((p) => (p.style.display = "none"));
+      qs(`#live-panel-${target}`).style.display = "";
+    });
+  });
+
+  // Tabs — admin
+  function activateAdminTab(target) {
+    qsa("[data-admin-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+    const tabBtn = qs(`[data-admin-tab="${target}"]`);
+    if (tabBtn) { tabBtn.classList.add("is-active"); tabBtn.setAttribute("aria-selected", "true"); }
+    qsa(".admin-tab-panel").forEach((p) => (p.style.display = "none"));
+    qs(`#admin-panel-${target}`).style.display = "";
+  }
+  qsa("[data-admin-tab]").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => activateAdminTab(tabBtn.getAttribute("data-admin-tab")));
+  });
+  qsa("[data-admin-tab-jump]").forEach((btn) => {
+    btn.addEventListener("click", () => activateAdminTab(btn.getAttribute("data-admin-tab-jump")));
+  });
+
+  // Admin: new/edit Subject (Campaign) form
+  qs("#admin-new-subject-btn")?.addEventListener("click", () => openAdminSubjectForm(null));
+  qs("#admin-subject-form-close")?.addEventListener("click", () => (qs("#admin-subject-form-card").hidden = true));
+  qs("#admin-subject-cancel-btn")?.addEventListener("click", () => (qs("#admin-subject-form-card").hidden = true));
+  qs("#admin-subject-save-btn")?.addEventListener("click", () => {
+    const card = qs("#admin-subject-form-card");
+    const editingId = card.dataset.editingId;
+    const name = qs("#admin-subject-name").value.trim();
+    const startDate = qs("#admin-subject-start").value;
+    const endDate = qs("#admin-subject-end").value;
+    if (!name) { showToast("Subject name is required.", "danger"); return; }
+    const duplicate = centralExamState.subjects.some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingId);
+    if (duplicate) { showToast("A subject with that name already exists.", "danger"); return; }
+
+    if (editingId) {
+      const subject = centralExamState.subjects.find((s) => s.id === editingId);
+      const oldName = subject.name;
+      Object.assign(subject, { name, startDate, endDate });
+      // Keep exams pointing at the renamed subject.
+      if (oldName !== name) {
+        centralExamState.exams.forEach((e) => { if (e.subject === oldName) e.subject = name; });
+      }
+      saveSubjectToSupabase(subject).catch((err) => {
+        console.error("Could not save subject:", err);
+        showToast("Saved locally, but couldn't sync to the server. Check your connection.", "danger");
+      });
+    } else {
+      const newSubject = { id: "sub_" + Date.now(), name, startDate, endDate };
+      centralExamState.subjects.push(newSubject);
+      saveSubjectToSupabase(newSubject).catch((err) => {
+        console.error("Could not save subject:", err);
+        showToast("Saved locally, but couldn't sync to the server. Check your connection.", "danger");
+      });
+    }
+    saveCentralExamState();
+    card.hidden = true;
+    renderAdminSubjectList();
+    renderAdminQuestionBank();
+    renderAdminResultsList();
+    showToast("Subject saved.", "success");
+  });
+
+  // Admin: new/edit Live Exam form
+  qs("#admin-exam-form-close")?.addEventListener("click", () => (qs("#admin-exam-form-card").hidden = true));
+  qs("#admin-exam-cancel-btn")?.addEventListener("click", () => (qs("#admin-exam-form-card").hidden = true));
+  qs("#admin-exam-save-btn")?.addEventListener("click", () => {
+    const card = qs("#admin-exam-form-card");
+    const editingId = card.dataset.editingId;
+    const subject = qs("#admin-exam-subject").value.trim();
+    const topic = qs("#admin-exam-topic").value.trim();
+    const language = qs("#admin-exam-language").value || "en";
+    const startVal = qs("#admin-exam-start").value;
+    const duration = parseInt(qs("#admin-exam-duration").value, 10) || 60;
+    const marksPerQuestion = parseFloat(qs("#admin-exam-marks").value) || 1;
+    // Negative marking is no longer chosen per-exam — every Live Exam
+    // now uses the single site-wide value from Settings → Exam
+    // Preferences, matching how AI Mode / practice exams already work.
+    const negativeMarking = Number(getStoredExamPrefs().negativeMarkValue ?? 0.25);
+    if (!subject) { showToast("Add a Subject first, then pick it here.", "danger"); return; }
+    if (!topic) { showToast("Topic is required - e.g. Noun, Tense.", "danger"); return; }
+    if (!startVal) { showToast("Start date & time is required.", "danger"); return; }
+    const start = new Date(startVal).getTime();
+
+    let savedId = editingId;
+    if (editingId) {
+      const exam = centralExamState.exams.find((e) => e.id === editingId);
+      Object.assign(exam, { subject, topic, language, start, duration, marksPerQuestion, negativeMarking });
+      saveLiveExamToSupabase(exam).catch((err) => {
+        console.error("Could not save live exam:", err);
+        showToast("Saved locally, but couldn't sync to the server. Check your connection.", "danger");
+      });
+    } else {
+      savedId = "le" + Date.now();
+      const newExam = {
+        id: savedId, subject, topic, language, start, duration, marksPerQuestion, negativeMarking,
+        status: "scheduled", questionCount: 0, subscriberCount: centralExamState.subscribers.total,
+      };
+      centralExamState.exams.push(newExam);
+      saveLiveExamToSupabase(newExam).catch((err) => {
+        console.error("Could not save live exam:", err);
+        showToast("Saved locally, but couldn't sync to the server. Check your connection.", "danger");
+      });
+    }
+    saveCentralExamState();
+    card.hidden = true;
+    renderAdminSubjectList();
+    renderAdminQuestionBank(savedId);
+    renderAdminResultsList();
+    showToast("Live exam saved and scheduled.", "success");
+  });
+
+  // Admin: Question Builder (AI Mode + manual editor + preview + push-to-live)
+  MCQBuilder.bindEvents();
+
+  // Admin: add member — opens the "New Member" form card (Name, Phone,
+  // Email) instead of stacking browser prompt() dialogs.
+  qs("#admin-add-member-btn")?.addEventListener("click", () => openAdminMemberForm());
+  qs("#admin-member-form-close")?.addEventListener("click", () => { qs("#admin-member-form-card").hidden = true; });
+  qs("#admin-member-cancel-btn")?.addEventListener("click", () => { qs("#admin-member-form-card").hidden = true; });
+
+  qs("#admin-member-save-btn")?.addEventListener("click", () => {
+    const name = qs("#admin-member-name").value.trim();
+    const phone = qs("#admin-member-phone").value.trim();
+    const email = qs("#admin-member-email").value.trim();
+    if (!name) { showToast("Please enter the member's name.", "danger"); return; }
+    if (!phone) { showToast("Please enter the member's phone number.", "danger"); return; }
+    if (!email) { showToast("Please enter the member's Gmail address.", "danger"); return; }
+    if (centralExamState.subscribers.members.some((m) => m.email.toLowerCase() === email.toLowerCase())) {
+      showToast("That email is already a member.", "danger");
+      return;
+    }
+    const asAssistant = qs("#admin-member-as-assistant").checked;
+    const role = asAssistant ? "assistant" : "subscriber";
+    // A regular subscriber only gets live-exam access to the Subject
+    // Campaign(s) checked in the picker — leave it unchecked to add them
+    // with no access yet, matching "manage subjects" rules elsewhere.
+    const subjects = asAssistant ? [] : qsa("#admin-member-subject-picker input[type=checkbox]").filter((cb) => cb.checked).map((cb) => cb.value);
+    const newMember = { name, phone, email, role, subjects };
+    centralExamState.subscribers.members.push(newMember);
+    centralExamState.subscribers.total += 1;
+    if (asAssistant) centralExamState.subscribers.assistantAdmins += 1;
+    saveMemberToSupabase(newMember).catch((err) => {
+      console.error("Could not save member:", err);
+      showToast("Added locally, but couldn't sync to the server. Check your connection.", "danger");
+    });
+    saveCentralExamState();
+    qs("#admin-member-form-card").hidden = true;
+    renderAdminMemberList();
+    showToast(asAssistant ? "Assistant Admin added." : (subjects.length ? `Member added - enrolled in ${subjects.join(", ")}.` : "Member added - no subject access yet. Use \"Manage Subjects\" to grant access."), "success");
+  });
+
+  qs("#admin-member-as-assistant")?.addEventListener("change", (e) => {
+    // Assistant Admins get full access to every subject automatically,
+    // so the per-subject picker is only meaningful for a plain Subscriber.
+    qs("#admin-member-subject-picker").style.display = e.target.checked ? "none" : (centralExamState.subjects.length ? "flex" : "none");
+  });
+
+  // Join-exam buttons are now rendered per card inside
+  // renderLiveCampaignCards() (one button per subscribed exam), since a
+  // student can have several Live Exam cards at once.
+}
+
+function renderLiveExamAdminPanel() {
+  // Restrict the entire admin panel to the campaign's admins/assistant
+  // admins. This is the real access-control gate — the hidden entry
+  // button above only hides the link for convenience; a user who
+  // navigates here directly (URL/hash, browser back button, dev tools,
+  // etc.) must still be blocked here regardless of how they arrived.
+  if (!isLiveExamAdmin()) {
+    showToast("This panel is restricted to the campaign's admins.", "danger");
+    showView("live-exam");
+    return;
+  }
+  renderAdminSubjectList();
+  renderAdminResultsList();
+  renderAdminMemberList();
+  renderAdminEnrollmentRequests();
+  renderAdminQuestionBank();
+}
+
+/* ==========================================================================
+   PRACTICE — topic-wise self-practice (Practice Panel + Practice Mode).
+   Entirely separate, local-only data model living in its own storage key
+   (PRACTICE_STORAGE_KEY), the same way centralExamState works before a
+   backend exists. Deliberately does not read or write centralExamState /
+   liveExamState anywhere in this block, and never calls any Live Exam
+   render/admin function — Practice and Live Exam are fully independent
+   features that happen to share the same visual language (same .card,
+   .option, .exam-header/.exam-layout classes) by reusing existing CSS,
+   not by sharing state.
+   ========================================================================== */
+const PRACTICE_STORAGE_KEY = "mcq-practice-state-v1";
+
+/* 12 BCS-preliminary subjects, each with 2 demo topics (per spec: "দুই
+   একটা টপিক ডেমো আকারে সেট করবে"). Only Bangla Grammar > Sandhi (সন্ধি)
+   ships with demo sample questions so Practice Mode has something real
+   to run end-to-end; every other topic starts with an empty question
+   bank ready for the admin (a later step) to fill in manually or via AI
+   Mode, exactly like Live Exam's Question Builder. */
+function defaultPracticeSubjects() {
+  const mk = (id, name, topics) => ({ id, name, topics });
+  const mkTopic = (id, name, questions) => ({ id, name, questions: questions || [] });
+  return [
+    mk("bn-lit", "বাংলা সাহিত্য", [
+      mkTopic("bn-lit-t1", "প্রাচীন ও মধ্যযুগের সাহিত্য"),
+      mkTopic("bn-lit-t2", "আধুনিক যুগের সাহিত্য"),
+    ]),
+    mk("bn-gram", "বাংলা ব্যাকরণ", [
+      mkTopic("bn-gram-sandhi", "সন্ধি", [
+        {
+          id: "q1",
+          question: "\u0995\u09cb\u09a8\u099f\u09bf \u09b8\u09a8\u09cd\u09a7\u09bf\u09b0 \u0989\u09a6\u09be\u09b9\u09b0\u09a3: \u09a8\u09b0\u09aa\u09a4\u09bf",
+          options: ["\u09a8\u09b0 + \u0985\u09aa\u09a4\u09bf", "\u09a8\u09b0\u09aa + \u0985\u09a4\u09bf", "\u09a8\u09b0 + \u09aa\u09a4\u09bf", "\u09a8\u09b0\u09aa\u09a4 + \u0987"],
+          correctAnswer: 0,
+          explanation: "\u09a8\u09b0 + \u0985\u09aa\u09a4\u09bf = \u09a8\u09b0\u09aa\u09a4\u09bf (\u0985 + \u0985 = \u0986, \u09b8\u09cd\u09ac\u09b0\u09b8\u09a8\u09cd\u09a7\u09bf)।",
+        },
+        {
+          id: "q2",
+          question: "\u09b8\u09a8\u09cd\u09a7\u09bf \u09aa\u09cd\u09b0\u09a7\u09be\u09a8\u09a4 \u0995\u09a4 \u09aa\u09cd\u09b0\u0995\u09be\u09b0?",
+          options: ["\u09a6\u09c1\u0987", "\u09a4\u09bf\u09a8", "\u099a\u09be\u09b0", "\u09aa\u09be\u0981\u099a"],
+          correctAnswer: 1,
+          explanation: "\u09b8\u09a8\u09cd\u09a7\u09bf \u09aa\u09cd\u09b0\u09a7\u09be\u09a8\u09a4 \u09a4\u09bf\u09a8 \u09aa\u09cd\u09b0\u0995\u09be\u09b0: \u09b8\u09cd\u09ac\u09b0\u09b8\u09a8\u09cd\u09a7\u09bf, \u09ac\u09cd\u09af\u099e\u09cd\u099c\u09a8\u09b8\u09a8\u09cd\u09a7\u09bf \u0993 \u09ac\u09bf\u09b8\u09b0\u09cd\u0997\u09b8\u09a8\u09cd\u09a7\u09bf।",
+        },
+        {
+          id: "q3",
+          question: "\u2018\u09b8\u09a4\u09cd\u09af + \u0985\u09a8\u09cd\u09ac\u09c7\u09b7\u09a3\u2019 \u098f\u09b0 \u09b8\u09a8\u09cd\u09a7\u09bf\u09ac\u09a6\u09cd\u09a7 \u09b0\u09c2\u09aa \u0995\u09cb\u09a8\u099f\u09bf?",
+          options: ["\u09b8\u09a4\u09cd\u09af\u09be\u09a8\u09cd\u09ac\u09c7\u09b7\u09a3", "\u09b8\u09a4\u09cd\u09af\u09c7\u09b7\u09a3", "\u09b8\u09a4\u09cd\u09af\u09be\u09a8\u09c1\u09b7\u09a3", "\u09b8\u09a4\u09cd\u09af\u09be\u09a8\u09c1\u09ac\u09c7\u09b7\u09a3"],
+          correctAnswer: 0,
+          explanation: "\u0985 + \u0985 = \u0986; \u09a4\u09be\u0987 \u09b8\u09a4\u09cd\u09af + \u0985\u09a8\u09cd\u09ac\u09c7\u09b7\u09a3 = \u09b8\u09a4\u09cd\u09af\u09be\u09a8\u09cd\u09ac\u09c7\u09b7\u09a3।",
+        },
+      ]),
+      mkTopic("bn-gram-karok", "কারক ও বিভক্তি"),
+    ]),
+    mk("en-lit", "English Literature", [
+      mkTopic("en-lit-t1", "Poetry"),
+      mkTopic("en-lit-t2", "Prose & Drama"),
+    ]),
+    mk("en-gram", "English Grammar", [
+      mkTopic("en-gram-tense", "Tense"),
+      mkTopic("en-gram-voice", "Voice & Narration"),
+    ]),
+    mk("bd-affairs", "বাংলাদেশ বিষয়াবলী", [
+      mkTopic("bd-affairs-history", "মুক্তিযুদ্ধ ও ইতিহাস"),
+      mkTopic("bd-affairs-economy", "অর্থনীতি ও উন্নয়ন"),
+    ]),
+    mk("intl-affairs", "আন্তর্জাতিক বিষয়াবলী", [
+      mkTopic("intl-affairs-org", "আন্তর্জাতিক সংস্থা"),
+      mkTopic("intl-affairs-events", "বিশ্ব রাজনীতি ও ঘটনাবলী"),
+    ]),
+    mk("geo-env", "ভূগোল, পরিবেশ ও দূর্যোগ ব্যবস্থাপনা", [
+      mkTopic("geo-env-world", "বিশ্ব ভূগোল"),
+      mkTopic("geo-env-disaster", "দূর্যোগ ব্যবস্থাপনা"),
+    ]),
+    mk("gen-sci", "সাধারণ বিজ্ঞান", [
+      mkTopic("gen-sci-physics", "পদার্থবিজ্ঞান"),
+      mkTopic("gen-sci-biology", "জীববিজ্ঞান"),
+    ]),
+    mk("ict", "কম্পিউটার ও তথ্য প্রযুক্তি", [
+      mkTopic("ict-basics", "কম্পিউটার মৌলিক ধারণা"),
+      mkTopic("ict-network", "নেটওয়ার্ক ও ইন্টারনেট"),
+    ]),
+    mk("math-reason", "গাণিতিক যুক্তি", [
+      mkTopic("math-reason-arith", "পাটিগণিত"),
+      mkTopic("math-reason-algebra", "বীজগণিত"),
+    ]),
+    mk("mental-skill", "মানসিক দক্ষতা", [
+      mkTopic("mental-skill-logic", "যৌক্তিক বিশ্লেষণ"),
+      mkTopic("mental-skill-analytical", "বিশ্লেষণধর্মী দক্ষতা"),
+    ]),
+    mk("ethics-gov", "নৈতিকতা মূল্যবোধ ও সুশাসন", [
+      mkTopic("ethics-gov-values", "মূল্যবোধ ও নৈতিকতা"),
+      mkTopic("ethics-gov-governance", "সুশাসন"),
+    ]),
+  ];
+}
+
+function loadPracticeState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PRACTICE_STORAGE_KEY) || "null");
+    if (saved && Array.isArray(saved.subjects)) return saved;
+  } catch (e) { /* fall through to defaults */ }
+  return { subjects: defaultPracticeSubjects(), progress: {} };
+}
+let practiceState = loadPracticeState();
+function savePracticeState() {
+  localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(practiceState));
+}
+
+function findPracticeTopic(subjectId, topicId) {
+  const subject = practiceState.subjects.find((s) => s.id === subjectId);
+  if (!subject) return null;
+  const topic = subject.topics.find((t) => t.id === topicId);
+  if (!topic) return null;
+  return { subject, topic };
+}
+function practiceProgressKey(subjectId, topicId) { return `${subjectId}::${topicId}`; }
+
+/* ---------- Practice Panel: subject accordion ---------- */
+registerGlobalDropdown("practice-panel-accordion", () => {
+  qsa(".pp-subject.is-open", qs("#pp-subject-list") || document).forEach((el) => el.classList.remove("is-open"));
+});
+
+function renderPracticeSubjectList() {
+  const container = qs("#pp-subject-list");
+  if (!container) return;
+  // Admin entry button on the Practice hub: only visible to the practice
+  // admin (isPracticeAdmin) — mirrors the same hide-for-non-admins pattern
+  // as #live-exam-admin-entry in renderCentralLiveExamHub().
+  const adminEntry = qs("#practice-admin-entry");
+  if (adminEntry) adminEntry.hidden = !isPracticeAdmin();
+  container.innerHTML = practiceState.subjects.map((subject) => {
+    const topicsHtml = subject.topics.length
+      ? subject.topics.map((topic) => `
+          <button type="button" class="pp-topic-row" data-practice-topic data-subject-id="${escapeHtml(subject.id)}" data-topic-id="${escapeHtml(topic.id)}">
+            <span class="pp-topic-row__name">${escapeHtml(topic.name)}</span>
+            <svg class="pp-topic-row__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>`).join("")
+      : `<div class="pp-subject__empty">No topics yet</div>`;
+    return `
+    <section class="pp-subject" data-subject-card="${escapeHtml(subject.id)}">
+      <button type="button" class="pp-subject__head" data-subject-toggle="${escapeHtml(subject.id)}">
+        <div class="pp-subject__title-wrap">
+          <div class="pp-subject__title">${escapeHtml(subject.name)}</div>
+        </div>
+        <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="pp-subject__topics">
+        <div class="pp-subject__topics-inner">${topicsHtml}</div>
+      </div>
+    </section>`;
+  }).join("");
+
+  qsa("[data-subject-toggle]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const card = btn.closest(".pp-subject");
+      if (!card) return;
+      const willOpen = !card.classList.contains("is-open");
+      if (willOpen) {
+        closeOtherGlobalDropdowns("practice-panel-accordion");
+        qsa(".pp-subject.is-open", container).forEach((el) => el.classList.remove("is-open"));
+      }
+      card.classList.toggle("is-open", willOpen);
+    });
+  });
+  qsa("[data-practice-topic]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const subjectId = btn.getAttribute("data-subject-id");
+      const topicId = btn.getAttribute("data-topic-id");
+      enterPracticeMode(subjectId, topicId);
+    });
+  });
+}
+
+/* ---------- Practice Mode: Exam-Mode-styled runner ---------- */
+let practiceModeState = null; // { subjectId, topicId, questions, answers: {qId: idx}, current }
+
+async function enterPracticeMode(subjectId, topicId) {
+  const found = findPracticeTopic(subjectId, topicId);
+  if (!found) { showToast("This topic isn't available.", "danger"); return; }
+  const { subject, topic } = found;
+
+  // Question content now lives in R2 (see getPracticeTopicQuestions), not
+  // on the local topic object, so this is a network call — show a toast
+  // if it's slow/fails rather than leaving the button looking unresponsive.
+  let questions;
+  try {
+    questions = await getPracticeTopicQuestions(subjectId, topicId);
+  } catch (e) {
+    console.error(e);
+    showToast("Couldn't load this topic's questions. Check your connection and try again.", "danger");
+    return;
+  }
+  if (!questions.length) {
+    showToast("No questions have been added to this topic yet.", "info");
+    return;
+  }
+
+  const savedProgress = practiceState.progress[practiceProgressKey(subjectId, topicId)];
+  practiceModeState = {
+    subjectId,
+    topicId,
+    subjectName: subject.name,
+    topicName: topic.name,
+    questions,
+    answers: (savedProgress && savedProgress.answers) ? { ...savedProgress.answers } : {},
+    current: (savedProgress && typeof savedProgress.current === "number") ? savedProgress.current : 0,
+  };
+
+  qs("#pm-header-subject").textContent = subject.name;
+  qs("#pm-header-topic").textContent = topic.name;
+
+  showView("practice-mode");
+  renderPracticeQuestionStream();
+  renderPracticeNavigator();
+  updatePracticeScorePill();
+  goToPracticeQuestionCard(practiceModeState.current, { skipSave: true });
+  initPracticeMobileNavStripSync();
+}
+
+function savePracticeProgress() {
+  if (!practiceModeState) return;
+  const key = practiceProgressKey(practiceModeState.subjectId, practiceModeState.topicId);
+  const answeredCount = Object.keys(practiceModeState.answers).length;
+  practiceState.progress[key] = {
+    answers: { ...practiceModeState.answers },
+    current: practiceModeState.current,
+    answeredCount,
+    updatedAt: Date.now(),
+  };
+  savePracticeState();
+}
+
+function practiceQuestionOutcome(q, selectedIdx) {
+  if (selectedIdx === undefined) return "unanswered";
+  return selectedIdx === q.correctAnswer ? "correct" : "wrong";
+}
+
+function renderPracticeQuestionStream() {
+  const s = practiceModeState;
+  const stream = qs("#pm-question-stream");
+  stream.innerHTML = "";
+  const letters = optionLetters(false);
+
+  s.questions.forEach((q, index) => {
+    const card = document.createElement("div");
+    card.className = "card question-card";
+    card.id = `pm-q-card-${index}`;
+    card.dataset.index = String(index);
+
+    const head = document.createElement("div");
+    head.className = "question-card__head";
+
+    const heading = document.createElement("h2");
+    heading.className = "question-text";
+    heading.id = `pm-question-text-${index}`;
+    const numBadge = document.createElement("span");
+    numBadge.className = "question-card__num";
+    numBadge.textContent = formatQuestionNumber(index, false);
+    heading.appendChild(numBadge);
+    heading.appendChild(document.createTextNode(q.question));
+    head.appendChild(heading);
+    card.appendChild(head);
+
+    const list = document.createElement("div");
+    list.id = `pm-options-list-${index}`;
+    list.setAttribute("role", "radiogroup");
+    list.setAttribute("aria-labelledby", `pm-question-text-${index}`);
+
+    q.options.forEach((optionText, idx) => {
+      const row = document.createElement("label");
+      row.className = "option";
+      row.innerHTML = `<span class="option__letter">${letters[idx]}</span><span class="option__text"></span>`;
+      row.querySelector(".option__text").textContent = optionText;
+      row.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (s.answers[q.id] !== undefined) return; // already answered — locked
+        selectPracticeAnswer(index, idx);
+      });
+      list.appendChild(row);
+    });
+    card.appendChild(list);
+
+    const explanation = document.createElement("div");
+    explanation.className = "pm-explanation";
+    explanation.id = `pm-explanation-${index}`;
+    explanation.hidden = true;
+    if (q.explanation) {
+      explanation.innerHTML = `<span class="pm-explanation__label"></span><span></span>`;
+      explanation.querySelector("span:last-child").textContent = q.explanation;
+    }
+    card.appendChild(explanation);
+
+    stream.appendChild(card);
+    renderMathIn(card);
+  });
+
+  updateAllPracticeQuestionCards();
+}
+
+function updatePracticeQuestionCard(index, animate) {
+  const s = practiceModeState;
+  const q = s.questions[index];
+  const card = qs(`#pm-q-card-${index}`);
+  if (!card) return;
+  const selected = s.answers[q.id];
+  const outcome = practiceQuestionOutcome(q, selected);
+
+  qsa(".option", qs(`#pm-options-list-${index}`)).forEach((row, idx) => {
+    row.classList.remove("pm-correct", "pm-wrong", "is-locked");
+    const existingTag = row.querySelector(".option__tag");
+    if (existingTag) existingTag.remove();
+    if (outcome === "unanswered") return;
+    row.classList.add("is-locked");
+    const isCorrectOpt = idx === q.correctAnswer;
+    const isSelectedOpt = idx === selected;
+    if (isCorrectOpt) row.classList.add("pm-correct");
+    else if (isSelectedOpt && outcome === "wrong") row.classList.add("pm-wrong");
+    if (isCorrectOpt || (isSelectedOpt && outcome === "wrong")) {
+      const tag = document.createElement("span");
+      tag.className = "option__tag" + (animate ? " option__tag--animate" : "");
+      tag.textContent = isCorrectOpt ? "✓" : "✕";
+      row.appendChild(tag);
+    }
+  });
+
+  const explanation = qs(`#pm-explanation-${index}`);
+  if (explanation) {
+    const shouldShow = outcome !== "unanswered" && !!q.explanation;
+    if (!animate) {
+      // Plain re-render (page load, navigating back to an already
+      // -answered question, jumping between cards) — no transition,
+      // just the right end state straight away. Also clears any leftover
+      // inline max-height from a previous animated open (see the
+      // transitionend handler below) so it doesn't override the
+      // collapsed/opening classes' own max-height next time this
+      // question *is* animated.
+      explanation.style.maxHeight = "";
+      explanation.hidden = !shouldShow;
+      explanation.classList.remove("pm-explanation--collapsed", "pm-explanation--opening");
+    } else if (shouldShow) {
+      // Fresh answer just picked — play the drop-down. `hidden` has to
+      // come off (and the element has to actually paint once in its
+      // collapsed state) before adding --opening, or the browser has no
+      // "before" state to transition from and the box just snaps open.
+      explanation.style.maxHeight = "";
+      explanation.hidden = false;
+      explanation.classList.add("pm-explanation--collapsed");
+      explanation.classList.remove("pm-explanation--opening");
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          explanation.classList.add("pm-explanation--opening");
+        });
+      });
+      // pm-explanation--opening's max-height (400px) is only a transition
+      // target, not a real content cap — a longer explanation would stay
+      // clipped after the animation ends otherwise. Once the transition
+      // finishes, drop max-height entirely so any length of text is
+      // fully visible. { once: true } means this doesn't need manual
+      // cleanup or interfere with the next question's animation.
+      explanation.addEventListener("transitionend", function onOpen(e) {
+        if (e.propertyName !== "max-height") return;
+        explanation.style.maxHeight = "none";
+      }, { once: true });
+    } else {
+      explanation.hidden = true;
+      explanation.classList.remove("pm-explanation--collapsed", "pm-explanation--opening");
+    }
+  }
+
+  card.classList.toggle("is-current", index === s.current);
+}
+function updateAllPracticeQuestionCards() {
+  practiceModeState.questions.forEach((_, index) => updatePracticeQuestionCard(index));
+}
+
+function selectPracticeAnswer(index, optionIdx) {
+  const s = practiceModeState;
+  const q = s.questions[index];
+  s.answers[q.id] = optionIdx;
+  updatePracticeQuestionCard(index, /* animate */ true);
+  updatePracticeScorePill();
+  renderPracticeNavigator();
+  savePracticeProgress();
+}
+
+function updatePracticeScorePill() {
+  const s = practiceModeState;
+  let right = 0, wrong = 0;
+  s.questions.forEach((q) => {
+    const outcome = practiceQuestionOutcome(q, s.answers[q.id]);
+    if (outcome === "correct") right++;
+    else if (outcome === "wrong") wrong++;
+  });
+  qs("#pm-right-count").textContent = String(right);
+  qs("#pm-wrong-count").textContent = String(wrong);
+}
+
+function practiceQuestionNavClasses(s, q, index) {
+  const outcome = practiceQuestionOutcome(q, s.answers[q.id]);
+  return "pm-q-btn q-btn" + (index === s.current ? " is-current" : "") + (outcome === "correct" ? " pm-correct" : outcome === "wrong" ? " pm-wrong" : "");
+}
+
+function renderPracticeNavigator() {
+  const s = practiceModeState;
+  const grid = qs("#pm-question-nav-grid");
+  const strip = qs("#pm-mobile-nav-strip");
+  const expectedCount = s.questions.length;
+
+  // Same in-place-update fast path as renderNavigator() (Exam Mode): avoid
+  // rebuilding the DOM on every answer/navigation so the smooth-scroll
+  // animation isn't interrupted by a reflow.
+  const gridBuilt = grid.children.length === expectedCount;
+  const stripBuilt = !strip || strip.children.length === expectedCount;
+  if (gridBuilt && stripBuilt) {
+    s.questions.forEach((q, index) => {
+      const cls = practiceQuestionNavClasses(s, q, index);
+      grid.children[index].className = cls;
+      if (strip) strip.children[index].className = cls;
+    });
+    return;
+  }
+
+  grid.innerHTML = "";
+  if (strip) strip.innerHTML = "";
+  s.questions.forEach((q, index) => {
+    [grid, strip].forEach((container) => {
+      if (!container) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = practiceQuestionNavClasses(s, q, index);
+      btn.textContent = String(index + 1);
+      btn.setAttribute("aria-label", `Question ${index + 1}`);
+      btn.addEventListener("click", () => goToPracticeQuestionCard(index));
+      container.appendChild(btn);
+    });
+  });
+}
+
+function goToPracticeQuestionCard(index, opts) {
+  const s = practiceModeState;
+  s.current = index;
+  qs("#pm-progress").textContent = `Question ${index + 1} of ${s.questions.length}`;
+  const card = qs(`#pm-q-card-${index}`);
+  const stream = qs("#pm-question-stream");
+  if (card && stream) {
+    const streamScrolls = stream.scrollHeight > stream.clientHeight;
+    if (streamScrolls) {
+      const top = card.offsetTop - stream.offsetTop;
+      stream.scrollTo({ top, behavior: "smooth" });
+    } else {
+      const header = qs("#view-practice-mode .exam-header");
+      const strip = qs("#pm-mobile-nav-strip");
+      const stickyOffset = (header?.offsetHeight || 0) + (strip?.offsetHeight || 0);
+      const cardTop = card.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: cardTop - stickyOffset - 12, behavior: "smooth" });
+    }
+  }
+  updateAllPracticeQuestionCards();
+  renderPracticeNavigator();
+  scrollPracticeStripToIndex(index);
+  if (!(opts && opts.skipSave)) savePracticeProgress();
+}
+
+/* Mobile/tablet only: keep #pm-mobile-nav-strip's highlighted number in
+   sync with whichever question card is in view, and auto-scroll the strip
+   so that number stays visible — same approach as Exam Mode's
+   initMobileNavStripSync(), kept as a separate copy since that one reads
+   liveExamState/#view-exam specifically. Desktop is unaffected: the strip
+   is display:none there via the shared .mobile-nav-strip base rule. */
+function scrollPracticeStripToIndex(index) {
+  const strip = qs("#pm-mobile-nav-strip");
+  const btn = strip?.children[index];
+  if (!strip || !btn) return;
+  const btnLeft = btn.offsetLeft;
+  const btnRight = btnLeft + btn.offsetWidth;
+  const viewLeft = strip.scrollLeft;
+  const viewRight = viewLeft + strip.clientWidth;
+  if (btnLeft < viewLeft || btnRight > viewRight) {
+    const target = btnLeft - (strip.clientWidth - btn.offsetWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+  }
+}
+
+function initPracticeMobileNavStripSync() {
+  const stream = qs("#pm-question-stream");
+  const strip = qs("#pm-mobile-nav-strip");
+  if (!stream || !strip) return;
+  if (practiceModeState && practiceModeState.navSyncObserver) practiceModeState.navSyncObserver.disconnect();
+
+  const mq = window.matchMedia("(max-width: 900px)");
+  let observer = null;
+
+  const setup = () => {
+    if (observer) { observer.disconnect(); observer = null; }
+    if (!mq.matches) return; // desktop: nav strip is hidden, nothing to sync
+    const s = practiceModeState;
+    if (!s) return;
+
+    const ratios = new Map();
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const index = Number(entry.target.dataset.index);
+        ratios.set(index, entry.isIntersecting ? entry.intersectionRatio : 0);
+      });
+      let bestIndex = s.current, bestRatio = -1;
+      ratios.forEach((ratio, index) => {
+        if (ratio > bestRatio) { bestRatio = ratio; bestIndex = index; }
+      });
+      if (bestRatio > 0 && bestIndex !== s.current) {
+        s.current = bestIndex;
+        qs("#pm-progress").textContent = `Question ${bestIndex + 1} of ${s.questions.length}`;
+        renderPracticeNavigator();
+        scrollPracticeStripToIndex(bestIndex);
+      }
+    }, {
+      root: null,
+      threshold: [0.25, 0.5, 0.75],
+      rootMargin: `-${(qs("#view-practice-mode .exam-header")?.offsetHeight || 0) + (strip.offsetHeight || 0)}px 0px -40% 0px`,
+    });
+    qsa(".question-card", stream).forEach((card) => observer.observe(card));
+  };
+
+  mq.addEventListener("change", setup);
+  setup();
+  if (practiceModeState) {
+    practiceModeState.navSyncObserver = { disconnect: () => { if (observer) observer.disconnect(); mq.removeEventListener("change", setup); } };
+  }
+}
+
+function exitPracticeMode() {
+  savePracticeProgress();
+  if (practiceModeState && practiceModeState.navSyncObserver) practiceModeState.navSyncObserver.disconnect();
+  practiceModeState = null;
+  // Use the same history.back()-driven path as every other on-screen
+  // Back button (see goBackView's own comment above) instead of a
+  // forward-style navigateToView call. navigateToView() pushes a BRAND
+  // NEW history entry via showView, which doesn't consume the entry
+  // Practice Mode itself pushed on the way in — so viewHistoryStack and
+  // the real browser history stack drift apart by one, and the very
+  // next Back press (icon or hardware) lands one view off from where
+  // the user expects. "practice" is passed only as the goBackView
+  // fallback for the rare case this is reached with an empty stack
+  // (e.g. a direct/refreshed load straight into Practice Mode).
+  goBackView("practice");
+}
+
+function initPracticeView() {
+  qs("#pm-back-btn")?.addEventListener("click", exitPracticeMode);
+}
+
+/* ==========================================================================
+   PRACTICE ADMIN PANEL — Subjects + Questions tabs only (no Results/Users,
+   per spec: Practice has no schedule or subscriber list). Reuses the exact
+   same admin-subject-card / live-admin-exam-row / mcqp-* markup and CSS as
+   the Live Exam Admin Panel, but a Subject here is just a name (no course
+   start/end date) and a Topic is just a name under a subject (no start
+   time, duration, marks, or negative marking) — Practice topics aren't
+   scheduled exams. All local-only (practiceState / localStorage): no
+   Supabase calls here, per spec, since the database connects later.
+   ========================================================================== */
+
+/* ---------- Questions tab: PracticeMCQBuilder ----------
+   Second instance of the same createMCQBuilder() factory that powers the
+   Live Exam Admin Panel's MCQBuilder above — identical rich-text editor,
+   layout picker, AI Mode (with attachments), and PUSH button, just pointed
+   at practiceState.subjects[].topics[].questions instead of
+   centralExamState.questionBank, and using the "pa-mcqp-" id prefix so it
+   can coexist in the DOM with the Live Exam builder without id clashes. */
+const PracticeMCQBuilder = createMCQBuilder({
+  idPrefix: "pa-mcqp",
+  selectFirstMessage: "Select or create a Topic first.",
+  getItems() {
+    const items = [];
+    practiceState.subjects.forEach((s) => {
+      s.topics.forEach((t) => {
+        items.push({ id: practiceProgressKey(s.id, t.id), label: `${s.name} - ${t.name}` });
+      });
+    });
+    return items;
+  },
+  getItemMeta(itemId) {
+    const [subjectId, topicId] = itemId.split("::");
+    const found = findPracticeTopic(subjectId, topicId);
+    if (!found) return null;
+    return { subject: found.subject.name, topic: found.topic.name, language: "en" };
+  },
+  async getBank(itemId) {
+    const [subjectId, topicId] = itemId.split("::");
+    const found = findPracticeTopic(subjectId, topicId);
+    if (!found) return [];
+    // Always force a fresh fetch here rather than serving a stale cache
+    // hit: this is the admin editor loading a topic to edit, so it needs
+    // the true current state in R2 — not a count-badge estimate from
+    // somewhere else in the UI.
+    return getPracticeTopicQuestions(subjectId, topicId, { forceRefresh: true });
+  },
+  async pushQuestions(itemId, converted) {
+    const [subjectId, topicId] = itemId.split("::");
+    const found = findPracticeTopic(subjectId, topicId);
+    if (!found) return;
+    // Throws on failure (network, auth) — pushIntoLive's try/catch is
+    // what turns that into a "couldn't save" toast instead of a false
+    // success. practiceState itself no longer stores the questions, so
+    // there's nothing local to roll back if this fails.
+    await pushPracticeTopicQuestions(subjectId, topicId, converted);
+    setPracticeTopicQuestionsCache(subjectId, topicId, converted);
+    renderPracticeAdminSubjectList();
+  },
+  pushedToast(count) {
+    return `${count} question${count === 1 ? "" : "s"} pushed into Practice.`;
+  },
+});
+
+function renderPracticeAdminQuestionBank(preferredItemId) {
+  PracticeMCQBuilder.render(preferredItemId);
+}
+
+/* ---------- Subjects tab: subject list + subject/topic forms ---------- */
+/* ---------- Practice Admin: Subjects tab UI state ----------
+   Tracks which subject accordion is open and which inline form (if any)
+   is active, so edits render right where the user clicked instead of in
+   a shared form fixed at the bottom of the page. Only one of
+   editingSubjectId / newSubjectOpen / editingTopic / newTopicForSubject
+   is ever set at a time. */
+let pracAdminUI = {
+  openSubjectId: null,
+  editingSubjectId: null,
+  newSubjectOpen: false,
+  editingTopic: null, // { subjectId, topicId }
+  newTopicForSubject: null,
+};
+
+registerGlobalDropdown("practice-admin-accordion", () => {
+  if (pracAdminUI.openSubjectId === null && !pracAdminUI.editingSubjectId && !pracAdminUI.newSubjectOpen && !pracAdminUI.editingTopic && !pracAdminUI.newTopicForSubject) return;
+  pracAdminUI = { openSubjectId: null, editingSubjectId: null, newSubjectOpen: false, editingTopic: null, newTopicForSubject: null };
+  renderPracticeAdminSubjectList();
+});
+
+function practiceAdminSubjectFormHtml(subject) {
+  return `
+    <div class="card" style="margin: 0 0 var(--space-4);" data-pa-inline-subject-form>
+      <div class="card__header">
+        <h3 class="text-h4">${subject ? "Edit subject" : "New subject"}</h3>
+        <button type="button" class="icon-btn" data-pa-admin-subject-form-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="pa-inline-form-row">
+        <div class="pa-inline-form-row__field">
+          <label class="form-label" for="pa-admin-subject-name">Subject name</label>
+          <input type="text" class="form-control" id="pa-admin-subject-name" placeholder="e.g. English Grammar" value="${subject ? escapeHtml(subject.name) : ""}" />
+        </div>
+        <div class="pa-inline-form-row__actions">
+          <button type="button" class="btn btn-primary" data-pa-admin-subject-save="${subject ? escapeHtml(subject.id) : ""}">Save Subject</button>
+          <button type="button" class="btn btn-secondary" data-pa-admin-subject-form-close>Cancel</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function practiceAdminTopicFormHtml(subject, topic) {
+  return `
+    <div class="card" style="margin: var(--space-3) 0 0;" data-pa-inline-topic-form>
+      <div class="card__header">
+        <h3 class="text-h4">${topic ? "Edit Topic" : "New Topic"}</h3>
+        <button type="button" class="icon-btn" data-pa-admin-topic-form-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="config-grid">
+        <div>
+          <label class="form-label" for="pa-admin-topic-subject">Subject</label>
+          <select class="form-control" id="pa-admin-topic-subject">
+            ${practiceState.subjects.map((s) => `<option value="${escapeHtml(s.id)}" ${s.id === subject.id ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="pa-admin-topic-name">Topic name</label>
+          <input type="text" class="form-control" id="pa-admin-topic-name" placeholder="e.g. Noun, Tense, Subject-Verb Agreement" value="${topic ? escapeHtml(topic.name) : ""}" />
+        </div>
+      </div>
+      <div class="pa-topic-form-actions">
+        <button type="button" class="btn btn-primary btn-sm" data-pa-admin-topic-save="${escapeHtml(subject.id)}::${topic ? escapeHtml(topic.id) : ""}">Save Topic</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-pa-admin-topic-form-close>Cancel</button>
+        <button type="button" class="btn btn-outline btn-sm" data-pa-admin-tab-jump="questions">Add Question</button>
+      </div>
+    </div>`;
+}
+
+function renderPracticeAdminSubjectList() {
+  const container = qs("#pa-admin-subject-list");
+  if (!container) return;
+
+  const newSubjectFormHtml = pracAdminUI.newSubjectOpen ? practiceAdminSubjectFormHtml(null) : "";
+
+  if (!practiceState.subjects.length) {
+    container.innerHTML = newSubjectFormHtml || `<div class="card text-center text-secondary" style="padding: var(--space-8);">No subjects yet - click "New Subject" to start (e.g. "English Grammar"), then add Topics under it.</div>`;
+    wirePracticeAdminSubjectList(container);
+    return;
+  }
+
+  container.innerHTML = newSubjectFormHtml + practiceState.subjects.map((subject) => {
+    const isOpen = pracAdminUI.openSubjectId === subject.id;
+    const isEditingThisSubject = pracAdminUI.editingSubjectId === subject.id;
+
+    const topicRows = subject.topics.length
+      ? subject.topics.map((topic) => {
+          // Question content lives in R2 now, not on the local topic
+          // object — show a cached count immediately if we have one
+          // (instant, no flicker on re-renders after the first load),
+          // else a placeholder that patchPracticeAdminQuestionCounts()
+          // fills in once its fetch resolves.
+          const key = `${subject.id}::${topic.id}`;
+          const cached = practiceQuestionCache.get(key);
+          const qCountLabel = cached ? `${cached.length} question${cached.length === 1 ? "" : "s"}` : "…";
+          const isEditingThisTopic = pracAdminUI.editingTopic && pracAdminUI.editingTopic.subjectId === subject.id && pracAdminUI.editingTopic.topicId === topic.id;
+          return `
+          <div class="live-admin-exam-row">
+            <div class="live-admin-exam-row__body">
+              <div class="live-admin-exam-row__title">${escapeHtml(topic.name || "Untitled topic")}</div>
+              <div class="live-admin-exam-row__meta" data-pa-qcount="${escapeHtml(subject.id)}::${escapeHtml(topic.id)}">${qCountLabel}</div>
+            </div>
+            <div class="live-admin-exam-row__actions">
+              <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-topic="${escapeHtml(subject.id)}::${escapeHtml(topic.id)}">Edit</button>
+              <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-topic="${escapeHtml(subject.id)}::${escapeHtml(topic.id)}">Delete</button>
+            </div>
+          </div>
+          ${isEditingThisTopic ? practiceAdminTopicFormHtml(subject, topic) : ""}`;
+        }).join("")
+      : `<div class="pp-subject__empty">No Topics yet under "${escapeHtml(subject.name)}" - add one like Noun or Tense.</div>`;
+
+    const newTopicFormHtml = pracAdminUI.newTopicForSubject === subject.id ? practiceAdminTopicFormHtml(subject, null) : "";
+
+    return `
+    <section class="pp-subject${isOpen ? " is-open" : ""}" data-subject-card="${escapeHtml(subject.id)}">
+      <button type="button" class="pp-subject__head" data-subject-toggle="${escapeHtml(subject.id)}">
+        <div class="pp-subject__title-wrap">
+          <div class="pp-subject__title">${escapeHtml(subject.name)}</div>
+        </div>
+        <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="pp-subject__topics">
+        <div class="pp-subject__topics-inner">
+          ${isEditingThisSubject ? practiceAdminSubjectFormHtml(subject) : ""}
+          <div class="admin-subject-card__actions" style="margin-bottom: var(--space-3);">
+            <button type="button" class="btn btn-primary btn-sm" data-pa-admin-new-topic-for="${escapeHtml(subject.id)}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              New Topic
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-subject="${escapeHtml(subject.id)}">Edit</button>
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-subject="${escapeHtml(subject.id)}">Delete</button>
+          </div>
+          ${topicRows}
+          ${newTopicFormHtml}
+        </div>
+      </div>
+    </section>`;
+  }).join("");
+
+  wirePracticeAdminSubjectList(container);
+  patchPracticeAdminQuestionCounts(container);
+}
+
+/** Fetches each visible topic's real question count from R2 (or the
+    session cache) and patches it into the "N questions" label after the
+    initial render, since that data no longer lives on the local topic
+    object. Each fetch is independent — one slow/failed topic just leaves
+    its own label as "…" rather than blocking the others. */
+function patchPracticeAdminQuestionCounts(container) {
+  if (!container) return;
+  qsa("[data-pa-qcount]", container).forEach(async (el) => {
+    const [subjectId, topicId] = el.getAttribute("data-pa-qcount").split("::");
+    try {
+      const questions = await getPracticeTopicQuestions(subjectId, topicId);
+      el.textContent = `${questions.length} question${questions.length === 1 ? "" : "s"}`;
+    } catch (e) {
+      console.error(e);
+      el.textContent = "couldn't load count";
+    }
+  });
+}
+
+function wirePracticeAdminSubjectList(container) {
+  qsa("[data-subject-toggle]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-subject-toggle");
+      const willOpen = pracAdminUI.openSubjectId !== id;
+      if (willOpen) closeOtherGlobalDropdowns("practice-admin-accordion");
+      pracAdminUI.openSubjectId = willOpen ? id : null;
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-new-topic-for]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const subjectId = btn.getAttribute("data-pa-admin-new-topic-for");
+      closeOtherGlobalDropdowns("practice-admin-accordion");
+      pracAdminUI = { openSubjectId: subjectId, editingSubjectId: null, newSubjectOpen: false, editingTopic: null, newTopicForSubject: subjectId };
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-edit-topic]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const [subjectId, topicId] = btn.getAttribute("data-pa-admin-edit-topic").split("::");
+      closeOtherGlobalDropdowns("practice-admin-accordion");
+      pracAdminUI = { openSubjectId: subjectId, editingSubjectId: null, newSubjectOpen: false, editingTopic: { subjectId, topicId }, newTopicForSubject: null };
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-delete-topic]", container).forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const [subjectId, topicId] = btn.getAttribute("data-pa-admin-delete-topic").split("::");
+      const found = findPracticeTopic(subjectId, topicId);
+      if (!found) return;
+      if (!confirm(`Delete the topic "${found.topic.name}"? This also removes its question bank. This can't be undone.`)) return;
+      found.subject.topics = found.subject.topics.filter((t) => t.id !== topicId);
+      savePracticeState();
+      clearPracticeTopicQuestionsCache(subjectId, topicId);
+      renderPracticeAdminSubjectList();
+      renderPracticeAdminQuestionBank();
+      showToast("Topic deleted.", "success");
+      // Best-effort: the topic is already gone from the site regardless
+      // (practiceState no longer references it), so a failure here just
+      // means an orphaned file sits in R2 rather than the delete
+      // appearing to fail to the admin.
+      try {
+        await deletePracticeTopicQuestions(subjectId, topicId);
+      } catch (e) {
+        console.error("Could not delete topic's question bank from R2:", e);
+      }
+    });
+  });
+  qsa("[data-pa-admin-edit-subject]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute("data-pa-admin-edit-subject");
+      closeOtherGlobalDropdowns("practice-admin-accordion");
+      pracAdminUI = { openSubjectId: id, editingSubjectId: id, newSubjectOpen: false, editingTopic: null, newTopicForSubject: null };
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-delete-subject]", container).forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute("data-pa-admin-delete-subject");
+      const subject = practiceState.subjects.find((s) => s.id === id);
+      if (!subject) return;
+      if (subject.topics.length && !confirm(`"${subject.name}" has ${subject.topics.length} Topic(s) under it. Deleting the subject also deletes all of them and their questions. Continue?`)) return;
+      if (!subject.topics.length && !confirm(`Delete the subject "${subject.name}"?`)) return;
+      const topicIds = subject.topics.map((t) => t.id);
+      practiceState.subjects = practiceState.subjects.filter((s) => s.id !== id);
+      savePracticeState();
+      topicIds.forEach((topicId) => clearPracticeTopicQuestionsCache(id, topicId));
+      renderPracticeAdminSubjectList();
+      renderPracticeAdminQuestionBank();
+      showToast("Subject and its topics deleted.", "success");
+      // Best-effort cleanup in R2, same reasoning as single-topic delete
+      // above — one failed file shouldn't block or roll back the rest.
+      const results = await Promise.allSettled(topicIds.map((topicId) => deletePracticeTopicQuestions(id, topicId)));
+      results.forEach((r, i) => {
+        if (r.status === "rejected") console.error(`Could not delete question bank for topic ${topicIds[i]}:`, r.reason);
+      });
+    });
+  });
+
+  // Inline subject form (New or Edit — practiceAdminSubjectFormHtml)
+  qsa("[data-pa-admin-subject-form-close]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pracAdminUI.editingSubjectId = null;
+      pracAdminUI.newSubjectOpen = false;
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-subject-save]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const editingId = btn.getAttribute("data-pa-admin-subject-save");
+      const name = qs("#pa-admin-subject-name").value.trim();
+      if (!name) { showToast("Subject name is required.", "danger"); return; }
+      const duplicate = practiceState.subjects.some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingId);
+      if (duplicate) { showToast("A subject with that name already exists.", "danger"); return; }
+
+      if (editingId) {
+        const subject = practiceState.subjects.find((s) => s.id === editingId);
+        if (subject) subject.name = name;
+      } else {
+        practiceState.subjects.push({ id: practiceSubjectId(), name, topics: [] });
+      }
+      savePracticeState();
+      pracAdminUI.editingSubjectId = null;
+      pracAdminUI.newSubjectOpen = false;
+      renderPracticeAdminSubjectList();
+      showToast("Subject saved.", "success");
+    });
+  });
+
+  // Inline topic form (New or Edit — practiceAdminTopicFormHtml)
+  qsa("[data-pa-admin-topic-form-close]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pracAdminUI.editingTopic = null;
+      pracAdminUI.newTopicForSubject = null;
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-topic-save]", container).forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const [editingSubjectId, editingTopicId] = btn.getAttribute("data-pa-admin-topic-save").split("::");
+      const subjectId = qs("#pa-admin-topic-subject").value;
+      const name = qs("#pa-admin-topic-name").value.trim();
+      if (!subjectId) { showToast("Add a Subject first, then pick it here.", "danger"); return; }
+      if (!name) { showToast("Topic name is required - e.g. Noun, Tense.", "danger"); return; }
+      const subject = practiceState.subjects.find((s) => s.id === subjectId);
+      if (!subject) { showToast("Subject not found.", "danger"); return; }
+
+      let savedTopicId = editingTopicId;
+      let movedFromSubjectId = null; // set only when the topic's R2 file needs to move
+      if (editingTopicId && editingSubjectId === subjectId) {
+        const topic = subject.topics.find((t) => t.id === editingTopicId);
+        if (topic) topic.name = name;
+      } else if (editingTopicId && editingSubjectId !== subjectId) {
+        // Moved to a different subject. The topic keeps its own id, but
+        // R2's key is practice/{subjectId}/{topicId}.json — keyed on
+        // *both* ids — so its question bank file has to move from the
+        // old subject's path to the new one, not just the local metadata.
+        const oldSubject = practiceState.subjects.find((s) => s.id === editingSubjectId);
+        const topic = oldSubject ? oldSubject.topics.find((t) => t.id === editingTopicId) : null;
+        if (topic) {
+          oldSubject.topics = oldSubject.topics.filter((t) => t.id !== editingTopicId);
+          topic.name = name;
+          subject.topics.push(topic);
+          movedFromSubjectId = editingSubjectId;
+        }
+      } else {
+        savedTopicId = practiceTopicId();
+        subject.topics.push({ id: savedTopicId, name, questions: [] });
+      }
+      savePracticeState();
+      pracAdminUI.editingTopic = null;
+      pracAdminUI.newTopicForSubject = null;
+      pracAdminUI.openSubjectId = subjectId;
+      renderPracticeAdminSubjectList();
+
+      let moveFailed = false;
+      if (movedFromSubjectId) {
+        // Copy the question bank to its new path, then remove the old
+        // one — and do this BEFORE renderPracticeAdminQuestionBank()
+        // below. That call triggers the editor's getBank(), which always
+        // force-fetches the new subjectId::topicId key (see getBank's
+        // own comment) — if the copy hasn't landed in R2 yet, that fetch
+        // returns an empty bank and the editor would show "0 questions"
+        // for a topic that actually still has its questions, just not
+        // copied to the new path yet. Awaiting the move first means the
+        // editor's very first render already sees the real content.
+        try {
+          const questions = await getPracticeTopicQuestions(movedFromSubjectId, editingTopicId, { forceRefresh: true });
+          await pushPracticeTopicQuestions(subjectId, editingTopicId, questions);
+          setPracticeTopicQuestionsCache(subjectId, editingTopicId, questions);
+          await deletePracticeTopicQuestions(movedFromSubjectId, editingTopicId);
+          clearPracticeTopicQuestionsCache(movedFromSubjectId, editingTopicId);
+        } catch (err) {
+          console.error("Could not move topic's question bank in R2:", err);
+          moveFailed = true;
+          showToast("Topic moved, but its questions may not have followed - check both subjects.", "danger");
+        }
+      }
+
+      renderPracticeAdminQuestionBank(`${subjectId}::${savedTopicId}`);
+      patchPracticeAdminQuestionCounts(qs("#pa-admin-subject-list"));
+      // Skip the generic success toast when the move's own warning toast
+      // already fired above — stacking "...questions may not have
+      // followed" (danger) with "Topic saved." (success) right after it
+      // reads as a contradiction, when only one of them is the real
+      // outcome the admin needs to act on.
+      if (!moveFailed) showToast("Topic saved.", "success");
+    });
+  });
+
+  // "Add Question" button inside an inline Topic form jumps to the
+  // Questions tab, same as any other data-pa-admin-tab-jump control —
+  // bound here too since this button is (re)rendered dynamically and
+  // isn't present at initPracticeAdminPanel's one-time init wiring.
+  qsa("[data-pa-admin-tab-jump]", container).forEach((btn) => {
+    btn.addEventListener("click", () => activatePracticeAdminTab(btn.getAttribute("data-pa-admin-tab-jump")));
+  });
+}
+
+function practiceSubjectId() { return "ps" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function practiceTopicId() { return "pt" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function renderPracticeAdminPanel() {
+  // Real access-control gate (mirrors renderLiveExamAdminPanel() above) —
+  // the navigateToView() check is only a convenience fast-path; anyone
+  // reaching this function directly (stale hash, browser back/forward,
+  // dev tools) must still be blocked here regardless of how they arrived.
+  if (!isPracticeAdmin()) {
+    showToast("This panel is restricted to the site admin.", "danger");
+    showView("practice");
+    renderPracticeSubjectList();
+    return;
+  }
+  renderPracticeAdminSubjectList();
+  renderPracticeAdminQuestionBank();
+}
+
+// Tabs: Subjects / Questions (2 tabs only — no Results/Users here). Top
+// level (not nested in initPracticeAdminPanel) so both the one-time init
+// wiring and the dynamically re-rendered subject list (which can contain
+// an "Add Question" tab-jump button inside an inline Topic form) can bind
+// to it.
+function activatePracticeAdminTab(target) {
+  qsa("[data-pa-admin-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+  const tabBtn = qs(`[data-pa-admin-tab="${target}"]`);
+  if (tabBtn) { tabBtn.classList.add("is-active"); tabBtn.setAttribute("aria-selected", "true"); }
+  qsa(".view#view-practice-admin .admin-tab-panel").forEach((p) => (p.style.display = "none"));
+  const panel = qs(`#pa-admin-panel-${target}`);
+  if (panel) panel.style.display = "";
+}
+
+function initPracticeAdminPanel() {
+  qsa("[data-pa-admin-tab]").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => activatePracticeAdminTab(tabBtn.getAttribute("data-pa-admin-tab")));
+  });
+  qsa("[data-pa-admin-tab-jump]").forEach((btn) => {
+    btn.addEventListener("click", () => activatePracticeAdminTab(btn.getAttribute("data-pa-admin-tab-jump")));
+  });
+
+  qs("#pa-admin-new-subject-btn")?.addEventListener("click", () => {
+    closeOtherGlobalDropdowns("practice-admin-accordion");
+    pracAdminUI = { openSubjectId: null, editingSubjectId: null, newSubjectOpen: true, editingTopic: null, newTopicForSubject: null };
+    renderPracticeAdminSubjectList();
+  });
+
+  PracticeMCQBuilder.bindEvents();
+}
+
+/* ---------- Generic nav + wiring ---------- */
+function initSpaNav() {
+  qsa("[data-spa-nav]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = el.getAttribute("data-spa-nav");
+      // Icon buttons styled as a plain "Back" chevron (as opposed to
+      // the Home icon, or a normal forward link/card) should return to
+      // wherever the user came from, not their hardcoded data-spa-nav
+      // target — that target only ever exists as a fallback for when
+      // there's no history (e.g. a direct link or a refreshed page).
+      if (el.classList.contains("icon-btn--back")) {
+        goBackView(target);
+      } else {
+        // Any explicit jump to Home (via the Home icon, dashboard
+        // cards, etc.) is a deliberate return to the root — clear the
+        // back-stack so a later Back press doesn't replay stale views.
+        navigateToView(target, target === "home" ? { resetHistory: true } : undefined);
+      }
+    });
+  });
+
+  // Practice hub cards that aren't wired to a real view yet (Highlights
+  // Question / Vocabulary Master / Current Affairs) — just a heads-up
+  // toast for now instead of a dead link.
+  qsa("[data-practice-soon]").forEach((el) => {
+    el.addEventListener("click", () => {
+      showToast(t("practice.comingSoon"), "info");
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Seed a base history entry for the initial Home view so the very
+  // first press of the device Back button has something real to pop
+  // against (see the popstate listener above showView) instead of
+  // navigating away from the app on the first tap.
+  history.replaceState({ view: "home" }, "", location.href);
+
+  initGeneratorView();
+  initLiveExamView();
+  initCentralLiveExam();
+  initEnrollModal();
+  initStatisticsView();
+  initPrintView();
+  initPdfSettingsPanel();
+  initSpaNav();
+  initPracticeView();
+  initPracticeAdminPanel();
+
+  // Supabase-backed Live Exam data: pull the current state once so the
+  // Home/Live Exam/Admin views have real Subject/Exam/Member/Enrollment
+  // data instead of only whatever was cached in localStorage, then start
+  // listening for realtime changes so every open tab stays in sync
+  // (new exams, pushed questions, incoming submissions, new signups).
+  pullCentralExamStateFromSupabase();
+  subscribeCentralExamRealtime();
+
+  // If a completed/active exam already exists (e.g. page was refreshed
+  // mid-exam), resume it instead of showing a stale question-1 state.
+  const existing = restoreExamSession();
+  if (existing && existing.status !== "completed" && (window.location.hash === "#exam")) {
+    enterLiveExam();
+  }
+});
