@@ -4510,14 +4510,19 @@ async function fetchPracticeTopicQuestions(subjectId, topicId) {
     the Worker itself checks the Firebase ID token, but a signed-in check
     here avoids a pointless network round-trip for a request that would
     just come back 401. Throws on any failure so callers (PracticeMCQBuilder's
-    pushQuestions) can surface a real error instead of silently "succeeding". */
-async function pushPracticeTopicQuestions(subjectId, topicId, questions) {
+    pushQuestions) can surface a real error instead of silently "succeeding".
+    `language` ("en"/"bn") is stored alongside the questions server-side so
+    the data stays complete even though the app currently reads the topic's
+    language from the local practiceState (see topic.language) rather than
+    this field — keeping both in sync means a future device/browser could
+    read language straight from the server without a local copy. */
+async function pushPracticeTopicQuestions(subjectId, topicId, questions, language) {
   if (!isSignedIn()) throw new Error("Not signed in.");
   const idToken = await firebase.auth().currentUser.getIdToken();
   const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-    body: JSON.stringify({ questions }),
+    body: JSON.stringify({ questions, language: language || "en" }),
   });
   if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
   return res.json();
@@ -5065,7 +5070,7 @@ function isAnyExamCurrentlyLive() {
     exams start and end, without needing a page refresh. */
 function refreshBrandLiveIndicators() {
   const live = isAnyExamCurrentlyLive();
-  ["home", "live-exam", "live-exam-admin", "history", "statistics", "exam", "practice", "practice-mode", "practice-admin"].forEach((id) => {
+  ["home", "live-exam", "live-exam-admin", "history", "statistics", "exam", "practice", "practice-admin"].forEach((id) => {
     const el = document.getElementById(`brand-live-indicator-${id}`);
     if (!el) return;
     el.hidden = !live;
@@ -7786,7 +7791,7 @@ const PRACTICE_STORAGE_KEY = "mcq-practice-state-v1";
    Mode, exactly like Live Exam's Question Builder. */
 function defaultPracticeSubjects() {
   const mk = (id, name, topics) => ({ id, name, topics });
-  const mkTopic = (id, name, questions) => ({ id, name, questions: questions || [] });
+  const mkTopic = (id, name, questions, language) => ({ id, name, questions: questions || [], language: language || "en" });
   return [
     mk("bn-lit", "বাংলা সাহিত্য", [
       mkTopic("bn-lit-t1", "প্রাচীন ও মধ্যযুগের সাহিত্য"),
@@ -7968,6 +7973,7 @@ async function enterPracticeMode(subjectId, topicId) {
     topicId,
     subjectName: subject.name,
     topicName: topic.name,
+    language: topic.language || "en",
     questions,
     answers: (savedProgress && savedProgress.answers) ? { ...savedProgress.answers } : {},
     current: (savedProgress && typeof savedProgress.current === "number") ? savedProgress.current : 0,
@@ -8006,7 +8012,13 @@ function renderPracticeQuestionStream() {
   const s = practiceModeState;
   const stream = qs("#pm-question-stream");
   stream.innerHTML = "";
-  const letters = optionLetters(false);
+  // Question number badge (০১, ০২...) and option markers (ক/খ/গ/ঘ) follow
+  // THIS topic's own language — set by the admin's builder-tab EN/বাংলা
+  // toggle when the questions were pushed (see PracticeMCQBuilder.pushQuestions)
+  // — not the site-wide EN/বাংলা toggle, so each topic renders consistently
+  // for every student regardless of their own UI language preference.
+  const useLocalized = s.language === "bn";
+  const letters = optionLetters(useLocalized);
 
   s.questions.forEach((q, index) => {
     const card = document.createElement("div");
@@ -8022,7 +8034,7 @@ function renderPracticeQuestionStream() {
     heading.id = `pm-question-text-${index}`;
     const numBadge = document.createElement("span");
     numBadge.className = "question-card__num";
-    numBadge.textContent = formatQuestionNumber(index, false);
+    numBadge.textContent = formatQuestionNumber(index, useLocalized);
     heading.appendChild(numBadge);
     heading.appendChild(document.createTextNode(q.question));
     head.appendChild(heading);
@@ -8349,7 +8361,7 @@ const PracticeMCQBuilder = createMCQBuilder({
     const [subjectId, topicId] = itemId.split("::");
     const found = findPracticeTopic(subjectId, topicId);
     if (!found) return null;
-    return { subject: found.subject.name, topic: found.topic.name, language: "en" };
+    return { subject: found.subject.name, topic: found.topic.name, language: found.topic.language || "en" };
   },
   async getBank(itemId) {
     const [subjectId, topicId] = itemId.split("::");
@@ -8361,15 +8373,23 @@ const PracticeMCQBuilder = createMCQBuilder({
     // somewhere else in the UI.
     return getPracticeTopicQuestions(subjectId, topicId, { forceRefresh: true });
   },
-  async pushQuestions(itemId, converted) {
+  async pushQuestions(itemId, converted, lang) {
     const [subjectId, topicId] = itemId.split("::");
     const found = findPracticeTopic(subjectId, topicId);
     if (!found) return;
+    // Keep the topic's stored language in sync with whichever EN/বাংলা
+    // toggle was active in this builder when the questions were written
+    // — same rule as Live Exam's MCQBuilder: only overwrite if the topic
+    // is still on the default "en", so an explicit prior choice sticks.
+    if (!found.topic.language || found.topic.language === "en") {
+      found.topic.language = lang;
+      savePracticeState();
+    }
     // Throws on failure (network, auth) — pushIntoLive's try/catch is
     // what turns that into a "couldn't save" toast instead of a false
     // success. practiceState itself no longer stores the questions, so
     // there's nothing local to roll back if this fails.
-    await pushPracticeTopicQuestions(subjectId, topicId, converted);
+    await pushPracticeTopicQuestions(subjectId, topicId, converted, found.topic.language);
     setPracticeTopicQuestionsCache(subjectId, topicId, converted);
     renderPracticeAdminSubjectList();
   },
@@ -8702,7 +8722,7 @@ function wirePracticeAdminSubjectList(container) {
         }
       } else {
         savedTopicId = practiceTopicId();
-        subject.topics.push({ id: savedTopicId, name, questions: [] });
+        subject.topics.push({ id: savedTopicId, name, questions: [], language: "en" });
       }
       savePracticeState();
       pracAdminUI.editingTopic = null;
