@@ -2642,8 +2642,25 @@ function navigateToView(target, opts) {
   else if (target === "statistics") renderStatisticsPage();
   else if (target === "live-exam") renderCentralLiveExamHub();
   else if (target === "live-exam-admin") renderLiveExamAdminPanel();
-  else if (target === "practice") renderPracticeSubjectList();
-  else if (target === "practice-admin") renderPracticeAdminPanel();
+  else if (target === "practice") { renderPracticeSubjectList(); refreshPracticeAndRerenderPanel(); }
+  else if (target === "practice-admin") { renderPracticeAdminPanel(); refreshPracticeAndRerenderAdmin(); }
+}
+
+/** Renders instantly from whatever's cached (localStorage/in-memory), then
+    refreshes from the Worker in the background and re-renders once the
+    real tree lands — so the Practice Panel never blocks on a network
+    round-trip, but still converges on the admin's actual Subject/Topic
+    list within a moment. A student sitting on the panel while the admin
+    pushes a new topic elsewhere won't see it until they navigate back in
+    (this only fires on entry into the view), which matches how the rest
+    of the site already works (no live push channel anywhere else either). */
+async function refreshPracticeAndRerenderPanel() {
+  const changed = await refreshPracticeManifest();
+  if (changed && document.body.getAttribute("data-page") === "practice") renderPracticeSubjectList();
+}
+async function refreshPracticeAndRerenderAdmin() {
+  const changed = await refreshPracticeManifest();
+  if (changed && document.body.getAttribute("data-page") === "practice-admin") renderPracticeAdminSubjectList();
 }
 
 /* ---------- Generating view ---------- */
@@ -7874,8 +7891,89 @@ function loadPracticeState() {
   return { subjects: defaultPracticeSubjects(), progress: {} };
 }
 let practiceState = loadPracticeState();
+// Local cache only from here on — see refreshPracticeManifest() below for
+// the real source of truth (the Worker/KV manifest). localStorage is kept
+// so the Practice Panel still has *something* to show instantly on load
+// and while offline, before the network fetch resolves.
 function savePracticeState() {
   localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(practiceState));
+}
+
+/* ---------- Subject/Topic manifest sync (Worker/KV) ----------
+   The Subject/Topic tree used to live only in each browser's localStorage
+   (see defaultPracticeSubjects() above), which meant anything the admin
+   created never reached students — their browsers just built their own
+   default list independently and the ids never matched what the admin
+   had pushed questions into. GET/PUT /api/practice/manifest (added to
+   worker.js alongside this change) makes the tree itself a synced
+   resource, the same way question content already was. */
+
+/** Fetches the current Subject/Topic tree from the Worker. Public route,
+    no auth needed. Throws on network/HTTP failure so callers can decide
+    how to degrade (see refreshPracticeManifest). */
+async function fetchPracticeManifest() {
+  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`);
+  if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data.subjects) ? data.subjects : [];
+}
+
+/** Overwrites the Subject/Topic tree on the Worker. Admin-only (the
+    Worker checks the Firebase ID token); only sends id/name/topics/
+    language — never question content, which stays per-topic in its own
+    KV entry via pushPracticeTopicQuestions. */
+async function pushPracticeManifest(subjects) {
+  if (!isSignedIn()) throw new Error("Not signed in.");
+  const idToken = await firebase.auth().currentUser.getIdToken();
+  const slim = subjects.map((s) => ({
+    id: s.id,
+    name: s.name,
+    topics: s.topics.map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
+  }));
+  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+    body: JSON.stringify({ subjects: slim }),
+  });
+  if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
+  return res.json();
+}
+
+/** Pulls the latest manifest from the Worker and merges it into
+    practiceState, keeping each topic's already-cached `language` in memory
+    intact and never touching per-user practiceState.progress. Called once
+    at startup (see the call site right after practiceState is first read)
+    and after every admin edit that changes the tree, so every browser —
+    admin's included — converges on the same ids the Worker knows about.
+    Silently keeps the local/default tree on failure (offline, Worker
+    unreachable) rather than blanking the Practice Panel; the panel will
+    just show stale/default subjects until the next successful refresh. */
+async function refreshPracticeManifest() {
+  let subjects;
+  try {
+    subjects = await fetchPracticeManifest();
+  } catch (e) {
+    console.error("Could not load Practice subjects/topics from server:", e);
+    return false;
+  }
+  if (!subjects.length) return false; // never overwrite local with an empty tree
+  practiceState.subjects = subjects.map((s) => ({
+    id: s.id,
+    name: s.name,
+    topics: s.topics.map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
+  }));
+  savePracticeState();
+  return true;
+}
+
+/** Pushes the in-memory Subject/Topic tree to the Worker after an admin
+    edit, then re-renders anything already on screen that lists subjects/
+    topics so the admin's own view reflects the merged/confirmed state.
+    Throws on failure (network, auth) — callers should catch this the same
+    way pushPracticeTopicQuestions callers already do, so a failed sync
+    surfaces as a toast instead of a silent local-only edit. */
+async function syncPracticeManifestAfterEdit() {
+  await pushPracticeManifest(practiceState.subjects);
 }
 
 function findPracticeTopic(subjectId, topicId) {
@@ -8606,10 +8704,19 @@ function wirePracticeAdminSubjectList(container) {
       renderPracticeAdminSubjectList();
       renderPracticeAdminQuestionBank();
       showToast("Topic deleted.", "success");
-      // Best-effort: the topic is already gone from the site regardless
-      // (practiceState no longer references it), so a failure here just
-      // means an orphaned file sits in R2 rather than the delete
+      // Sync the tree itself first — students' browsers need to stop
+      // listing this topic before it matters whether its question-bank
+      // file also gets cleaned up. Both are best-effort from here: the
+      // topic is already gone from this admin's local view regardless
+      // (practiceState no longer references it), so a failure in either
+      // just means stale server-side data rather than the delete
       // appearing to fail to the admin.
+      try {
+        await syncPracticeManifestAfterEdit();
+      } catch (e) {
+        console.error("Could not sync subject/topic list to server:", e);
+        showToast("Topic deleted locally, but the change may not have reached students yet.", "danger");
+      }
       try {
         await deletePracticeTopicQuestions(subjectId, topicId);
       } catch (e) {
@@ -8641,8 +8748,15 @@ function wirePracticeAdminSubjectList(container) {
       renderPracticeAdminSubjectList();
       renderPracticeAdminQuestionBank();
       showToast("Subject and its topics deleted.", "success");
-      // Best-effort cleanup in R2, same reasoning as single-topic delete
-      // above — one failed file shouldn't block or roll back the rest.
+      // Sync the tree first (same reasoning as the topic-delete handler
+      // above), then best-effort cleanup in R2 — one failed file shouldn't
+      // block or roll back the rest.
+      try {
+        await syncPracticeManifestAfterEdit();
+      } catch (e) {
+        console.error("Could not sync subject/topic list to server:", e);
+        showToast("Subject deleted locally, but the change may not have reached students yet.", "danger");
+      }
       const results = await Promise.allSettled(topicIds.map((topicId) => deletePracticeTopicQuestions(id, topicId)));
       results.forEach((r, i) => {
         if (r.status === "rejected") console.error(`Could not delete question bank for topic ${topicIds[i]}:`, r.reason);
@@ -8660,7 +8774,7 @@ function wirePracticeAdminSubjectList(container) {
     });
   });
   qsa("[data-pa-admin-subject-save]", container).forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const editingId = btn.getAttribute("data-pa-admin-subject-save");
       const name = qs("#pa-admin-subject-name").value.trim();
@@ -8678,7 +8792,17 @@ function wirePracticeAdminSubjectList(container) {
       pracAdminUI.editingSubjectId = null;
       pracAdminUI.newSubjectOpen = false;
       renderPracticeAdminSubjectList();
-      showToast("Subject saved.", "success");
+      // Sync to the Worker so every student's browser picks up the new/
+      // renamed subject — without this, the subject only ever exists in
+      // this admin's own localStorage (the original bug this whole sync
+      // layer fixes).
+      try {
+        await syncPracticeManifestAfterEdit();
+        showToast("Subject saved.", "success");
+      } catch (err) {
+        console.error("Could not sync subject/topic list to server:", err);
+        showToast("Subject saved locally, but the change may not have reached students yet.", "danger");
+      }
     });
   });
 
@@ -8730,6 +8854,18 @@ function wirePracticeAdminSubjectList(container) {
       pracAdminUI.openSubjectId = subjectId;
       renderPracticeAdminSubjectList();
 
+      // Sync the tree itself before touching R2 question content below —
+      // students need the new/renamed/moved topic id to exist in the
+      // manifest before there's any point fetching questions for it.
+      let manifestSyncFailed = false;
+      try {
+        await syncPracticeManifestAfterEdit();
+      } catch (err) {
+        console.error("Could not sync subject/topic list to server:", err);
+        manifestSyncFailed = true;
+        showToast("Topic saved locally, but the change may not have reached students yet.", "danger");
+      }
+
       let moveFailed = false;
       if (movedFromSubjectId) {
         // Copy the question bank to its new path, then remove the old
@@ -8757,11 +8893,12 @@ function wirePracticeAdminSubjectList(container) {
       renderPracticeAdminQuestionBank(`${subjectId}::${savedTopicId}`);
       patchPracticeAdminQuestionCounts(qs("#pa-admin-subject-list"));
       // Skip the generic success toast when the move's own warning toast
-      // already fired above — stacking "...questions may not have
-      // followed" (danger) with "Topic saved." (success) right after it
-      // reads as a contradiction, when only one of them is the real
-      // outcome the admin needs to act on.
-      if (!moveFailed) showToast("Topic saved.", "success");
+      // or the manifest-sync warning toast already fired above — stacking
+      // a "...may not have reached students"/"...may not have followed"
+      // (danger) toast with "Topic saved." (success) right after it reads
+      // as a contradiction, when only one of them is the real outcome the
+      // admin needs to act on.
+      if (!moveFailed && !manifestSyncFailed) showToast("Topic saved.", "success");
     });
   });
 
@@ -8872,6 +9009,22 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpaNav();
   initPracticeView();
   initPracticeAdminPanel();
+
+  // Worker/KV-backed Practice Subject/Topic tree: pull the current
+  // manifest once at startup so the Practice Panel (and Practice Admin
+  // Panel, for the admin) reflect the real server-side list instead of
+  // only whatever was cached in this browser's localStorage or the
+  // built-in defaultPracticeSubjects() fallback. If the initial view on
+  // load happens to already be Practice/Practice Admin (e.g. a refresh),
+  // re-render once this resolves — same "instant local render, refresh
+  // in background" pattern as refreshPracticeAndRerenderPanel/Admin used
+  // on in-app navigation.
+  refreshPracticeManifest().then((changed) => {
+    if (!changed) return;
+    const page = document.body.getAttribute("data-page");
+    if (page === "practice") renderPracticeSubjectList();
+    else if (page === "practice-admin") renderPracticeAdminSubjectList();
+  });
 
   // Supabase-backed Live Exam data: pull the current state once so the
   // Home/Live Exam/Admin views have real Subject/Exam/Member/Enrollment
