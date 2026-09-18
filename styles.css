@@ -162,7 +162,7 @@ fieldset {
  --color-info-border: #bfdbfe;
 
  /* ---------- Light theme surfaces ---------- */
- --color-bg: #f5f5fa;
+ --color-bg: #faf9f6;
  --color-surface: #ffffff;
  --color-surface-alt: #fafafa;
 
@@ -1354,6 +1354,16 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  box-shadow: var(--shadow-xs);
 }
 
+/* Statistics page — the two bottom cards on the Practice Exam tab
+   ("BCS Preliminary" / category breakdown, and "Performance by
+   subject") get a light brand-color border instead of the default
+   neutral one, to tie them together visually as this page's headline
+   cards. */
+#bcs-prelim-stats-card,
+#subject-breakdown-card {
+ border-color: var(--color-primary-border);
+}
+
 .card--interactive {
  cursor: pointer;
  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
@@ -1550,23 +1560,135 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .toast-info    .toast__icon { background-color: rgba(64, 156, 255, 0.18); color: #409cff; }
 
 /* ==========================================================================
- TABS
+ TABS — AGQ-style pill/segmented control: a rounded track holding
+ equal-width pill buttons, the active one lifted with a surface
+ background + shadow (rather than an underline). Built from the site's
+ own tokens so it stays theme-consistent; only this shared component's
+ CSS changed — markup/classes (.tabs / .tab / .is-active) are untouched.
  ========================================================================== */
 .tabs {
  display: flex;
  align-items: center;
  gap: var(--space-1);
- border-bottom: 1px solid var(--color-border);
+ background-color: var(--color-surface-alt);
+ border: 1px solid var(--color-border);
+ border-radius: var(--radius-lg);
+ padding: 5px;
+}
+/* Lives inside .bcs-prelim-stats-card's own .card__header now (see the
+   HTML) instead of floating above as its own card — the trigger takes
+   the title's place so switching categories reads as part of that one
+   card rather than a separate control stacked on top of it. */
+.stats-category-dropdown {
+ position: relative;
+ flex: 1;
+ min-width: 0;
+}
+.stats-category-dropdown[hidden] { display: none; }
+.stats-category-dropdown__trigger {
+ display: flex;
+ align-items: center;
+ gap: var(--space-2);
+ width: 100%;
+ padding: var(--space-1) 0;
+ text-align: left;
+ border-radius: var(--radius-md);
+}
+.stats-category-dropdown__trigger-icon {
+ font-size: 1.3rem;
+ line-height: 1;
+ flex-shrink: 0;
+}
+.stats-category-dropdown__trigger-icon img {
+ width: 28px;
+ height: 28px;
+ object-fit: cover;
+ border-radius: var(--radius-sm);
+ display: block;
+}
+.stats-category-dropdown__trigger-text {
+ flex: 1;
+ min-width: 0;
+}
+.stats-category-dropdown__trigger-name {
+ display: block;
+ font-size: var(--font-size-h4, 1.05rem);
+ font-weight: var(--font-weight-bold, 700);
+ color: var(--color-text-primary);
+ line-height: var(--line-height-tight);
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+}
+.stats-category-dropdown__chevron {
+ flex-shrink: 0;
+ width: 18px;
+ height: 18px;
+ color: var(--color-text-muted);
+ transition: transform var(--transition-fast);
+}
+.stats-category-dropdown__trigger[aria-expanded="true"] .stats-category-dropdown__chevron {
+ transform: rotate(180deg);
+}
+.stats-category-dropdown__panel {
+ display: none;
+ position: absolute;
+ top: calc(100% + var(--space-2));
+ left: calc(-1 * var(--space-4));
+ right: calc(-1 * var(--space-4));
+ z-index: 20;
+ background-color: var(--color-surface);
+ border: 1px solid var(--color-border);
+ border-radius: var(--radius-lg);
+ box-shadow: var(--shadow-md, var(--shadow-sm));
+ padding: var(--space-2);
+ max-height: 280px;
+ overflow-y: auto;
+}
+.stats-category-dropdown__panel.is-open { display: block; }
+.stats-category-dropdown__option {
+ display: flex;
+ align-items: center;
+ gap: var(--space-2);
+ width: 100%;
+ padding: var(--space-3);
+ border-radius: var(--radius-md);
+ text-align: left;
+}
+.stats-category-dropdown__option:hover {
+ background-color: var(--color-hover-bg);
+}
+.stats-category-dropdown__option[aria-selected="true"] {
+ background-color: var(--color-primary-wash);
+ color: var(--color-primary);
+ font-weight: var(--font-weight-semibold);
+}
+.stats-category-dropdown__option-icon {
+ font-size: 1.15rem;
+ line-height: 1;
+ flex-shrink: 0;
+}
+.stats-category-dropdown__option-icon img {
+ width: 22px;
+ height: 22px;
+ object-fit: cover;
+ border-radius: var(--radius-sm);
+ display: block;
 }
 
 .tab {
+ flex: 1;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ gap: var(--space-2);
  padding: var(--space-3) var(--space-4);
+ border-radius: var(--radius-md);
  font-size: var(--font-size-small);
  font-weight: var(--font-weight-medium);
  color: var(--color-text-secondary);
- border-bottom: 2px solid transparent;
- margin-bottom: -1px;
- transition: color var(--transition-fast), border-color var(--transition-fast);
+ white-space: nowrap;
+ transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .tab:hover {
@@ -1574,15 +1696,22 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 .tab.is-active {
+ background-color: var(--color-surface);
  color: var(--color-primary);
- border-bottom-color: var(--color-primary);
  font-weight: var(--font-weight-semibold);
+ box-shadow: var(--shadow-sm);
 }
 
 .tab:focus-visible {
  outline: none;
  box-shadow: 0 0 0 4px var(--color-focus-ring);
- border-radius: var(--radius-sm);
+ border-radius: var(--radius-md);
+}
+
+.tab__icon {
+ width: 16px;
+ height: 16px;
+ flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -1800,6 +1929,53 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  padding: var(--space-6);
 }
 
+/* practice-interest-modal / practice-module-modal are flat blocks like
+   #submit-modal (see the comment above) — same scoped padding fix. */
+#practice-interest-modal .modal,
+#practice-module-modal .modal {
+ padding: var(--space-6);
+}
+
+/* Module picker: each module is a full-width outline button styled as
+   a small selectable card (title + question count), sized and spaced
+   the same way as every other .btn-lg in the app for consistency.
+   justify-content/align-items are reset from .btn's centering flex
+   (and .btn-lg's fixed height) so the title and count sit snug
+   together instead of being centered as a block with a big gap. */
+.evaluate-module-btn.btn.btn-lg {
+ flex-direction: column;
+ align-items: flex-start;
+ justify-content: flex-start;
+ gap: 2px;
+ height: auto;
+ min-height: 52px;
+ padding: var(--space-3) var(--space-4);
+ text-align: left;
+ line-height: 1.3;
+}
+.evaluate-module-btn__title {
+ font-weight: var(--font-weight-bold);
+ font-size: var(--font-size-body);
+}
+.evaluate-module-btn__meta {
+ font-size: var(--font-size-caption);
+ color: var(--color-text-secondary);
+}
+
+/* Module grid: always 2 columns (Module 1/2 on one row, 3/4 on the
+   next, ...) down to very small phones, matching the requested
+   layout; only truly narrow screens collapse to 1 column so buttons
+   don't get crushed. */
+#practice-module-modal-list {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 320px) {
+ #practice-module-modal-list {
+  grid-template-columns: 1fr;
+ }
+}
+
 /* ==========================================================================
  BREADCRUMB
  ========================================================================== */
@@ -1945,6 +2121,30 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .segmented__option:focus-visible {
  outline: none;
  box-shadow: 0 0 0 4px var(--color-focus-ring);
+}
+
+/* ==========================================================================
+ THEME TOGGLE BUTTON — single icon-btn in the navbar that toggles
+ Light <-> Dark. Both icons are stacked on top of each other; only the
+ one matching the current theme is shown, with no animation on switch.
+ ========================================================================== */
+.theme-toggle-btn {
+ position: relative;
+ overflow: hidden;
+}
+
+.theme-toggle-btn__icon {
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ width: 20px;
+ height: 20px;
+ transform: translate(-50%, -50%);
+ display: none;
+}
+
+.theme-toggle-btn__icon.is-active {
+ display: block;
 }
 
 /* ==========================================================================
@@ -2395,7 +2595,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .homepage-grid {
  display: grid;
  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
- gap: var(--space-6);
+ gap: var(--space-4);
  align-items: stretch;
 }
 
@@ -2455,10 +2655,23 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 
 .homepage-side-col .dashboard-list {
  flex-shrink: 0;
+ /* Lets the 3 nav rows themselves grow to absorb any leftover height
+    from .dashboard-card's flex:1 stretch (see below), instead of that
+    space sitting empty underneath the whole list on desktop/tablet. */
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+}
+
+.homepage-side-col .dashboard-item {
+ /* Each row shares the extra height equally, so the block reads as
+    3 evenly "thicker" cards rather than 3 fixed-height rows plus a
+    gap at the bottom. */
+ flex: 1;
 }
 
 .homepage-side-col .quick-stats-grid {
- margin-top: var(--space-6);
+ margin-top: var(--space-4);
 }
 
 .homepage-side-col .continue-card {
@@ -2469,7 +2682,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  AI MODE CARD
  ========================================================================== */
 .ai-mode-card {
- padding: var(--space-6);
+ padding: var(--space-4);
  /* Premium, brand-tinted gradient background — a soft indigo wash fading
   into the neutral surface tone, shared with other tone-carrying cards
   site-wide. Fading to neutral (rather than another saturated hue) keeps
@@ -2752,17 +2965,20 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  gap: var(--space-4) var(--space-4);
  margin-bottom: var(--space-6);
 }
+/* Grid already spaces items via `gap`; without this, each .form-group's
+   own margin-bottom would double up with the grid gap and throw off the
+   row rhythm (extra space below row 1 vs. between other rows). */
+.config-grid .form-group { margin-bottom: 0; }
 
 /* ==========================================================================
  DASHBOARD
  ========================================================================== */
 .dashboard-card {
- padding: var(--space-6);
- /* Premium gradient: cool info→success wash, distinct from the AI Mode
-  card's indigo lean so the two homepage columns feel related but not
-  identical. */
- background-image: linear-gradient(155deg, var(--gradient-info-from) 0%, var(--gradient-success-to) 100%);
- border-color: var(--color-info-border);
+ padding: var(--space-4);
+ /* Light brand-color border to tie this card visually to the other
+    primary navigation surfaces (Live/Practice/Statistics tiles and the
+    quick-stats row below), instead of the default neutral card border. */
+ border-color: var(--color-primary-border);
 }
 
 .dashboard-card__heading {
@@ -2784,7 +3000,9 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  text-transform: uppercase;
 }
 
-/* Uniform-gap list per Phase 2 spacing rule (section 18) */
+/* Uniform-gap list: 12px standard, matching each card's own 12px
+ padding (see .dashboard-item below), so the space around a card's
+ edges reads the same as the space between cards. */
 .dashboard-list {
  display: flex;
  flex-direction: column;
@@ -2795,7 +3013,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  display: flex;
  align-items: center;
  gap: var(--space-4);
- padding: var(--space-5);
+ padding: var(--space-3);
  border-radius: var(--radius-lg);
  border: 1px solid transparent;
  text-align: left;
@@ -2860,49 +3078,44 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  transform: translateX(3px);
 }
 
-/* Tinted variants — soft gradient backgrounds using the shared
- --gradient-* token pairs (already tuned for both light and dark mode:
- pastel washes in light mode, low-opacity tints in dark mode) so each
- dashboard entry reads as its own "card" at a glance instead of a flat
- list, while staying legible/on-brand in both themes. */
+/* Simple, flat dashboard tiles: neutral card background, thin neutral
+ border. Icons all use the brand/primary color now (not per-item hues),
+ so Live/Practice/Statistics read as one consistent set. */
 .dashboard-item--history {
- background-image: linear-gradient(135deg, var(--gradient-success-from) 0%, var(--gradient-success-to) 100%);
- border-color: var(--color-success-border);
+ background-color: var(--color-surface-alt);
+ border-color: var(--color-primary-border);
 }
-.dashboard-item--history .dashboard-item__icon { background-color: var(--color-surface); color: var(--color-success); border-color: var(--color-success-border); }
-.dashboard-item--history .dashboard-item__arrow { color: var(--color-success); }
+.dashboard-item--history .dashboard-item__icon { background-color: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.dashboard-item--history .dashboard-item__arrow { color: var(--color-text-secondary); }
 
 /* Practice — replaces History in the dashboard's vertical list (the
  History page itself still exists and is still reachable from the
- "Exams" quick-stat card below), so it reuses the same success/green
- tint History had rather than introducing a fifth hue. */
+ "Exams" quick-stat card below). */
 .dashboard-item--practice {
- background-color: var(--color-success-light);
- border-color: var(--color-success-border);
+ background-color: var(--color-surface-alt);
+ border-color: var(--color-primary-border);
 }
-.dashboard-item--practice .dashboard-item__icon { background-color: var(--color-surface); color: var(--color-success); border-color: var(--color-success-border); }
-.dashboard-item--practice .dashboard-item__arrow { color: var(--color-success); }
+.dashboard-item--practice .dashboard-item__icon { background-color: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.dashboard-item--practice .dashboard-item__arrow { color: var(--color-text-secondary); }
 
-/* Statistics — light amber/orange gradient. */
+/* Statistics */
 .dashboard-item--stats {
- background-image: linear-gradient(135deg, var(--gradient-warning-from) 0%, var(--gradient-warning-to) 100%);
- border-color: var(--color-warning-border);
+ background-color: var(--color-surface-alt);
+ border-color: var(--color-primary-border);
 }
-.dashboard-item--stats .dashboard-item__icon { background-color: var(--color-surface); color: var(--color-warning-hover); border-color: var(--color-warning-border); }
-.dashboard-item--stats .dashboard-item__arrow { color: var(--color-warning-hover); }
+.dashboard-item--stats .dashboard-item__icon { background-color: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.dashboard-item--stats .dashboard-item__arrow { color: var(--color-text-secondary); }
 
-/* Live Exam — the Central Live Exam campaign entry point. Light
- red/pink gradient (unused elsewhere in the dashboard list) so "live"
- reads as urgent/broadcast rather than blending in with the calmer
- info/success/warning tiles above it, plus a pulsing dot to reinforce
- the live-broadcast metaphor at a glance. */
+/* Live Exam — the Central Live Exam campaign entry point. Icon uses
+ the same brand color as the other three now, plus the pulsing dot;
+ the tile itself is the same plain surface as the other three. */
 .dashboard-item--live {
- background-image: linear-gradient(135deg, var(--gradient-danger-from) 0%, var(--gradient-danger-to) 100%);
- border-color: var(--color-danger-border);
+ background-color: var(--color-surface-alt);
+ border-color: var(--color-primary-border);
  position: relative;
 }
-.dashboard-item--live .dashboard-item__icon { background-color: var(--color-surface); color: var(--color-danger); border-color: var(--color-danger-border); }
-.dashboard-item--live .dashboard-item__arrow { color: var(--color-danger); }
+.dashboard-item--live .dashboard-item__icon { background-color: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.dashboard-item--live .dashboard-item__arrow { color: var(--color-text-secondary); }
 .dashboard-item--live .dashboard-item__title { display: flex; align-items: center; gap: var(--space-2); }
 
 .live-pulse-dot {
@@ -3002,9 +3215,10 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .live-campaign-cards {
  display: grid;
  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
- gap: var(--space-5);
+ gap: var(--space-4);
 }
 .live-campaign-card {
+ padding: var(--space-4);
  position: relative;
  display: flex;
  flex-direction: column;
@@ -3770,8 +3984,8 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  CONTINUE / RECENT EXAM
  ========================================================================== */
 .continue-card {
- margin-top: var(--space-6);
- padding: var(--space-6);
+ margin-top: var(--space-4);
+ padding: var(--space-4);
  /* Solid warm amber wash — kept flat instead of a corner-to-corner
   gradient. The previous gradient (amber fading into a --gradient-
   neutral-to blue-black in dark mode) left a muddy dark patch in the
@@ -3836,21 +4050,27 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 /* ==========================================================================
- QUICK STATS — three individual cards (optional, secondary)
+ QUICK STATS — one merged horizontal card, three segments divided by
+ a vertical line down the middle.
  ========================================================================== */
 .quick-stats-grid {
- display: grid;
- grid-template-columns: repeat(3, 1fr);
- gap: var(--space-3);
- margin-top: var(--space-6);
+ display: flex;
+ align-items: stretch;
+ border-radius: var(--radius-md);
+ border: 1px solid var(--color-primary-border);
+ background-color: var(--color-surface-alt);
+ margin-top: var(--space-4);
+ overflow: hidden;
 }
 
 .quick-stat-card {
+ flex: 1;
  text-align: center;
  padding: var(--space-4) var(--space-2);
- border-radius: var(--radius-md);
- border: 1px solid var(--color-primary-border);
- background-color: var(--color-primary-wash);
+ border-left: 1px solid var(--color-primary-border);
+}
+.quick-stat-card:first-child {
+ border-left: none;
 }
 
 /* Now rendered as a <button>, so it needs its own reset + affordances that
@@ -3859,16 +4079,15 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .quick-stat-card--link {
  width: 100%;
  cursor: pointer;
- transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+ transition: background-color var(--transition-fast);
 }
 .quick-stat-card--link:hover {
  background-color: var(--color-primary-light);
- border-color: var(--color-primary);
 }
 .quick-stat-card--link:active { transform: scale(0.98); }
 .quick-stat-card--link:focus-visible {
  outline: 2px solid var(--color-primary);
- outline-offset: 2px;
+ outline-offset: -2px;
 }
 
 .quick-stat-card__value {
@@ -3883,31 +4102,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  color: var(--color-text-secondary);
  margin-top: var(--space-1);
 }
-
-/* Distinct light gradient per card (matching the dashboard cards'
- gradient tokens) so the three quick stats aren't identical blue
- tiles — Exams stays primary/blue, Avg. Score gets an info/purple
- tint, Questions gets a success/green tint. Value color follows suit
- for a cohesive look; hover states use the matching *-light token. */
-.quick-stat-card--exams {
- background-image: linear-gradient(135deg, var(--gradient-primary-from) 0%, var(--gradient-primary-to) 100%);
- border-color: var(--color-primary-border);
-}
-.quick-stat-card--exams:hover { background-color: var(--color-primary-light); }
-
-.quick-stat-card--avg {
- background-image: linear-gradient(135deg, var(--gradient-info-from) 0%, var(--gradient-info-to) 100%);
- border-color: var(--color-info-border);
-}
-.quick-stat-card--avg .quick-stat-card__value { color: var(--color-info); }
-.quick-stat-card--avg:hover { background-color: var(--color-info-light); border-color: var(--color-info); }
-
-.quick-stat-card--questions {
- background-image: linear-gradient(135deg, var(--gradient-success-from) 0%, var(--gradient-success-to) 100%);
- border-color: var(--color-success-border);
-}
-.quick-stat-card--questions .quick-stat-card__value { color: var(--color-success); }
-.quick-stat-card--questions:hover { background-color: var(--color-success-light); border-color: var(--color-success); }
 
 /* ==========================================================================
  SUB-PAGES — Exams / History / Statistics (reached from the dashboard's
@@ -3958,17 +4152,19 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  font-weight: var(--font-weight-bold);
  color: var(--color-primary);
 }
-/* Mobile: keep just the logo mark (no "Examcamp" wordmark, no page-name
- label) so the Live Exam / History / Statistics headers all render
- identically — logo on the left, icon-only actions on the right —
- at the same breakpoint the main site header already hides its own
- wordmark at (see .site-header__brand span above). */
+/* Mobile: keep the logo + "Examcamp" wordmark (matches the main site
+ header, which also keeps its wordmark on mobile — see
+ .site-header__brand span above); only the page-name label
+ (e.g. "Practice") is dropped so the row doesn't crowd the
+ icon-only actions on the right. Home/Back/Admin icon buttons on the
+ right also shrink to match the 36×36 logo mark. */
 @media (max-width: 640px) {
- .subpage-header__title--brand span {
-  display: none;
- }
  .subpage-header__page-label {
   display: none;
+ }
+ .subpage-header__right .icon-btn {
+  width: 36px;
+  height: 36px;
  }
 }
 .subpage-main {
@@ -3995,6 +4191,26 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  font-size: var(--font-size-small);
  color: var(--color-text-secondary);
  margin-top: var(--space-1);
+}
+
+/* Live Exam quick-stats card: Central Merit Rank / Exams Given / Course
+ Avg. merged into one card (was 3 separate tinted cards) with a thin
+ vertical divider between each stat. */
+.live-summary-card {
+ display: flex;
+ align-items: stretch;
+ padding: var(--space-3);
+}
+.live-summary-card__stat {
+ flex: 1;
+ min-width: 0;
+ text-align: center;
+}
+.live-summary-card__divider {
+ width: 1px;
+ flex-shrink: 0;
+ background-color: var(--color-border);
+ margin: 0 var(--space-2);
 }
 
 /* ==========================================================================
@@ -4118,6 +4334,31 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  flex-direction: column;
  gap: var(--space-3);
 }
+.pp-subject-list[hidden] { display: none; }
+.pp-subjects-heading {
+ display: flex;
+ align-items: center;
+ gap: var(--space-3);
+ margin-bottom: var(--space-5);
+}
+.pp-subjects-heading:empty { display: none; }
+.pp-subjects-heading__icon {
+ flex-shrink: 0;
+ font-size: 1.7rem;
+ line-height: 1;
+}
+.pp-subjects-heading__icon--img {
+ width: 36px;
+ height: 36px;
+ object-fit: cover;
+ border-radius: var(--radius-md);
+}
+.pp-subjects-heading__name {
+ font-size: var(--font-size-h4);
+ font-weight: var(--font-weight-bold, 700);
+ color: var(--color-text-primary);
+ line-height: var(--line-height-tight);
+}
 .pp-subject {
  padding: 0;
  overflow: hidden;
@@ -4146,7 +4387,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  font-size: var(--font-size-body);
  font-weight: var(--font-weight-bold, 700);
  line-height: var(--line-height-tight);
- color: #ffffff;
+ color: var(--color-primary);
  white-space: nowrap;
  overflow: hidden;
  text-overflow: ellipsis;
@@ -4230,6 +4471,99 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  padding: var(--space-3);
  font-size: var(--font-size-small);
  color: var(--color-text-secondary);
+}
+
+/* ---------- Practice Panel: category grid (top-level screen,
+   বিসিএস প্রিলিমিনারী / ব্যাংক প্রিলিমিনারী / ...) ---------- */
+.pp-category-list {
+ display: grid;
+ grid-template-columns: repeat(2, 1fr);
+ gap: var(--space-3);
+}
+.pp-category-list[hidden] { display: none; }
+.pp-category-card {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ gap: var(--space-2);
+ padding: var(--space-4);
+ border: 1px solid var(--color-primary-border);
+ border-radius: var(--radius-lg);
+ background-color: var(--color-surface);
+ text-align: center;
+ transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+.pp-category-card:hover {
+ border-color: var(--color-primary);
+ background: var(--color-hover-bg);
+ transform: translateY(-2px);
+}
+.pp-category-card__icon {
+ font-size: 2rem;
+ line-height: 1;
+}
+.pp-category-card__icon--img {
+ width: 40px;
+ height: 40px;
+ object-fit: cover;
+ border-radius: var(--radius-md);
+}
+.pp-category-card__name {
+ font-weight: var(--font-weight-bold, 700);
+ color: var(--color-primary);
+ line-height: var(--line-height-tight);
+}
+.pp-category-card__desc {
+ font-size: var(--font-size-caption);
+ color: var(--color-text-muted);
+ line-height: 1.3;
+}
+@media (min-width: 640px) {
+  .pp-category-list { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---------- Practice Admin: Categories tab (icon upload + preview) ---------- */
+.pa-category-icon-row {
+ display: flex;
+ align-items: center;
+ gap: var(--space-4);
+ margin-bottom: var(--space-4);
+}
+.pa-category-icon-row__actions {
+ display: flex;
+ align-items: center;
+ gap: var(--space-2);
+ flex-wrap: wrap;
+}
+.pa-category-icon-preview {
+ width: 56px;
+ height: 56px;
+ border-radius: var(--radius-md);
+ object-fit: cover;
+ flex-shrink: 0;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 1.8rem;
+ background-color: var(--color-surface-alt, var(--color-surface));
+ border: 1px solid var(--color-border);
+}
+.pa-category-icon-preview--empty {
+ opacity: 0.6;
+}
+.pa-category-icon-preview--sm {
+ width: 32px;
+ height: 32px;
+ font-size: 1.2rem;
+}
+.pa-category-icon-inline {
+ width: 16px;
+ height: 16px;
+ object-fit: cover;
+ border-radius: var(--radius-sm);
+ vertical-align: -3px;
+ margin-right: 2px;
 }
 
 /* ---------- Practice Mode — same layout family as Exam Mode
@@ -4466,24 +4800,52 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  .record-row__score-label { display: none; }
 }
 
+/* ---------- Tab panels (site-wide) ---------- */
+/* Every "<tabs> followed by a panel that swaps on tab-click" section
+   (Live Exam, Admin, Practice Admin, History, Statistics) used the same
+   inline style="margin-top: var(--space-6)" on each panel, repeated
+   across ~14 sections. Centralizing it here means the gap between the
+   tab bar and whichever panel is showing stays a single source of truth
+   instead of 14 hand-typed copies that can drift out of sync. The one
+   documented exception (#pa-admin-panel-agq, whose first child is
+   already a tab bar) overrides this below via its existing !important. */
+.live-tab-panel,
+.admin-tab-panel,
+.history-tab-panel,
+.stats-tab-panel {
+ margin-top: var(--space-6);
+}
 /* ---------- Statistics overview page ---------- */
+/* Vertical rhythm for the tab panel is owned here, in one place, rather
+   than scattered across inline margin-top/margin-bottom on each card —
+   so every gap in the stack (tabs -> stats grid -> BCS card -> subject
+   breakdown -> recent results) stays a single, consistent space-6. */
+.stats-tab-panel > * + * { margin-top: var(--space-6); }
+/* Single unified card holding all three stat segments, separated by
+   dividers — a vertical rule between segments side-by-side on wider
+   screens, and a horizontal rule between stacked segments on mobile. */
 .stats-overview-grid {
- display: grid;
- grid-template-columns: repeat(3, 1fr);
- gap: var(--space-4);
- margin-bottom: var(--space-8);
+ display: flex;
+ background-image: linear-gradient(155deg, var(--gradient-neutral-from) 0%, var(--gradient-primary-to) 100%);
+ border: 1px solid var(--color-primary-border);
+ border-radius: var(--radius-lg);
+ overflow: hidden;
 }
 .stats-overview-card {
- padding: var(--space-5);
- background-image: linear-gradient(155deg, var(--gradient-neutral-from) 0%, var(--gradient-primary-to) 100%);
+ flex: 1;
+ min-width: 0;
+ padding: var(--space-6);
+ position: relative;
 }
-/* Rotate through the palette so each stat tile in the grid feels distinct. */
-.stats-overview-grid .stats-overview-card:nth-child(6n+1) { background-image: linear-gradient(155deg, var(--gradient-primary-from) 0%, var(--gradient-neutral-to) 100%); border-color: var(--color-primary-border); }
-.stats-overview-grid .stats-overview-card:nth-child(6n+2) { background-image: linear-gradient(155deg, var(--gradient-info-from) 0%, var(--gradient-neutral-to) 100%); border-color: var(--color-info-border); }
-.stats-overview-grid .stats-overview-card:nth-child(6n+3) { background-image: linear-gradient(155deg, var(--gradient-success-from) 0%, var(--gradient-neutral-to) 100%); border-color: var(--color-success-border); }
-.stats-overview-grid .stats-overview-card:nth-child(6n+4) { background-image: linear-gradient(155deg, var(--gradient-warning-from) 0%, var(--gradient-neutral-to) 100%); border-color: var(--color-warning-border); }
-.stats-overview-grid .stats-overview-card:nth-child(6n+5) { background-image: linear-gradient(155deg, var(--gradient-danger-from) 0%, var(--gradient-neutral-to) 100%); border-color: var(--color-danger-border); }
-.stats-overview-grid .stats-overview-card:nth-child(6n+6) { background-image: linear-gradient(155deg, var(--gradient-info-from) 0%, var(--gradient-success-to) 100%); border-color: var(--color-info-border); }
+.stats-overview-card + .stats-overview-card::before {
+ content: "";
+ position: absolute;
+ left: 0;
+ top: var(--space-4);
+ bottom: var(--space-4);
+ width: 1px;
+ background-color: var(--color-primary-border);
+}
 .stats-overview-card__label {
  font-size: var(--font-size-small);
  color: var(--color-text-secondary);
@@ -4505,10 +4867,12 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  display: flex;
  align-items: center;
  gap: var(--space-4);
- padding: var(--space-3) 0;
- border-bottom: 1px solid var(--color-border);
+ padding: var(--space-3) var(--space-4);
+ border: 1px dashed var(--color-border);
+ border-radius: var(--radius-md);
+ margin-bottom: var(--space-2);
 }
-.subject-breakdown-row:last-child { border-bottom: none; }
+.subject-breakdown-row:last-child { margin-bottom: 0; }
 .subject-breakdown-row__name {
  width: 140px;
  flex-shrink: 0;
@@ -4542,7 +4906,87 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 @media (max-width: 640px) {
- .stats-overview-grid { grid-template-columns: 1fr; }
+ .stats-overview-grid { display: none; }
+ .stats-overview-card + .stats-overview-card::before {
+  left: var(--space-4);
+  right: var(--space-4);
+  top: 0;
+  bottom: auto;
+  width: auto;
+  height: 1px;
+ }
+}
+
+/* ---------- Statistics page: BCS Preliminary card (pie chart + per-topic
+   bars). Reuses Practice Panel's practiceState.subjects/progress so this
+   breaks down real Practice Panel activity by subject/topic. ---------- */
+.bcs-prelim-layout { display: flex; align-items: flex-start; gap: var(--space-8); flex-wrap: wrap; }
+.bcs-prelim-pie-wrap { position: relative; width: 200px; height: 200px; flex-shrink: 0; margin: 0 auto; }
+.bcs-prelim-pie { width: 100%; height: 100%; border-radius: 50%; box-shadow: var(--shadow-sm); }
+.bcs-prelim-pie-center {
+ position: absolute; inset: 22%; border-radius: 50%;
+ background-color: var(--color-surface); box-shadow: var(--shadow-xs);
+ display: flex; flex-direction: column; align-items: center; justify-content: center;
+ text-align: center; padding: var(--space-2);
+}
+.bcs-prelim-pie-center__value { font-size: var(--font-size-h3); font-weight: var(--font-weight-bold); color: var(--color-text-primary); line-height: 1.1; }
+.bcs-prelim-pie-center__label { font-size: 0.65rem; color: var(--color-text-muted); margin-top: var(--space-1); line-height: 1.2; }
+
+.bcs-prelim-legend { flex: 1; min-width: 220px; display: flex; flex-direction: column; }
+.bcs-prelim-legend-row {
+ display: flex; align-items: center; gap: var(--space-3); width: 100%;
+ padding: var(--space-2) var(--space-1); border: none; border-bottom: 1px solid var(--color-border);
+ background: transparent; cursor: pointer; font-family: inherit; text-align: left;
+ border-radius: var(--radius-sm); transition: background-color var(--transition-fast);
+}
+.bcs-prelim-legend-row:hover { background-color: var(--color-hover-bg); }
+.bcs-prelim-legend-row:last-of-type { border-bottom: none; }
+.bcs-prelim-legend-row--empty { opacity: 0.5; }
+.bcs-prelim-legend-row__swatch { width: 12px; height: 12px; border-radius: var(--radius-pill); flex-shrink: 0; }
+.bcs-prelim-legend-row__name {
+ flex: 1; font-size: var(--font-size-small); color: var(--color-text-primary);
+ font-weight: var(--font-weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bcs-prelim-legend-row__pct { font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); flex-shrink: 0; }
+.bcs-prelim-legend-row__chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--color-text-muted); transition: transform var(--transition-fast); }
+.bcs-prelim-legend-row[aria-expanded="true"] .bcs-prelim-legend-row__chevron { transform: rotate(180deg); }
+
+.bcs-prelim-topic-panel {
+ padding: 0 var(--space-1) 0; margin-bottom: 0; border-bottom: 1px solid var(--color-border);
+ max-height: 0; overflow: hidden; opacity: 0;
+ transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease, padding 350ms ease, margin 350ms ease;
+}
+.bcs-prelim-topic-panel.is-open {
+ max-height: 340px; opacity: 1; padding: var(--space-4) var(--space-1) var(--space-2); margin-bottom: var(--space-2);
+}
+.bcs-prelim-topic-heading { font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); margin-bottom: var(--space-4); }
+.bcs-prelim-topic-empty { font-size: var(--font-size-small); color: var(--color-text-muted); text-align: center; padding: var(--space-4) 0; }
+
+.bcs-prelim-bar-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.bcs-prelim-bar-chart { display: flex; flex-direction: column; }
+.bcs-prelim-bar-row {
+ display: flex; align-items: flex-end; gap: var(--space-4);
+ min-height: 140px; padding: 0 var(--space-1);
+ border-bottom: 2px solid var(--color-text-muted, #9ca3af);
+}
+.bcs-prelim-label-row { display: flex; gap: var(--space-4); padding: 0 var(--space-1) var(--space-2); }
+.bcs-prelim-bar { display: flex; flex-direction: column; align-items: center; width: 56px; flex-shrink: 0; }
+.bcs-prelim-bar__count { font-size: var(--font-size-caption); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.bcs-prelim-bar__track-zone {
+ height: 110px; display: flex; align-items: flex-end; justify-content: center;
+}
+.bcs-prelim-bar__track {
+ width: 28px; height: 100%; display: flex; align-items: flex-end;
+ background-color: var(--color-hover-bg); border-radius: var(--radius-sm) var(--radius-sm) 0 0; overflow: hidden;
+}
+.bcs-prelim-bar__fill { width: 100%; height: 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; transition: height 600ms cubic-bezier(0.4, 0, 0.2, 1); }
+.bcs-prelim-bar--empty .bcs-prelim-bar__track { opacity: 0.5; }
+.bcs-prelim-bar__label { width: 56px; flex-shrink: 0; font-size: 0.65rem; color: var(--color-text-muted); text-align: center; line-height: 1.25; margin-top: var(--space-2); }
+
+@media (max-width: 640px) {
+ .bcs-prelim-layout { flex-direction: column; align-items: center; gap: var(--space-6); }
+ .bcs-prelim-legend { width: 100%; min-width: 0; }
+ .bcs-prelim-pie-wrap { width: 170px; height: 170px; }
 }
 
 /* ==========================================================================
@@ -4610,17 +5054,28 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  natural page scroll as every other page, so .site-footer follows the
  content instead of pinning to the bottom of the viewport.
 
- .page-main uses justify-content: flex-start (not center) so the grid
- always starts flush with the top: on tall screens the extra room just
- becomes blank space below the cards, and on short screens the page
- simply scrolls — nothing is ever clipped or pushed off the top edge
- unreachably, which center-based approaches are prone to since scroll
- position can't go negative. */
+ .page-main uses justify-content: safe center: on tall screens the
+ leftover room is split evenly above and below the grid instead of
+ all sitting below it, so the two cards read as vertically centered
+ in the viewport. The "safe" keyword is what keeps this from
+ regressing on short screens — plain `center` can push content above
+ the visible top with no way to scroll up to it (scroll position
+ can't go negative); `safe center` falls back to flex-start alignment
+ automatically whenever the content doesn't fully fit, so nothing is
+ ever clipped or pushed off-screen unreachably. */
 @media (min-width: 1025px) {
  body[data-page="home"] .page-main {
   display: flex;
   flex-direction: column;
+  /* Plain flex-start first as the fallback for browsers that don't
+     understand the `safe` keyword (notably older Safari) — without
+     this line those browsers would drop the whole justify-content
+     declaration below and fall through to the default (flex-start
+     anyway), but declaring it explicitly here makes that safety net
+     obvious rather than incidental. The `safe center` rule right
+     after overrides it in every browser that supports the keyword. */
   justify-content: flex-start;
+  justify-content: safe center;
   padding-block: var(--space-6);
  }
 
@@ -4630,7 +5085,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 
  body[data-page="home"] .ai-mode-card,
  body[data-page="home"] .dashboard-card {
-  padding: var(--space-5);
+  padding: var(--space-4);
  }
 
  body[data-page="home"] .ai-mode-card textarea.form-control {
@@ -4640,7 +5095,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  }
 
  body[data-page="home"] .homepage-grid {
-  gap: var(--space-5);
+  gap: var(--space-4);
  }
 
  body[data-page="home"] .ai-mode-card__spacer {
@@ -4667,26 +5122,31 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  }
 
  .homepage-side-col .quick-stats-grid {
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
  }
 }
 
 @media (max-width: 640px) {
+ /* Questions+Difficulty and Language+Time pair up two-per-row on mobile;
+    Subject and Topic (3rd/4th form-group in the markup) stay full-width
+    since they're text inputs that need the room. */
  .config-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
+ }
+
+ .config-grid .form-group:nth-child(5),
+ .config-grid .form-group:nth-child(6) {
+  grid-column: 1 / -1;
  }
 
  .capture-upload-row {
   grid-template-columns: 1fr 1fr;
  }
 
- .ai-mode-card,
- .dashboard-card {
-  padding: var(--space-5);
- }
-
- .quick-stats-grid {
-  gap: var(--space-2);
+ body[data-page="home"] .ai-mode-card,
+ body[data-page="home"] .dashboard-card,
+ body[data-page="home"] .continue-card {
+  padding: var(--space-4);
  }
 
  .quick-stat-card {
@@ -4697,12 +5157,12 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   font-size: var(--font-size-h4);
  }
 
- .dashboard-item {
-  padding: var(--space-4);
- }
-
  .dashboard-item__title {
   font-size: var(--font-size-body);
+ }
+
+ .live-summary-card .subpage-summary__value {
+  font-size: var(--font-size-h3);
  }
 }
 
@@ -4764,8 +5224,13 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   gap: var(--space-2);
  }
 
- .site-header__brand span {
-  display: none;
+ .site-header__brand span[data-i18n="brand.name"] {
+  display: inline;
+ }
+
+ .site-header__brand {
+  gap: var(--space-1);
+  font-size: var(--font-size-body);
  }
 
  .site-header__actions {
@@ -4779,6 +5244,22 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 
  .segmented__option {
   padding: 0 var(--space-2);
+ }
+
+ /* Navbar action icons (theme toggle, settings) and the Google sign-in
+  button shrink to match the 36×36 logo mark, instead of the desktop
+  44px icon-btn / pill-shaped sign-in button. */
+ .site-header__actions .icon-btn,
+ .site-header__actions .theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+ }
+
+ .site-header__actions #auth-signin-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
  }
 
  .grid-2,
@@ -4822,6 +5303,22 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
   max-height: 100%;
   border-radius: 0;
   align-self: stretch;
+ }
+
+ /* Practice interest/module popups: keep the normal centered dialog
+    style on mobile too, instead of the bottom-sheet default every
+    other .modal gets in this breakpoint. */
+ #practice-interest-modal.modal-overlay,
+ #practice-module-modal.modal-overlay {
+  align-items: center;
+  padding: var(--space-4);
+ }
+
+ #practice-interest-modal .modal,
+ #practice-module-modal .modal {
+  max-width: 480px;
+  border-radius: var(--radius-lg);
+  align-self: center;
  }
 
  .tabs {
@@ -5160,10 +5657,22 @@ body[data-page="practice-mode"] {
  gap: var(--space-4);
  height: var(--header-height);
 }
+/* Logo + "Examcamp" wordmark, added to the left of the page's own
+ "Results & Analytics" meta so Statistics matches the Live Exam /
+ Practice hub headers (see .subpage-header__title--brand). */
+.stats-navbar__brand { flex-shrink: 0; margin-right: var(--space-2); }
 .stats-navbar__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .stats-navbar__meta .exam-meta__subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats-navbar__actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 .stats-navbar__actions .icon-btn { border: 1px solid var(--color-border); }
+@media (max-width: 640px) {
+ /* Home/Print icon buttons shrink to match the 36×36 logo mark added
+  to this header (see .stats-navbar__brand above). */
+ .stats-navbar__actions .icon-btn {
+  width: 36px;
+  height: 36px;
+ }
+}
 
 /* ---------- Statistics page: layout ---------- */
 .stats-page { max-width: 900px; margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-12); }
@@ -5196,7 +5705,7 @@ body[data-page="practice-mode"] {
  display: flex;
  align-items: center;
  gap: var(--space-8);
- padding: var(--space-8);
+ padding: var(--space-4);
  border-radius: var(--radius-lg);
  border: 1px solid var(--color-primary-border);
  background-color: var(--color-surface);
@@ -5224,7 +5733,7 @@ body[data-page="practice-mode"] {
  Options render as a borderless 2x2 grid; correct/selected-wrong are
  marked with a small colored tick/cross badge instead of a bordered
  row or text tag, keeping the review compact and scannable. */
-.review-question { padding: var(--space-5); margin-bottom: var(--space-4); }
+.review-question { padding: var(--space-4); margin-bottom: var(--space-4); }
 .review-question__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
 .review-question__num { flex-shrink: 0; font-size: var(--font-size-body); font-weight: var(--font-weight-bold); color: var(--color-primary); line-height: 1.6; margin-right: var(--space-2); }
 .review-question__text { font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); flex: 1; }
@@ -6132,10 +6641,13 @@ body[data-page="practice-mode"] {
  .mcqp-modal-overlay {
   position: fixed; inset: 0; background: rgba(17, 24, 39, 0.5); z-index: 2000;
   display: flex; align-items: center; justify-content: center; padding: var(--space-4);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
  }
  .mcqp-modal {
   background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
   width: 100%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--color-primary-border);
  }
  .mcqp-modal__head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
  .mcqp-modal__head h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
@@ -6159,10 +6671,21 @@ body[data-page="practice-mode"] {
  .mcqp-modal__foot .btn { flex: 1; justify-content: center; }
  .mcqp-ai-textarea {
   width: 100%; min-height: 90px; resize: vertical; font-family: var(--font-family-base); font-size: var(--font-size-body);
-  padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-input-bg);
+  padding: 10px 12px; border: 1px solid var(--color-primary-border); border-radius: var(--radius-sm); background: var(--color-input-bg);
   color: var(--color-text-primary);
  }
  .mcqp-ai-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-focus-ring); }
+ /* Inputs/selects inside this modal (count, difficulty, on-generate)
+    reuse the app-wide .form-control look but with the same light
+    brand-color border as the textarea above, so every field in the
+    modal reads as one consistent, on-brand form instead of mixing
+    the neutral border used elsewhere in the app. */
+ .mcqp-modal .form-control {
+  border-color: var(--color-primary-border);
+ }
+ .mcqp-modal .form-control:focus {
+  border-color: var(--color-primary);
+ }
  .mcqp-ai-row { display: flex; gap: var(--space-3); }
  .mcqp-field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
  .mcqp-field label { font-size: var(--font-size-label); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
@@ -6388,3 +6911,1087 @@ body[data-page="practice-mode"] {
    width: 100%;
   }
  }
+
+/* ==========================================================================
+   AGQ (Auto Generation Question) — Practice Admin's third tab. Scoped
+   entirely under .agq-embed so its component classes (.card, .btn,
+   .toggle, .chip, etc.) never leak onto or collide with the site's own
+   same-named classes used elsewhere. AGQ's own :root / dark-theme token
+   blocks were removed here — this panel reads the site's own
+   var(--color-*) tokens directly, so it already follows the site's
+   light/dark mode with no extra CSS needed.
+   ========================================================================== */
+/* ==========================================================================
+   DESIGN TOKENS — mirrors ExamCamp's existing styles.css palette so this
+   panel drops into the real admin shell without looking bolted-on.
+   ========================================================================== */
+
+
+.agq-embed * { box-sizing: border-box; }
+.agq-embed html, .agq-embed body {
+  margin: 0; padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+.agq-embed body { padding-bottom: 64px; }
+
+.agq-embed button { font-family: inherit; cursor: pointer; }
+.agq-embed input, .agq-embed select { font-family: inherit; }
+
+/* ---------- Top bar (mirrors ExamCamp's real .subpage-header) ---------- */
+.agq-embed .agq-topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.agq-embed .agq-topbar-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: center;
+  gap: 12px;
+  height: 72px;
+  padding: 0 24px;
+}
+.agq-embed .agq-brand {
+  display: flex; align-items: center; gap: 9px;
+  color: var(--color-primary);
+  min-width: 0;
+  text-decoration: none;
+}
+.agq-embed .agq-brand-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #fff;
+}
+.agq-embed .agq-brand-icon svg { width: 17px; height: 17px; }
+.agq-embed .agq-brand-text {
+  font-size: 1.05rem; font-weight: 900; line-height: 1.15;
+  white-space: nowrap;
+  display: flex; flex-direction: column;
+}
+.agq-embed .agq-brand-text .sub { font-size: 0.72rem; font-weight: 700; color: var(--color-text-muted); }
+.agq-embed .agq-topbar-right {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: auto;
+}
+/* Matches the site's real .icon-btn look exactly */
+.agq-embed .icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; box-sizing: border-box;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary-border);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  flex-shrink: 0;
+}
+.agq-embed .icon-btn:hover { background-color: var(--color-primary-light); border-color: var(--color-primary); }
+.agq-embed .icon-btn svg { width: 20px; height: 20px; }
+.agq-embed .theme-toggle-btn {
+  width: 36px; height: 36px; border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-secondary);
+  transition: background .15s ease;
+  flex-shrink: 0;
+}
+.agq-embed .theme-toggle-btn:hover { background: var(--color-hover-bg); }
+@media (max-width: 640px) {
+  .agq-embed .agq-brand-text .sub { display: none; }
+  .agq-embed .agq-topbar-inner { height: 60px; padding: 0 14px; gap: 8px; }
+  .agq-embed .agq-brand-text { font-size: 0.98rem; }
+  .agq-embed .agq-brand-icon { width: 28px; height: 28px; }
+  .agq-embed .icon-btn { width: 38px; height: 38px; }
+  .agq-embed .icon-btn svg { width: 18px; height: 18px; }
+  .agq-embed .theme-toggle-btn { width: 33px; height: 33px; }
+  .agq-embed .agq-topbar-right { gap: 6px; }
+}
+@media (max-width: 400px) {
+  .agq-embed .agq-brand-text { font-size: 0.9rem; }
+}
+
+/* ---------- Container / tabs ---------- */
+/* No extra inline padding here: .agq-container already lives inside the
+   Practice Admin shell's own .container (see the <main class="subpage-main">
+   > .container wrapper in the HTML), which already applies the site's
+   padding-inline. Adding side padding again here double-padded the AGQ
+   panel versus the Subjects/Questions tabs next to it. Only vertical
+   spacing belongs here. */
+/* No extra top padding here either: the outer .admin-tab-panel section
+   (see the inline style="margin-top: var(--space-6)" in the HTML) already
+   provides the same top gap the Subjects/Questions tabs get, so adding
+   padding-top here just stacked a second gap on top of it. */
+.agq-embed .agq-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.agq-embed .agq-tabs {
+  display: flex; gap: 6px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 5px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Join the outer Subjects/Questions/AGQ pill bar directly to this inner
+   নিয়ন্ত্রণ/রিভিউ কিউ/হিস্টোরি pill bar when AGQ is the active outer tab,
+   so the two read as one continuous grouped control instead of two
+   separate pills with a gap between them. #pa-admin-panel-agq is the
+   only .admin-tab-panel whose first child is another tab bar (every
+   other panel's content is cards/forms, which still want the normal
+   var(--space-6) breathing room from the outer .tabs above them), so
+   this stays scoped to that one section rather than touching the
+   shared .admin-tab-panel spacing rule.
+   Visual seam: the outer bar's bottom corners square off and its
+   bottom border is dropped; the inner bar's top corners square off
+   and its own top border sits flush against the outer bar's remaining
+   border, reading as a single divider line rather than a hairline
+   gap or a doubled-up border. */
+#pa-admin-panel-agq { margin-top: 0 !important; }
+/* .pa-tabs--joined is toggled by activatePracticeAdminTab() below (not
+   relying on :has() alone, since this panel loads inside embedded
+   WebViews of uncertain CSS support) whenever the AGQ tab is active. */
+.tabs.pa-tabs--joined {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+#pa-admin-panel-agq .agq-tabs {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: 0;
+}
+.agq-embed .agq-tab {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  border: none; background: transparent;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+  min-width: fit-content;
+}
+.agq-embed .agq-tab svg { width: 17px; height: 17px; flex-shrink: 0; }
+.agq-embed .agq-tab.active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.agq-embed .agq-tab .tab-count {
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 0.68rem; font-weight: 900;
+  min-width: 18px; height: 18px;
+  border-radius: var(--radius-pill);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+.agq-embed .agq-tab:not(.active) .tab-count { background: var(--color-text-muted); }
+@media (max-width: 480px) {
+  .agq-embed .agq-tab { font-size: 0.82rem; padding: 9px 10px; gap: 5px; }
+  .agq-embed .agq-tab svg { width: 15px; height: 15px; }
+}
+@media (max-width: 380px) {
+  .agq-embed .agq-tab { font-size: 0.76rem; padding: 8px 7px; }
+}
+
+.agq-embed .agq-panel { display: none; animation: fadeIn .2s ease; }
+.agq-embed .agq-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---------- Card shell ---------- */
+.agq-embed .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.agq-embed .card-body { padding: 16px var(--space-3); }
+.agq-embed .card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px; flex-wrap: wrap;
+}
+.agq-embed .card-header h3 { margin: 0; font-size: 1.02rem; font-weight: 900; }
+.agq-embed .card-header p { margin: 2px 0 0; font-size: 0.82rem; color: var(--color-text-muted); }
+/* Some card headers (e.g. Subject Order) pair a short title with a short
+   action button — keep those in one row even on mobile instead of the
+   column stack other (longer-button) card headers fall back to. */
+.agq-embed .card-header--row { flex-wrap: nowrap; }
+.agq-embed .card-header--row > div:first-child { min-width: 0; }
+.agq-embed .card-header--row .btn { flex-shrink: 0; }
+
+/* ---------- Master switch ---------- */
+/* Auto Generation + প্রগ্রেস ওভারভিউ live in one card
+   (.control-summary-card, a plain .card — see markup) rather than
+   two stacked cards. control-summary-divider draws the internal
+   seam between the two sections: a top border plus some breathing
+   room, reusing .card-header's existing padding/layout rather than
+   a whole new rule. */
+.agq-embed .master-switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 18px var(--space-3); flex-wrap: wrap;
+}
+.agq-embed .control-summary-divider {
+  border-top: 1px solid var(--color-border);
+  border-bottom: none;
+  margin-top: 4px;
+}
+.agq-embed .master-switch-info { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1 1 auto; }
+.agq-embed .master-switch-info strong { font-size: 1rem; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agq-embed .status-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(156, 163, 175, 0.15);
+  transition: all .2s ease;
+}
+.agq-embed .status-dot.on {
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18); }
+  50% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0.1); }
+}
+
+/* iOS-style toggle */
+.agq-embed .toggle {
+  position: relative; display: inline-block;
+  width: 52px; height: 30px; flex-shrink: 0;
+}
+.agq-embed .toggle input { opacity: 0; width: 0; height: 0; }
+.agq-embed .toggle-track {
+  position: absolute; inset: 0; cursor: pointer;
+  background: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  transition: background .2s ease;
+}
+.agq-embed .toggle-track::before {
+  content: ""; position: absolute;
+  width: 24px; height: 24px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease;
+}
+.agq-embed .toggle input:checked + .toggle-track { background: var(--color-success); }
+.agq-embed .toggle input:checked + .toggle-track::before { transform: translateX(22px); }
+.agq-embed .toggle input:focus-visible + .toggle-track { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
+/* ---------- Progress / cursor visualization ---------- */
+.agq-embed .progress-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; padding: 0 var(--space-3) 16px;
+}
+.agq-embed .progress-stat {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px var(--space-3);
+}
+.agq-embed .progress-stat .label { font-size: 0.72rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+.agq-embed .progress-stat .value { font-size: 1.15rem; font-weight: 900; margin-top: 3px; }
+.agq-embed .progress-stat .value small { font-size: 0.7rem; font-weight: 700; color: var(--color-text-muted); }
+
+/* Overall bank progress bar */
+.agq-embed .bank-progress-wrap { padding: 0 var(--space-3) 16px; }
+.agq-embed .bank-progress-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 6px;
+}
+.agq-embed .bank-progress-labels strong { color: var(--color-text-primary); }
+.agq-embed .bank-progress-track {
+  height: 10px; border-radius: var(--radius-pill);
+  background: var(--color-hover-bg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.agq-embed .bank-progress-fill {
+  height: 100%; border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-primary), #8b5cf6);
+  transition: width .4s ease;
+}
+
+/* ---------- Form controls ---------- */
+.agq-embed .field-group { padding: 4px var(--space-3) var(--space-3); }
+.agq-embed .topic-target-list { padding: 0 var(--space-3) var(--space-4); }
+.agq-embed .field-row { margin-bottom: 16px; }
+.agq-embed .field-row:last-child { margin-bottom: 0; }
+.agq-embed .field-row > label {
+  display: block; font-size: 0.85rem; font-weight: 700;
+  color: var(--color-text-secondary); margin-bottom: 6px;
+}
+.agq-embed .field-hint { font-size: 0.76rem; color: var(--color-text-muted); margin-top: 5px; }
+/* Current-position indicator under the টপিক-ভিত্তিক টার্গেট সাবজেক্ট/টপিক
+   selects — shown only when the selected option is the one Auto
+   Generation is currently producing questions for. Colored (not muted
+   like a normal field-hint) so it reads as a live status, not a tip. */
+.agq-embed .gen-current-hint { color: var(--color-primary); font-weight: 700; }
+.agq-embed .gen-locked-hint {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--color-primary); font-weight: 700;
+}
+.agq-embed .gen-locked-hint svg { flex-shrink: 0; }
+
+.agq-embed .stepper {
+  display: flex; align-items: center; gap: 2px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  width: fit-content;
+  background: var(--color-input-bg);
+  padding: 3px;
+}
+.agq-embed .stepper button {
+  width: 34px; height: 34px;
+  border: none; background: transparent;
+  border-radius: calc(var(--radius-md) - 4px);
+  color: var(--color-text-secondary);
+  font-size: 1.15rem; font-weight: 700;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s ease, color .15s ease;
+}
+.agq-embed .stepper button:hover { background: var(--color-hover-bg); color: var(--color-text-primary); }
+.agq-embed .stepper button:active { background: var(--color-primary-light); color: var(--color-primary); }
+.agq-embed .stepper .stepper-value {
+  min-width: 46px; text-align: center;
+  font-size: 0.98rem; font-weight: 800;
+  height: 34px; line-height: 34px;
+  padding: 0 4px;
+}
+
+/* Stepper + "+ টার্গেট সেট" button sit side by side at every width —
+   the button's short label keeps the row compact enough that even
+   phones (see the 640px query below) don't need to stack it. The
+   button stretches to fill the remaining space so the whole row
+   matches the full width of the selects above it, instead of both
+   controls sitting content-sized and stranded on the left. */
+.agq-embed .topic-target-controls {
+  display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
+}
+.agq-embed .topic-target-controls .stepper { flex: 0 0 auto; }
+.agq-embed .topic-target-controls .btn { flex: 1 1 auto; min-width: 0; white-space: nowrap; justify-content: center; }
+
+.agq-embed select.select-input {
+  width: 100%; max-width: 320px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font-size: 0.92rem; font-weight: 600;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.agq-embed select.select-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-focus-ring); }
+/* Inside a two-column field-row--pair grid, each select should fill its
+   own column rather than staying capped at the 320px standalone width —
+   otherwise the second column's dropdown looks stranded in empty space. */
+.agq-embed .field-row--pair select.select-input,
+.agq-embed .field-row--triple select.select-input { max-width: 100%; }
+
+/* Number input (প্রশ্ন লক্ষ্যমাত্রা) styled to match the select-input
+   boxes it sits next to, so the row of three controls looks uniform. */
+.agq-embed input[type="number"].select-input {
+  width: 100%; max-width: 320px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font-size: 0.92rem; font-weight: 600;
+  appearance: textfield;
+}
+.agq-embed input[type="number"].select-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-focus-ring); }
+
+/* জেনারেশন সেটিংস: batch-size stepper, ফ্রিকোয়েন্সি/ব্যাচ select, and
+   প্রশ্ন লক্ষ্যমাত্রা number field. Desktop/laptop (min-width: 901px,
+   matching the field-row--triple desktop tier below) puts all three in
+   one row of equal width. Tablet and phone keep the stepper + frequency
+   select on one line, with the target field dropping to its own full-
+   width line beneath — see the two breakpoints further down. */
+.agq-embed .generation-controls-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.agq-embed .generation-control { flex: 1 1 0; min-width: 0; }
+.agq-embed .generation-control .stepper,
+.agq-embed .generation-control select.select-input,
+.agq-embed .generation-control input.select-input { width: 100%; max-width: 100%; }
+
+/* Chip multi-select for question types.
+   A CSS grid (rather than flex-wrap) is used so chips of different label
+   lengths still settle into even, aligned rows at every viewport instead
+   of wrapping into a ragged 2-1-2-1 pattern. Each chip gets a shared
+   minimum width and stretches to fill its cell. */
+.agq-embed .chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+.agq-embed .chip {
+  display: inline-flex; align-items: flex-start; gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  transition: all .15s ease;
+  user-select: none;
+  box-sizing: border-box;
+  flex: 1 1 180px;
+}
+.agq-embed .chip input { display: none; }
+.agq-embed .chip .chip-check {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1.5px solid var(--color-border-strong);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s ease;
+  /* Aligns the checkbox with the first line of the label instead of the
+     vertical center of the whole (possibly multi-line, on narrow/wrapped
+     pills) label text. */
+  margin-top: 2px;
+}
+.agq-embed .chip .chip-check svg { width: 11px; height: 11px; opacity: 0; transition: opacity .1s ease; stroke: #fff; }
+.agq-embed .chip input:checked ~ .chip-check { background: var(--color-primary); border-color: var(--color-primary); }
+.agq-embed .chip input:checked ~ .chip-check svg { opacity: 1; }
+.agq-embed .chip:has(input:checked) { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+
+/* Subject order list (drag handle look, static demo) */
+.agq-embed .subject-order-list { display: flex; flex-direction: column; gap: 8px; }
+.agq-embed .subject-order-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-size: 0.88rem; font-weight: 700;
+}
+.agq-embed .subject-order-item .drag-handle { color: var(--color-text-muted); flex-shrink: 0; cursor: grab; }
+.agq-embed .subject-order-item .order-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--color-primary-light); color: var(--color-primary);
+  font-size: 0.72rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.agq-embed .subject-order-item .subj-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agq-embed .subject-order-item .subj-meta { font-size: 0.74rem; color: var(--color-text-muted); font-weight: 600; flex-shrink: 0; }
+.agq-embed .subject-order-item.current { border-color: var(--color-primary-border); background: var(--color-primary-light); }
+.agq-embed .subj-current-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--color-primary); flex-shrink: 0;
+}
+/* Move Up/Down controls used inside the Reorder Subjects modal (replaces
+   the old purely-decorative drag-handle icon, which had no drag logic
+   behind it at all). Kept compact and stacked so they fit the same row
+   height as the rest of the list item. */
+.agq-embed .subject-order-item .order-move-btns {
+  display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
+}
+.agq-embed .subject-order-item .order-move-btn {
+  width: 22px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.agq-embed .subject-order-item .order-move-btn:hover:not(:disabled) {
+  background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border);
+}
+.agq-embed .subject-order-item .order-move-btn:disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+.agq-embed .subject-order-item .order-move-btn svg { width: 12px; height: 12px; }
+
+/* ---------- Buttons ---------- */
+.agq-embed .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-size: 0.9rem; font-weight: 800;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+.agq-embed .btn svg { width: 16px; height: 16px; }
+.agq-embed .btn-primary { background: var(--color-primary); color: #fff; }
+.agq-embed .btn-primary:hover { background: var(--color-primary-hover); }
+.agq-embed .btn-success { background: var(--color-success); color: #fff; }
+.agq-embed .btn-success:hover { background: var(--color-success-hover); }
+.agq-embed .btn-danger { background: var(--color-danger-light); color: var(--color-danger); border-color: var(--color-danger-border); }
+.agq-embed .btn-danger:hover { background: var(--color-danger); color: #fff; }
+.agq-embed .btn-ghost { background: var(--color-surface-alt); color: var(--color-text-secondary); border-color: var(--color-border); }
+.agq-embed .btn-ghost:hover { background: var(--color-hover-bg); }
+.agq-embed .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+.agq-embed .btn-block { width: 100%; }
+.agq-embed .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- Review queue ---------- */
+.agq-embed .queue-toolbar-left { font-size: 0.86rem; color: var(--color-text-secondary); margin-bottom: 10px; }
+.agq-embed .queue-toolbar-left strong { color: var(--color-text-primary); }
+
+/* ---------- Subject -> topic accordion (Review Queue + History) ----------
+   Two nested disclosure levels: a subject card opens to reveal that
+   subject's topic list, and each topic row opens to reveal that topic's
+   questions. Used by renderQueue() and renderHistory() alike, so both
+   tabs stay visually identical apart from their per-row actions. */
+.agq-embed .subject-card { margin-bottom: 12px; }
+.agq-embed .subject-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px; cursor: pointer;
+}
+.agq-embed .subject-head-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 auto; }
+.agq-embed .subject-head-left > div:last-child { min-width: 0; flex: 1; }
+.agq-embed .subject-name {
+  font-size: 0.94rem; font-weight: 900; margin: 0 0 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.agq-embed .subject-sub { font-size: 0.78rem; color: var(--color-text-muted); font-weight: 600; }
+/* Smooth expand: the body is always in the DOM as a 1-row grid track that
+   animates between 0fr (collapsed) and 1fr (expanded), so its height
+   transitions instead of snapping via display:none/block. The inner
+   wrapper needs min-height:0 so it actually shrinks to the 0fr track
+   instead of forcing the row open, and overflow:hidden keeps content
+   clipped mid-animation. */
+.agq-embed .subject-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  border-top: 1px solid transparent;
+  transition: grid-template-rows .28s ease, border-color .28s ease;
+}
+.agq-embed .subject-body > .subject-body-inner { min-height: 0; overflow: hidden; }
+.agq-embed .subject-card.expanded .subject-body { grid-template-rows: 1fr; border-top-color: var(--color-border); }
+.agq-embed .subject-card.expanded > .subject-head .chevron { transform: rotate(180deg); }
+
+.agq-embed .topic-item { border-bottom: 1px solid var(--color-border); }
+.agq-embed .topic-item:last-child { border-bottom: none; }
+.agq-embed .topic-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; cursor: pointer;
+  transition: background .15s ease;
+}
+.agq-embed .topic-head:hover { background: var(--color-hover-bg); }
+.agq-embed .topic-item.expanded > .topic-head { background: var(--color-surface-alt); }
+.agq-embed .topic-item.expanded > .topic-head .chevron { transform: rotate(180deg); }
+.agq-embed .topic-head-main { min-width: 0; flex: 1 1 auto; }
+.agq-embed .topic-head-main .batch-meta-sub { margin-top: 3px; }
+.agq-embed .topic-name {
+  font-size: 0.88rem; font-weight: 800; margin: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.agq-embed .topic-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  background: var(--color-surface);
+  transition: grid-template-rows .28s ease;
+}
+.agq-embed .topic-body > .topic-body-inner { min-height: 0; overflow: hidden; }
+.agq-embed .topic-item.expanded > .topic-body { grid-template-rows: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .agq-embed .subject-body,
+  .agq-embed .topic-body { transition: none; }
+}
+.agq-embed .topic-select-checkbox {
+  width: 17px; height: 17px; accent-color: var(--color-primary);
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* ---------- Massive (bulk) action bar ---------- */
+.agq-embed .mass-action-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-xs);
+}
+/* Groups the "সব ব্যাচ সিলেক্ট করুন" checkbox label with its selected-count
+   badge so they always share one row, even when the bulk-action buttons
+   wrap to their own row below on narrow screens. */
+.agq-embed .mass-select-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.agq-embed .mass-select-all {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; font-weight: 700; color: var(--color-text-secondary);
+  cursor: pointer; user-select: none;
+}
+.agq-embed .mass-select-all input {
+  width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer;
+}
+.agq-embed .mass-action-bar .mass-btns { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.agq-embed .mass-selected-count {
+  font-size: 0.78rem; font-weight: 800; color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 10px; border-radius: var(--radius-pill);
+}
+
+.agq-embed .batch-card { margin-bottom: 12px; }
+.agq-embed .batch-head {
+  display: flex; align-items: flex-start;
+  gap: 12px; padding: 16px 18px; cursor: pointer;
+}
+/* .batch-head's children are the checkbox, .batch-head-left and
+   .batch-head-right (three flex siblings, not nested) — .batch-head-left
+   must grow to fill the space between the checkbox and the right side,
+   otherwise justify-content on the parent leaves it stranded in the
+   middle of the row instead of hugging the checkbox on the left. */
+.agq-embed .batch-head-left { display: flex; gap: 12px; min-width: 0; flex: 1 1 auto; }
+.agq-embed .batch-head-left > div:last-child { min-width: 0; flex: 1; }
+.agq-embed .batch-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  background: var(--color-primary-light); color: var(--color-primary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.agq-embed .batch-icon svg { width: 20px; height: 20px; }
+.agq-embed .batch-meta-title { font-size: 0.94rem; font-weight: 900; margin: 0 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agq-embed .batch-meta-sub { font-size: 0.78rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.agq-embed .type-tag {
+  display: inline-flex; padding: 2px 9px; border-radius: var(--radius-pill);
+  font-size: 0.68rem; font-weight: 900;
+  background: var(--color-info-light); color: var(--color-info-hover);
+  border: 1px solid var(--color-info-border);
+}
+.agq-embed .type-tag.bcs { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.agq-embed .type-tag.bank { background: var(--color-success-light); color: var(--color-success-hover); border-color: var(--color-success-border); }
+.agq-embed .type-tag.teacher { background: var(--color-warning-light); color: var(--color-warning-hover); border-color: var(--color-warning-border); }
+.agq-embed .type-tag.english { background: rgba(139, 92, 246, .1); color: #7c3aed; border-color: rgba(139, 92, 246, .3); }
+
+.agq-embed .batch-head-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* ---------- Internal MCQ editor modal (mirrors site's real mcqp2-qcard) ---------- */
+.agq-embed .mcq-editor-card {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+.agq-embed .mcq-editor-card__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.agq-embed .mcq-editor-card__head strong { font-size: 0.86rem; font-weight: 900; }
+.agq-embed .mcq-editor-card__body { padding: 16px; }
+.agq-embed .mcq-field-label {
+  font-size: 0.76rem; font-weight: 800; color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: .03em;
+  margin-bottom: 6px; display: block;
+}
+.agq-embed .mcq-textarea, .agq-embed .mcq-input {
+  width: 100%;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  padding: 10px 12px;
+  font-family: inherit; font-size: 0.9rem; font-weight: 600;
+  resize: vertical;
+}
+.agq-embed .mcq-textarea:focus, .agq-embed .mcq-input:focus {
+  outline: none; border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+.agq-embed .mcq-editor-question-block { margin-bottom: 16px; }
+.agq-embed .mcq-editor-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.agq-embed .mcq-option-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.agq-embed .mcq-option-row__label {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s ease;
+}
+.agq-embed .mcq-option-row__label:hover { border-color: var(--color-success); color: var(--color-success); }
+.agq-embed .mcq-option-row__label.is-correct { background: var(--color-success); border-color: var(--color-success); color: #fff; }
+.agq-embed .mcq-option-row input[type="radio"] { display: none; }
+.agq-embed .mcq-editor-expl-block { margin-bottom: 4px; }
+.agq-embed .mcq-editor-meta-row {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--color-primary-light);
+  border-top: 1px solid var(--color-primary-border);
+  font-size: 0.76rem; color: var(--color-text-secondary);
+}
+.agq-embed .mcq-editor-meta-row b { color: var(--color-text-primary); }
+.agq-embed .qcount-pill {
+  background: var(--color-surface-alt); border: 1px solid var(--color-border);
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  font-size: 0.78rem; font-weight: 800; white-space: nowrap;
+}
+.agq-embed .chevron { color: var(--color-text-muted); transition: transform .2s ease; flex-shrink: 0; }
+.agq-embed .batch-card.expanded .chevron { transform: rotate(180deg); }
+
+.agq-embed .batch-body { display: none; border-top: 1px solid var(--color-border); }
+.agq-embed .batch-card.expanded .batch-body { display: block; }
+.agq-embed .batch-actions {
+  display: flex; gap: 8px; padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  flex-wrap: wrap;
+}
+
+.agq-embed .q-preview-list { padding: 6px var(--space-3) 16px; }
+.agq-embed .q-preview-item {
+  padding: 13px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+.agq-embed .q-preview-item:last-child { border-bottom: none; }
+/* Puts the question number on the left and its single-question edit
+   icon on the right, both on the same row. */
+.agq-embed .q-preview-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 4px;
+}
+.agq-embed .q-preview-edit-btn {
+  width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s ease;
+}
+.agq-embed .q-preview-edit-btn:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary-border); }
+.agq-embed .q-preview-edit-btn svg { width: 14px; height: 14px; }
+.agq-embed .q-preview-main { min-width: 0; }
+.agq-embed .q-preview-num {
+  font-size: 0.72rem; font-weight: 900; color: var(--color-text-muted);
+}
+.agq-embed .q-preview-text { font-size: 0.9rem; font-weight: 700; line-height: 1.55; margin-bottom: 8px; }
+.agq-embed .q-preview-options {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px;
+  font-size: 0.83rem; color: var(--color-text-secondary);
+}
+.agq-embed .q-preview-options .opt { display: flex; gap: 6px; align-items: flex-start; }
+.agq-embed .q-preview-options .opt.correct { color: var(--color-success-hover); font-weight: 800; }
+.agq-embed .q-preview-options .opt-letter {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+  background: var(--color-hover-bg); font-size: 0.68rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+.agq-embed .q-preview-options .opt.correct .opt-letter { background: var(--color-success); color: #fff; }
+.agq-embed .q-expl-note {
+  margin-top: 8px; padding: 8px 10px;
+  background: var(--color-surface-alt); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem; color: var(--color-text-secondary); font-weight: 600;
+  line-height: 1.55;
+}
+.agq-embed .q-expl-note b { color: var(--color-text-primary); }
+
+.agq-embed .empty-state {
+  text-align: center; padding: 48px 20px; color: var(--color-text-muted);
+}
+.agq-embed .empty-state svg { width: 52px; height: 52px; margin-bottom: 12px; opacity: .5; }
+.agq-embed .empty-state p { margin: 0; font-size: 0.9rem; }
+
+/* ---------- History log ---------- */
+.agq-embed .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.agq-embed .history-dot.approved { background: var(--color-success); }
+.agq-embed .history-dot.rejected { background: var(--color-danger); }
+.agq-embed .status-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: var(--radius-pill);
+  font-size: 0.7rem; font-weight: 900; white-space: nowrap;
+}
+.agq-embed .status-tag.approved { background: var(--color-success-light); color: var(--color-success-hover); border: 1px solid var(--color-success-border); }
+.agq-embed .status-tag.rejected { background: var(--color-danger-light); color: var(--color-danger); border: 1px solid var(--color-danger-border); }
+
+/* ---------- Toast ---------- */
+.agq-embed .toast-wrap {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; flex-direction: column; gap: 8px;
+  align-items: center; pointer-events: none;
+}
+.agq-embed .toast {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--color-text-primary); color: var(--color-bg);
+  padding: 11px 18px; border-radius: var(--radius-md);
+  font-size: 0.85rem; font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  opacity: 0; transform: translateY(10px);
+  animation: toast-in .25s ease forwards, toast-out .25s ease 2.2s forwards;
+}
+.agq-embed .toast.success svg { color: var(--color-success); }
+.agq-embed .toast.danger svg { color: var(--color-danger); }
+.agq-embed .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+@keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(10px); } }
+
+/* ---------- Modal (batch settings) ---------- */
+.agq-embed .modal-backdrop {
+  position: fixed; inset: 0; background: rgba(17, 24, 39, .45);
+  display: none; align-items: flex-end; justify-content: center;
+  z-index: 90; padding: 0;
+}
+.agq-embed .modal-backdrop.open { display: flex; }
+.agq-embed .modal-sheet {
+  background: var(--color-surface);
+  width: 100%; max-width: 520px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  max-height: 85vh; overflow-y: auto;
+  animation: sheet-up .25s ease;
+}
+.agq-embed .modal-sheet.modal-sheet--wide { max-width: 640px; }
+@media (min-width: 640px) {
+  .agq-embed .modal-backdrop { align-items: center; }
+  .agq-embed .modal-sheet { border-radius: var(--radius-lg); margin-bottom: 20px; }
+}
+@keyframes sheet-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.agq-embed .modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px var(--space-3); border-bottom: 1px solid var(--color-border);
+  position: sticky; top: 0; background: var(--color-surface);
+}
+.agq-embed .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 900; }
+.agq-embed .modal-close {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: var(--color-hover-bg); color: var(--color-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+}
+.agq-embed .modal-footer {
+  display: flex; gap: 10px; padding: 16px var(--space-3);
+  border-top: 1px solid var(--color-border);
+  position: sticky; bottom: 0; background: var(--color-surface);
+}
+/* Edit Question modal: keep Delete, Cancel, Save on one row at every
+   width instead of each stacking full-width — Delete stays compact
+   (its natural/icon width) while Cancel and Save share the rest. */
+#editQuestionModal .modal-footer { flex-wrap: nowrap; }
+#editQuestionModal .modal-footer #deleteQuestionBtn { flex: 0 0 auto; width: auto; }
+#editQuestionModal .modal-footer #cancelEditBtn,
+#editQuestionModal .modal-footer #saveEditBtn { flex: 1 1 0; width: auto; }
+
+/* ---------- Topic target rows ---------- */
+.agq-embed .topic-target-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.agq-embed .topic-target-row:last-child { margin-bottom: 0; }
+.agq-embed .topic-target-row.current { border-color: var(--color-primary-border); background: var(--color-primary-light); }
+.agq-embed .topic-target-row .ttr-main { flex: 1; min-width: 0; }
+.agq-embed .topic-target-row .ttr-title { font-size: 0.85rem; font-weight: 800; }
+.agq-embed .topic-target-row .ttr-sub { font-size: 0.76rem; color: var(--color-text-muted); margin-top: 2px; }
+.agq-embed .topic-target-row .ttr-progress-track {
+  height: 6px; border-radius: var(--radius-pill);
+  background: var(--color-hover-bg); overflow: hidden; margin-top: 6px;
+  border: 1px solid var(--color-border);
+}
+.agq-embed .topic-target-row .ttr-progress-fill {
+  height: 100%; background: var(--color-primary); border-radius: var(--radius-pill);
+}
+.agq-embed .topic-target-row .ttr-remove {
+  width: 28px; height: 28px; border-radius: var(--radius-sm); flex-shrink: 0;
+  border: 1px solid var(--color-danger-border); background: var(--color-danger-light);
+  color: var(--color-danger); display: flex; align-items: center; justify-content: center;
+}
+.agq-embed .topic-target-row .ttr-remove svg { width: 13px; height: 13px; }
+.agq-embed .topic-target-empty { font-size: 0.82rem; color: var(--color-text-muted); text-align: center; padding: 10px 0; }
+
+.agq-embed .section-label {
+  font-size: 0.72rem; font-weight: 900; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--color-text-muted);
+  padding: 16px var(--space-3) 8px;
+}
+
+/* ==========================================================================
+   RESPONSIVE — tiered to match ExamCamp's own breakpoints
+   (1024px tablet-landscape, 900px tablet, 640px mobile, 480px/380px small
+   phones) so this panel feels like part of the same site at every size.
+   ========================================================================== */
+
+/* ---- Tablet and up (>640px): side-by-side field rows. Starting this at
+   the same breakpoint the mobile query stacks them at (640px) means there
+   is no dead middle range where the pair sits in plain block flow —
+   above 640px it is always a two-column grid, below it always stacked. ---- */
+@media (min-width: 641px) {
+  .agq-embed .field-row--pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  /* Same idea for the three-select টপিক-ভিত্তিক টার্গেট row (সাবজেক্ট /
+     টপিক / প্রশ্নের ভাষা): two columns on tablet-width screens so the
+     selects don't get squeezed, three once there's room on desktop. */
+  .agq-embed .field-row--triple { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+@media (min-width: 900px) {
+  .agq-embed .field-row--triple { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+/* জেনারেশন সেটিংস row: on tablet and phone (below 1024px, this site's
+   own desktop/laptop cutoff — see the বন্ধনী note above), keep the
+   batch-size stepper and ফ্রিকোয়েন্সি/ব্যাচ select paired on one line,
+   with প্রশ্ন লক্ষ্যমাত্রা dropping to its own full-width line below,
+   matching the width of the two controls above it. At 1024px and up
+   all three sit on one line — see the desktop rule further down. */
+.agq-embed .generation-control:nth-child(3) { flex-basis: 100%; }
+
+/* ---- Desktop (>1024px): roomier stat grid. Chip grid is capped at 4
+   columns here — with 7 chips, auto-fill would otherwise pack 5 into the
+   first row and leave the second row visibly lopsided (5 + 2); 4 columns
+   gives a steadier 4 + 3. ---- */
+@media (min-width: 1024px) {
+  .agq-embed .batch-actions { flex-wrap: nowrap; }
+  .agq-embed .chip-group .chip { flex-basis: calc(25% - 6px); }
+  /* Desktop/laptop: stepper, ফ্রিকোয়েন্সি/ব্যাচ and প্রশ্ন লক্ষ্যমাত্রা
+     all sit on one line, each taking an equal share of the row. */
+  .agq-embed .generation-control:nth-child(3) { flex-basis: 0; }
+}
+
+/* ---- Tablet (900px and down) ---- */
+@media (max-width: 900px) {
+  /* Four progress-stat cards get cramped at 4 columns once the card
+     itself is tablet-narrow, so drop to 2x2 here — full 4-across
+     resumes only on wider desktop/laptop screens. */
+  .agq-embed .progress-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .agq-embed .chip-group { gap: 6px; }
+  .agq-embed .chip-group .chip { flex-basis: 150px; }
+}
+
+/* ---- Narrow tablet / large phone (720px and down): the two-column chip
+   grid gets cramped with longer Bengali labels, so drop to a single
+   column — one chip per row, full width, instead of uneven wrapping. ---- */
+@media (max-width: 720px) {
+  .agq-embed .chip-group .chip { flex-basis: 100%; }
+}
+
+/* ---- Mobile (640px and down): switch to the site's stacked, full-width
+   admin-panel feel — cards go edge-to-edge in spirit, controls stack. ---- */
+@media (max-width: 640px) {
+  .agq-embed body { padding-bottom: 48px; }
+  .agq-embed .card { border-radius: var(--radius-md); margin-bottom: 12px; }
+  .agq-embed .card-header { padding: 14px 10px; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .agq-embed .card-header--row { flex-direction: row; align-items: center; }
+  .agq-embed .card-header > div:last-child:not([class]) { width: 100%; }
+  .agq-embed .card-body { padding: 14px 10px; }
+  .agq-embed .card-header h3 { font-size: 0.95rem; }
+
+  .agq-embed .master-switch-row { padding: 16px 10px; gap: 10px; }
+
+  .agq-embed .progress-grid { grid-template-columns: 1fr; gap: 8px; padding: 0 10px 16px; }
+  .agq-embed .progress-stat { padding: 10px 10px; }
+  .agq-embed .bank-progress-wrap { padding: 0 10px 16px; }
+
+  .agq-embed .field-group, .agq-embed .topic-target-list { padding: 4px 10px 16px; }
+  .agq-embed select.select-input { max-width: 100%; }
+  .agq-embed .stepper { width: fit-content; max-width: 100%; }
+
+  /* Stepper and "+ টার্গেট সেট" stay on one line even on phones, and the
+     button still stretches to fill the row's remaining width so the
+     whole control row lines up with the full-width selects above it. */
+  .agq-embed .topic-target-controls { flex-wrap: nowrap; }
+  .agq-embed .topic-target-controls .stepper { flex: 0 0 auto; }
+  .agq-embed .topic-target-controls .btn { flex: 1 1 auto; white-space: nowrap; }
+
+  /* Match the সব টপিক সিলেক্ট করুন (.mass-action-bar) card's tighter,
+     more compact inner spacing: same 10px left/right inset. */
+  .agq-embed .subject-head { padding: 12px 10px; gap: 8px; }
+  .agq-embed .subject-head-left { gap: 8px; }
+  .agq-embed .subject-name { font-size: 0.84rem; }
+  .agq-embed .subject-sub { font-size: 0.7rem; }
+  .agq-embed .topic-head { padding: 11px 10px; gap: 6px; }
+  .agq-embed .topic-name { font-size: 0.8rem; }
+  /* Subject/topic rows pack an icon, two lines of text, a pill and a
+     chevron into one line — on phones that's too much to keep at
+     full size without the pill/count text forcing the row wider than
+     the screen and squeezing the subject/topic name down to a sliver.
+     Shrinking the text and tightening the gaps here (rather than
+     letting subject-name/topic-name wrap or truncate harder) keeps
+     every row a predictable single-line height. */
+  .agq-embed .batch-head-right { gap: 5px; }
+  .agq-embed .qcount-pill { font-size: 0.68rem; padding: 4px 8px; }
+  .agq-embed .status-tag { font-size: 0.64rem; padding: 4px 8px; }
+  .agq-embed .chevron { width: 16px; height: 16px; }
+
+  .agq-embed .mass-action-bar { flex-direction: column; align-items: stretch; padding: 12px 10px; }
+  .agq-embed .mass-select-row { order: 1; }
+  .agq-embed .mass-btns { margin-left: 0; order: 2; width: 100%; }
+  .agq-embed .mass-btns .btn { flex: 1; }
+
+  .agq-embed .batch-head { padding: 12px 10px; gap: 10px; }
+  .agq-embed .batch-head-left { gap: 9px; }
+  .agq-embed .batch-icon { width: 34px; height: 34px; }
+  .agq-embed .batch-icon svg { width: 17px; height: 17px; }
+  .agq-embed .batch-meta-title { font-size: 0.86rem; }
+  .agq-embed .batch-head-right { gap: 6px; }
+  .agq-embed .qcount-pill { font-size: 0.72rem; padding: 4px 9px; }
+
+  .agq-embed .batch-actions { padding: 10px 10px; }
+  .agq-embed .batch-actions .btn { flex: 1 1 auto; }
+
+  .agq-embed .q-preview-list { padding: 4px 14px 14px; }
+  .agq-embed .q-preview-options { grid-template-columns: 1fr; }
+
+  .agq-embed .history-row { padding: 12px 10px; }
+
+  .agq-embed .subject-order-item { padding: 10px 10px; font-size: 0.82rem; }
+
+  .agq-embed .modal-sheet, .agq-embed .modal-sheet--wide { max-width: 100%; }
+  .agq-embed .modal-header, .agq-embed .modal-footer { padding: 14px 12px; }
+  .agq-embed .modal-footer { flex-wrap: wrap; }
+  .agq-embed .modal-footer .btn:not(.btn-block) { flex: 1 1 100%; }
+  /* Edit Question modal keeps its one-row Delete/Cancel/Save layout
+     even on mobile — overrides the generic stacking rules above. */
+  #editQuestionModal .modal-footer { flex-wrap: nowrap; }
+  #editQuestionModal .modal-footer #deleteQuestionBtn { flex: 0 0 auto; }
+  #editQuestionModal .modal-footer #cancelEditBtn,
+  #editQuestionModal .modal-footer #saveEditBtn { flex: 1 1 0; }
+  .agq-embed .mcq-editor-card__body { padding: 14px; }
+
+  .agq-embed .field-row--pair,
+  .agq-embed .field-row--triple { display: flex; flex-direction: column; gap: 16px; }
+  .agq-embed .topic-target-row { padding: 10px 10px; }
+  .agq-embed .topic-target-row .ttr-remove { margin-left: auto; }
+}
+
+/* ---- Small phones ---- */
+@media (max-width: 480px) {
+  .agq-embed .card-header, .agq-embed .card-body, .agq-embed .field-group, .agq-embed .topic-target-list, .agq-embed .q-preview-list, .agq-embed .batch-head, .agq-embed .batch-actions, .agq-embed .progress-grid, .agq-embed .bank-progress-wrap { padding-left: 8px; padding-right: 8px; }
+  .agq-embed .master-switch-row { padding: 14px 8px; }
+  .agq-embed .progress-stat .value { font-size: 1.02rem; }
+  .agq-embed .batch-meta-sub { font-size: 0.72rem; }
+  .agq-embed .q-preview-text { font-size: 0.85rem; }
+  .agq-embed .btn { font-size: 0.84rem; padding: 9px 14px; }
+  .agq-embed .btn-sm { font-size: 0.74rem; padding: 6px 10px; }
+  .agq-embed .chip { font-size: 0.78rem; padding: 7px 11px; }
+}
+
+/* ---- Very small phones ---- */
+@media (max-width: 380px) {
+  .agq-embed .topic-target-controls .btn { padding: 10px 12px; font-size: 0.82rem; gap: 5px; }
+  .agq-embed .stepper button { width: 32px; height: 32px; }
+  .agq-embed .stepper .stepper-value { min-width: 42px; height: 32px; line-height: 32px; font-size: 0.9rem; }
+}
+
+@media (max-width: 480px) {
+  .agq-embed .modal-sheet { max-height: 92vh; }
+}
+
