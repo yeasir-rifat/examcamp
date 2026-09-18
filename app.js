@@ -198,25 +198,13 @@ function clamp(value, min, max) {
 const THEME_STORAGE_KEY = "mcq-exam-theme";
 const THEME_LIGHT = "light";
 const THEME_DARK = "dark";
-const THEME_SYSTEM = "system";
-
-/**
- * Resolves "system" down to an actual light/dark value based on the
- * user's OS preference.
- */
-function resolveSystemTheme() {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? THEME_DARK
-    : THEME_LIGHT;
-}
 
 /**
  * Applies a theme to the document root via data-theme attribute.
- * @param {string} theme - "light" | "dark" | "system"
+ * @param {string} theme - "light" | "dark"
  */
 function applyTheme(theme) {
-  const resolved = theme === THEME_SYSTEM ? resolveSystemTheme() : theme;
-  document.documentElement.setAttribute("data-theme", resolved);
+  document.documentElement.setAttribute("data-theme", theme);
   document.documentElement.setAttribute("data-theme-preference", theme);
   updateThemeToggleUI(theme);
 }
@@ -231,18 +219,33 @@ function setTheme(theme) {
 }
 
 /**
- * Reads stored preference, defaulting to "system" on first visit.
+ * Reads stored preference, defaulting to "light" on first visit.
  */
 function getStoredTheme() {
-  return localStorage.getItem(THEME_STORAGE_KEY) || THEME_SYSTEM;
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return stored === THEME_DARK ? THEME_DARK : THEME_LIGHT;
 }
 
 /**
- * Updates the header toggle's visual active state to match current theme.
+ * Updates the single dynamic toggle button: swaps which icon is visible
+ * (sun for light, moon for dark).
  */
 function updateThemeToggleUI(theme) {
-  const options = document.querySelectorAll("[data-theme-option]");
-  options.forEach((el) => {
+  document.querySelectorAll(".theme-toggle-btn").forEach((btn) => {
+    btn.querySelectorAll(".theme-toggle-btn__icon").forEach((icon) => {
+      const isLight = theme === THEME_LIGHT && icon.classList.contains("theme-toggle-btn__icon--light");
+      const isDark = theme === THEME_DARK && icon.classList.contains("theme-toggle-btn__icon--dark");
+      icon.classList.toggle("is-active", isLight || isDark);
+    });
+    const labels = { light: "Light theme", dark: "Dark theme" };
+    const label = labels[theme] || "Toggle theme";
+    btn.setAttribute("title", label);
+    btn.setAttribute("aria-label", label);
+  });
+
+  // Kept for backwards compatibility in case any old markup still has
+  // the legacy segmented control (e.g. leftover in an embedded widget).
+  document.querySelectorAll("[data-theme-option]").forEach((el) => {
     const isActive = el.getAttribute("data-theme-option") === theme;
     el.classList.toggle("is-active", isActive);
     el.setAttribute("aria-pressed", String(isActive));
@@ -250,39 +253,31 @@ function updateThemeToggleUI(theme) {
 }
 
 /**
- * Cycles Light -> Dark -> System -> Light (used by compact icon-only toggle)
+ * Toggles Light <-> Dark (used by the single icon toggle)
  */
 function cycleTheme() {
   const current = getStoredTheme();
-  const order = [THEME_LIGHT, THEME_DARK, THEME_SYSTEM];
-  const next = order[(order.indexOf(current) + 1) % order.length];
-  setTheme(next);
+  return current === THEME_LIGHT ? THEME_DARK : THEME_LIGHT;
 }
 
 function initTheme() {
   // Apply immediately to avoid a flash of unstyled/incorrect theme.
   applyTheme(getStoredTheme());
 
-  // Wire up explicit theme option buttons, if present on the page.
+  // Wire up explicit theme option buttons, if present on the page
+  // (kept for backwards compatibility with any non-cycling control).
   document.querySelectorAll("[data-theme-option]").forEach((btn) => {
     btn.addEventListener("click", () => {
       setTheme(btn.getAttribute("data-theme-option"));
     });
   });
 
-  // Wire up compact cycle toggle, if present.
+  // Wire up the single dynamic toggle (navbar icon button).
   document.querySelectorAll("[data-theme-cycle]").forEach((btn) => {
-    btn.addEventListener("click", cycleTheme);
-  });
-
-  // React to OS theme changes when "system" is the active preference.
-  window
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", () => {
-      if (getStoredTheme() === THEME_SYSTEM) {
-        applyTheme(THEME_SYSTEM);
-      }
+    btn.addEventListener("click", () => {
+      setTheme(cycleTheme());
     });
+  });
 }
 
 document.addEventListener("DOMContentLoaded", initTheme);
@@ -371,6 +366,9 @@ const I18N_STRINGS = {
     "practice.current.title": "Current Affairs",
     "practice.current.desc": "Stay updated with current events",
     "practice.comingSoon": "Coming soon",
+    "practice.allCategories": "All categories",
+    "practice.category.empty": "No categories yet.",
+    "practice.category.newCard": "New category",
 
     "home.continue.title": "Continue Exam",
     "home.continue.titleLive": "Continue Live Exam",
@@ -416,7 +414,7 @@ const I18N_STRINGS = {
 
     "home.continue.questionsCompleted": "questions completed",
 
-    "live.summary.rank": "Central Merit Rank",
+    "live.summary.rank": "Central Merit",
     "live.summary.given": "Exams Given",
     "live.summary.avg": "Course Avg.",
     "live.tab.routine": "Routine",
@@ -436,10 +434,22 @@ const I18N_STRINGS = {
     "stats.overview.allPractice": "All Practice Exams",
     "stats.overview.acrossPractice": "Across all Practice Exams",
     "stats.bySubject": "Performance by subject",
+    "stats.bySubject.empty": "No data yet - complete an exam to see your subject breakdown.",
     "stats.recentResults": "Recent results",
+    "stats.recentResults.empty": "No completed exams yet.",
+    "stats.recentResultsLive": "Recent results",
+    "stats.recentResultsLive.empty": "No published live exam results yet - they'll appear here once the admin publishes them.",
     "stats.resultsAnalytics": "Results & Analytics",
     "stats.obtainedMarks": "Obtained Marks",
     "stats.answerSheet": "Answer sheet",
+    "stats.bcsPrelim.title": "BCS Preliminary",
+    "stats.bcsPrelim.subtitle": "Practice Panel activity by subject",
+    "stats.bcsPrelim.empty": "No Practice Panel activity yet — answer a few questions from Practice to see your subject-wise breakdown here.",
+    "stats.bcsPrelim.totalAttempted": "Total attempted",
+    "stats.bcsPrelim.byTopic": "By topic",
+    "stats.bcsPrelim.noTopicActivity": "No topics attempted yet in this subject.",
+    "stats.bcsPrelim.demoBadge": "Demo data",
+    "agq.demoBanner": "Demo data — AGQ backend (Supabase Edge Function) is not connected yet.",
 
     "generator.title": "Generating your exam…",
     "generator.subtitle": "Hope you will perform better",
@@ -468,6 +478,121 @@ const I18N_STRINGS = {
     "enroll.sendMoney": "Send Money",
     "enroll.transactionId": "Transaction ID",
     "enroll.transactionIdError": "Please enter the Transaction ID.",
+    "agq.tab.control": "Control",
+    "agq.tab.queue": "Review",
+    "agq.tab.history": "History",
+
+    "agq.control.autoGeneration": "Auto Generation",
+    "agq.control.progressOverview": "Progress Overview",
+    "agq.control.todaysBatch": "Today's Batch",
+    "agq.control.completed": "completed",
+    "agq.control.totalBatches": "Total Batches",
+    "agq.control.batches": "batches",
+    "agq.control.totalQuestionsAdded": "Total Questions Added",
+    "agq.control.questions": "questions",
+    "agq.control.pendingReview": "Pending Review",
+    "agq.control.generateNow": "Generate Now (one batch)",
+
+    "agq.categorySelect.label": "Exam category",
+
+    "agq.subjectOrder.title": "Subject Order",
+    "agq.subjectOrder.reorder": "Reorder",
+    "agq.subjectOrder.topic": "topic",
+    "agq.subjectOrder.topics": "topics",
+    "agq.subjectOrder.moveUp": "Move up",
+    "agq.subjectOrder.moveDown": "Move down",
+
+    "agq.topicTarget.title": "Topic-wise Target",
+    "agq.topicTarget.subject": "Subject",
+    "agq.topicTarget.topic": "Topic",
+    "agq.topicTarget.questionLanguage": "Question Language",
+    "agq.topicTarget.setTarget": "Set Target",
+    "agq.topicTarget.aiWorkingOnTopic": "AI is currently working on this topic",
+    "agq.topicTarget.assignedTargets": "Assigned Targets",
+    "agq.topicTarget.noTargetsYet": "No target has been set for any topic yet. Add one from the form above.",
+    "agq.topicTarget.questionsCompleted": "questions completed",
+    "agq.topicTarget.removeTarget": "Remove target",
+    "agq.topicTarget.currentPosition": "Current position",
+    "agq.topicTarget.previewTemplate": "At {batchSize} questions per batch, this topic will take approximately {batches} to complete (about {days} days at a {freqHours}-hour frequency).",
+
+    "agq.generation.title": "Generation Settings",
+    "agq.generation.questionsPerBatch": "Questions per Batch",
+    "agq.generation.frequencyPerBatch": "Frequency/Batch",
+    "agq.generation.every1h": "Every 1 hours",
+    "agq.generation.every2h": "Every 2 hours (actual cron interval)",
+    "agq.generation.every3h": "Every 3 hours",
+    "agq.generation.every4h": "Every 4 hours",
+    "agq.generation.every6h": "Every 6 hours",
+    "agq.generation.questionTarget": "Question Target",
+    "agq.generation.questionTypes": "Question Types (multiple selectable)",
+    "agq.generation.typeGeneral": "General Questions",
+    "agq.generation.typeBcsPast": "BCS Preli — Past Year Questions",
+    "agq.generation.typeBcsImportant": "BCS Preli — Important Questions",
+    "agq.generation.typeBank": "Bank Preli Questions",
+    "agq.generation.typeNtrca": "NTRCA & Primary Teacher Registration",
+    "agq.generation.typeGovtOther": "Other Government Job Questions",
+    "agq.generation.typeVarsity": "University Admission (BCS-relevant)",
+    "agq.generation.save": "Save Generation Settings",
+    "agq.generation.saved": "Generation settings saved",
+    "agq.generation.selectAtLeastOne": "Select at least one question type",
+
+    "agq.qc.title": "Duplicate Protection & Quality Check",
+    "agq.qc.desc": "Every new question is checked against previous questions, and AI automatically verifies answer clarity. Every generated batch is submitted to the review queue by subject and topic.",
+
+    "agq.queue.topicsWaiting": " topics are waiting for review",
+    "agq.queue.subjects": " subjects, ",
+    "agq.queue.selectAllTopics": "Select all topics",
+    "agq.queue.selected": " selected",
+    "agq.queue.massivePush": "Massive Push",
+    "agq.queue.massiveDelete": "Massive Delete",
+    "agq.queue.emptyTitle": "Review queue is empty, all batches processed",
+    "agq.queue.selectTopic": "Select this topic",
+    "agq.queue.topicsLabel": " topics",
+    "agq.queue.questionsWaiting": " questions waiting",
+    "agq.queue.moreQuestionsInTopic": "more questions in this topic",
+    "agq.queue.questionNum": "Question",
+    "agq.queue.editQuestion": "Edit this question",
+    "agq.queue.explanation": "Explanation:",
+
+    "agq.history.topicsProcessed": " topics have been processed",
+    "agq.history.emptyTitle": "No batch has been approved or rejected yet",
+    "agq.history.approved": "Approved",
+    "agq.history.rejected": "Rejected",
+    "agq.history.moreQuestionsWere": "more questions were in this topic",
+
+    "agq.reorderModal.title": "Reorder Subjects",
+    "agq.reorderModal.hint": "Use the up/down buttons to move a subject",
+    "agq.reorderModal.cancel": "Cancel",
+    "agq.reorderModal.save": "Save",
+
+    "agq.editModal.title": "Edit Question",
+    "agq.editModal.subject": "Subject:",
+    "agq.editModal.topic": "Topic:",
+    "agq.editModal.delete": "Delete",
+    "agq.editModal.cancel": "Cancel",
+    "agq.editModal.save": "Save",
+    "agq.editModal.explanationLabel": "Explanation",
+    "agq.editModal.explanationPlaceholder": "Write the explanation for the correct answer...",
+    "agq.editModal.questionPlaceholder": "Write the question...",
+    "agq.editModal.optionPlaceholder": "Write the option...",
+    "agq.editModal.preview": "Preview",
+
+    "agq.toast.autoGenOn": "Auto Generation turned on",
+    "agq.toast.autoGenOff": "Auto Generation turned off",
+    "agq.toast.subjectOrderSaved": "Subject order saved",
+    "agq.toast.targetRemoved": "Target removed",
+    "agq.toast.noTopicFound": "No topic found for this subject",
+    "agq.toast.aiWorkingWait": "AI is currently working on this topic, set target after it finishes",
+    "agq.toast.targetSaved": "Target saved for the topic",
+    "agq.toast.batchApproved": "Topic's batch approved and added to the live bank",
+    "agq.toast.batchRejected": "Topic's batch rejected",
+    "agq.toast.questionSaved": "Question saved",
+    "agq.toast.questionDeleted": "Question deleted",
+    "agq.toast.massPushed": " batches were Massive Pushed to the live bank",
+    "agq.toast.massDeleted": " batches were Massive Deleted",
+    "agq.toast.justNow": "just now",
+    "agq.toast.addedToLiveBank": " questions added to the live bank",
+    "agq.toast.batchRejectedShort": "Batch was rejected",
   },
   bn: {
     "brand.name": "Examcamp",
@@ -543,6 +668,9 @@ const I18N_STRINGS = {
     "practice.current.title": "Current Affairs",
     "practice.current.desc": "সাম্প্রতিক ঘটনাবলী সম্পর্কে জানুন",
     "practice.comingSoon": "শীঘ্রই আসছে",
+    "practice.allCategories": "সব ক্যাটাগরি",
+    "practice.category.empty": "এখনো কোনো ক্যাটাগরি নেই।",
+    "practice.category.newCard": "নতুন ক্যাটাগরি",
 
     "home.continue.title": "পরীক্ষা চালিয়ে যান",
     "home.continue.titleLive": "লাইভ পরীক্ষা চালিয়ে যান",
@@ -608,10 +736,22 @@ const I18N_STRINGS = {
     "stats.overview.allPractice": "সকল প্র্যাকটিস পরীক্ষা",
     "stats.overview.acrossPractice": "সকল প্র্যাকটিস পরীক্ষা জুড়ে",
     "stats.bySubject": "বিষয়ভিত্তিক পারফরম্যান্স",
+    "stats.bySubject.empty": "এখনো কোনো ডেটা নেই - বিষয়ভিত্তিক বিশ্লেষণ দেখতে একটি পরীক্ষা সম্পন্ন করুন।",
     "stats.recentResults": "সাম্প্রতিক ফলাফল",
+    "stats.recentResults.empty": "এখনো কোনো পরীক্ষা সম্পন্ন হয়নি।",
+    "stats.recentResultsLive": "সাম্প্রতিক ফলাফল",
+    "stats.recentResultsLive.empty": "এখনো কোনো প্রকাশিত লাইভ পরীক্ষার ফলাফল নেই - অ্যাডমিন প্রকাশ করলে এখানে দেখা যাবে।",
     "stats.resultsAnalytics": "ফলাফল ও বিশ্লেষণ",
     "stats.obtainedMarks": "প্রাপ্ত নম্বর",
     "stats.answerSheet": "উত্তরপত্র",
+    "stats.bcsPrelim.title": "বিসিএস প্রিলিমিনারি",
+    "stats.bcsPrelim.subtitle": "বিষয়ভিত্তিক প্র্যাকটিস প্যানেল কার্যক্রম",
+    "stats.bcsPrelim.empty": "এখনো কোনো প্র্যাকটিস প্যানেল কার্যক্রম নেই — প্র্যাকটিস থেকে কিছু প্রশ্নের উত্তর দিন, এখানে আপনার বিষয়ভিত্তিক বিশ্লেষণ দেখতে পাবেন।",
+    "stats.bcsPrelim.totalAttempted": "মোট অংশগ্রহণ",
+    "stats.bcsPrelim.byTopic": "টপিক অনুযায়ী",
+    "stats.bcsPrelim.noTopicActivity": "এই বিষয়ে এখনো কোনো টপিকে অংশগ্রহণ করা হয়নি।",
+    "stats.bcsPrelim.demoBadge": "ডেমো ডেটা",
+    "agq.demoBanner": "ডেমো ডেটা — AGQ ব্যাকএন্ড (Supabase Edge Function) এখনো সংযুক্ত নয়।",
 
     "generator.title": "আপনার পরীক্ষা তৈরি হচ্ছে…",
     "generator.subtitle": "আশা করি ভালো ফলাফল করবেন",
@@ -640,6 +780,119 @@ const I18N_STRINGS = {
     "enroll.sendMoney": "সেন্ড মানি",
     "enroll.transactionId": "ট্রানজেকশন আইডি",
     "enroll.transactionIdError": "ট্রানজেকশন আইডি লিখুন।",
+    "agq.tab.control": "নিয়ন্ত্রণ",
+    "agq.tab.queue": "রিভিউ কিউ",
+    "agq.tab.history": "হিস্টোরি",
+
+    "agq.control.autoGeneration": "Auto Generation",
+    "agq.control.progressOverview": "প্রগ্রেস ওভারভিউ",
+    "agq.control.todaysBatch": "আজকের ব্যাচ",
+    "agq.control.completed": "সম্পন্ন",
+    "agq.control.totalBatches": "মোট ব্যাচ",
+    "agq.control.batches": "ব্যাচ",
+    "agq.control.totalQuestionsAdded": "মোট প্রশ্ন সংযোজন",
+    "agq.control.questions": "প্রশ্ন",
+    "agq.control.pendingReview": "পেন্ডিং রিভিউ",
+
+    "agq.categorySelect.label": "পরীক্ষার ক্যাটাগরি",
+
+    "agq.subjectOrder.title": "সাবজেক্ট অর্ডার",
+    "agq.subjectOrder.reorder": "ক্রম পরিবর্তন",
+    "agq.subjectOrder.topic": "টপিক",
+    "agq.subjectOrder.topics": "টপিক",
+    "agq.subjectOrder.moveUp": "উপরে সরান",
+    "agq.subjectOrder.moveDown": "নিচে সরান",
+
+    "agq.topicTarget.title": "টপিক-ভিত্তিক টার্গেট",
+    "agq.topicTarget.subject": "সাবজেক্ট",
+    "agq.topicTarget.topic": "টপিক",
+    "agq.topicTarget.questionLanguage": "প্রশ্নের ভাষা",
+    "agq.topicTarget.setTarget": "+ টার্গেট সেট",
+    "agq.topicTarget.aiWorkingOnTopic": "AI বর্তমানে এই টপিকের কাজ করছে",
+    "agq.topicTarget.assignedTargets": "নির্ধারিত টার্গেটসমূহ",
+    "agq.topicTarget.noTargetsYet": "এখনো কোনো টপিকের জন্য নির্দিষ্ট টার্গেট সেট করা হয়নি। উপরের ফর্ম থেকে যুক্ত করুন।",
+    "agq.topicTarget.questionsCompleted": "প্রশ্ন সম্পন্ন",
+    "agq.topicTarget.removeTarget": "টার্গেট বাতিল করুন",
+    "agq.topicTarget.currentPosition": "বর্তমান অবস্থান",
+
+    "agq.generation.title": "জেনারেশন সেটিংস",
+    "agq.generation.questionsPerBatch": "প্রতি ব্যাচে প্রশ্ন সংখ্যা",
+    "agq.generation.frequencyPerBatch": "ফ্রিকোয়েন্সি/ব্যাচ",
+    "agq.generation.every1h": "প্রতি ১ ঘন্টায়",
+    "agq.generation.every2h": "প্রতি ২ ঘন্টায় (আসল cron ইন্টারভাল)",
+    "agq.generation.every3h": "প্রতি ৩ ঘন্টায়",
+    "agq.generation.every4h": "প্রতি ৪ ঘন্টায়",
+    "agq.generation.every6h": "প্রতি ৬ ঘন্টায়",
+    "agq.generation.questionTarget": "প্রশ্ন লক্ষ্যমাত্রা",
+    "agq.generation.questionTypes": "প্রশ্নের ধরন (একাধিক নির্বাচন করা যাবে)",
+    "agq.generation.typeGeneral": "সাধারণ প্রশ্ন",
+    "agq.generation.typeBcsPast": "BCS প্রিলি — বিগত সালের প্রশ্ন",
+    "agq.generation.typeBcsImportant": "BCS প্রিলি — গুরুত্বপূর্ণ প্রশ্ন",
+    "agq.generation.typeBank": "ব্যাংক প্রিলি প্রশ্ন",
+    "agq.generation.typeNtrca": "NTRCA ও প্রাথমিক শিক্ষক নিবন্ধন",
+    "agq.generation.typeGovtOther": "অন্যান্য সরকারি চাকরির প্রশ্ন",
+    "agq.generation.typeVarsity": "বিশ্ববিদ্যালয় ভর্তি পরীক্ষা (BCS উপযোগী)",
+    "agq.generation.save": "জেনারেশন সেটিংস সংরক্ষণ করুন",
+    "agq.generation.saved": "জেনারেশন সেটিংস সংরক্ষিত হয়েছে",
+    "agq.generation.selectAtLeastOne": "অন্তত একটি প্রশ্নের ধরন নির্বাচন করুন",
+
+    "agq.qc.title": "ডুপ্লিকেট প্রোটেকশন ও কোয়ালিটি চেক সক্রিয়",
+    "agq.qc.desc": "প্রতিটি নতুন প্রশ্ন আগের প্রশ্নগুলোর সাথে মিলিয়ে দেখা হয় এবং AI স্বয়ংক্রিয়ভাবে উত্তরের স্পষ্টতা যাচাই করে। তৈরি হওয়া প্রতিটি ব্যাচ সাবজেক্ট ও টপিক অনুযায়ী রিভিউ কিউতে জমা হবে।",
+
+    "agq.queue.topicsWaiting": "টপিক রিভিউয়ের অপেক্ষায়",
+    "agq.queue.subjects": "সাবজেক্টে",
+    "agq.queue.selectAllTopics": "সব টপিক সিলেক্ট করুন",
+    "agq.queue.selected": "টি নির্বাচিত",
+    "agq.queue.massivePush": "Massive Push",
+    "agq.queue.massiveDelete": "Massive Delete",
+    "agq.queue.emptyTitle": "রিভিউ কিউ খালি, সব ব্যাচ প্রসেস হয়ে গেছে",
+    "agq.queue.selectTopic": "এই টপিক সিলেক্ট করুন",
+    "agq.queue.topicsLabel": "টপিক",
+    "agq.queue.questionsWaiting": "প্রশ্ন অপেক্ষমাণ",
+    "agq.queue.moreQuestionsInTopic": "টি প্রশ্ন এই টপিকে আছে",
+    "agq.queue.questionNum": "প্রশ্ন",
+    "agq.queue.editQuestion": "এই প্রশ্নটি এডিট করুন",
+    "agq.queue.explanation": "ব্যাখ্যা:",
+
+    "agq.history.topicsProcessed": "টপিক প্রসেস হয়েছে",
+    "agq.history.emptyTitle": "এখনো কোনো ব্যাচ Approve বা Reject করা হয়নি",
+    "agq.history.approved": "Approved",
+    "agq.history.rejected": "Rejected",
+    "agq.history.moreQuestionsWere": "টি প্রশ্ন এই টপিকে ছিল",
+
+    "agq.reorderModal.title": "সাবজেক্ট ক্রম পরিবর্তন",
+    "agq.reorderModal.hint": "একটি সাবজেক্ট সরাতে উপরে/নিচে বাটন ব্যবহার করুন",
+    "agq.reorderModal.cancel": "বাতিল",
+    "agq.reorderModal.save": "সংরক্ষণ করুন",
+
+    "agq.editModal.title": "প্রশ্ন এডিট করুন",
+    "agq.editModal.subject": "সাবজেক্ট:",
+    "agq.editModal.topic": "টপিক:",
+    "agq.editModal.delete": "ডিলেট করুন",
+    "agq.editModal.cancel": "বাতিল",
+    "agq.editModal.save": "সংরক্ষণ করুন",
+    "agq.editModal.explanationLabel": "ব্যাখ্যা",
+    "agq.editModal.explanationPlaceholder": "সঠিক উত্তরের ব্যাখ্যা লিখুন...",
+    "agq.editModal.questionPlaceholder": "প্রশ্ন লিখুন...",
+    "agq.editModal.optionPlaceholder": "অপশন লিখুন...",
+    "agq.editModal.preview": "প্রিভিউ",
+
+    "agq.toast.autoGenOn": "Auto Generation চালু করা হয়েছে",
+    "agq.toast.autoGenOff": "Auto Generation বন্ধ করা হয়েছে",
+    "agq.toast.subjectOrderSaved": "সাবজেক্ট ক্রম সংরক্ষণ করা হয়েছে",
+    "agq.toast.targetRemoved": "টার্গেট বাতিল করা হয়েছে",
+    "agq.toast.noTopicFound": "এই সাবজেক্টে কোনো টপিক পাওয়া যায়নি",
+    "agq.toast.aiWorkingWait": "AI বর্তমানে এই টপিকে কাজ করছে, শেষ হওয়ার পর টার্গেট সেট করুন",
+    "agq.toast.targetSaved": "টপিকের জন্য টার্গেট সংরক্ষণ করা হয়েছে",
+    "agq.toast.batchApproved": "টপিকের ব্যাচ Approve করে লাইভ ব্যাংকে যুক্ত করা হয়েছে",
+    "agq.toast.batchRejected": "টপিকের ব্যাচ বাতিল করা হয়েছে",
+    "agq.toast.questionSaved": "প্রশ্নটি সংরক্ষণ করা হয়েছে",
+    "agq.toast.questionDeleted": "প্রশ্নটি ডিলেট করা হয়েছে",
+    "agq.toast.massPushed": "টি ব্যাচ Massive Push করে লাইভ ব্যাংকে যুক্ত করা হয়েছে",
+    "agq.toast.massDeleted": "টি ব্যাচ Massive Delete করা হয়েছে",
+    "agq.toast.justNow": "এইমাত্র",
+    "agq.toast.addedToLiveBank": "টি প্রশ্ন লাইভ ব্যাংকে যুক্ত হয়েছে",
+    "agq.toast.batchRejectedShort": "ব্যাচটি বাতিল করা হয়েছে",
   },
 };
 
@@ -687,6 +940,11 @@ function setLanguage(lang) {
   // applyI18nStrings() above would otherwise stomp them back to the
   // generic "Continue Exam" text on every language switch.
   if (typeof initRecentExamState === "function") initRecentExamState();
+  // AGQ's own static numbers (progress overview, queue/history toolbar
+  // counts, tab badge, steppers) live as plain text in the HTML rather
+  // than data-i18n strings, so they need their own re-render on every
+  // language switch — same reasoning as initRecentExamState() above.
+  if (typeof applyAgqLocalizedNumbers === "function") applyAgqLocalizedNumbers();
 }
 
 function initLanguageToggle() {
@@ -1526,9 +1784,127 @@ function flushCloudWrite() {
     });
 }
 // Best-effort flush if the tab is closed with a pending debounce in flight.
-window.addEventListener("beforeunload", () => {
+// beforeunload alone is unreliable on mobile (iOS Safari in particular
+// often never fires it when a tab is backgrounded/swiped away), so also
+// flush on visibilitychange (going to background) and pagehide, which
+// fire much more consistently on mobile than beforeunload does.
+function flushCloudWriteIfPending() {
   if (pendingCloudWrite) flushCloudWrite();
+}
+window.addEventListener("beforeunload", flushCloudWriteIfPending);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushCloudWriteIfPending();
 });
+window.addEventListener("pagehide", flushCloudWriteIfPending);
+
+/* ---------- Practice Panel progress sync (public.practice_progress) ----------
+   Separate table from user_data (row-per-topic, see practice_progress_schema.sql)
+   rather than one more key inside user_data's blob: practice progress can
+   span hundreds of topics and is written on every answered question, so a
+   dedicated table with one row per (user, subject, topic) avoids re-sending
+   every other topic's data on each write and avoids racing other user_data
+   writes (aiConfig/examPrefs/examHistory) that happen independently.
+   Same debounce-then-flush shape as queueCloudWrite/flushCloudWrite above,
+   kept as its own queue so a burst of practice answers doesn't get batched
+   in with (or delayed by) exam-history/config writes. */
+let pendingPracticeWrites = new Map(); // key (subjectId::topicId) -> row payload
+let practiceWriteTimer = null;
+function queuePracticeProgressWrite(subjectId, topicId, entry) {
+  if (!isSignedIn()) return;
+  const key = practiceProgressKey(subjectId, topicId);
+  pendingPracticeWrites.set(key, { subjectId, topicId, entry });
+  setSyncStatus("syncing");
+  clearTimeout(practiceWriteTimer);
+  practiceWriteTimer = setTimeout(flushPracticeProgressWrites, 600);
+}
+function flushPracticeProgressWrites() {
+  const user = getCurrentUser();
+  const pending = pendingPracticeWrites;
+  pendingPracticeWrites = new Map();
+  if (!user || pending.size === 0) return;
+  const category = getActivePracticeCategory();
+  const rows = Array.from(pending.values()).map(({ subjectId, topicId, entry }) => {
+    const subj = (category ? category.subjects : []).find((s) => s.id === subjectId);
+    const topic = subj ? (subj.topics || []).find((t) => t.id === topicId) : null;
+    return {
+      firebase_uid: user.uid,
+      subject_id: subjectId,
+      topic_id: topicId,
+      subject_name: subj ? subj.name : null,
+      topic_name: topic ? topic.name : null,
+      answers: entry.answers || {},
+      current_index: entry.current || 0,
+      answered_count: entry.answeredCount || 0,
+      updated_at: new Date(entry.updatedAt || Date.now()).toISOString(),
+    };
+  });
+  supabaseClient
+    .from("practice_progress")
+    .upsert(rows, { onConflict: "firebase_uid,subject_id,topic_id" })
+    .then(({ error }) => {
+      if (error) throw error;
+      setSyncStatus("synced");
+    })
+    .catch((err) => {
+      console.error("Practice progress sync failed:", err);
+      setSyncStatus("error");
+    });
+}
+// See flushCloudWriteIfPending above for why beforeunload alone isn't
+// enough on mobile — same visibilitychange/pagehide fallback here.
+function flushPracticeProgressWritesIfPending() {
+  if (pendingPracticeWrites.size > 0) flushPracticeProgressWrites();
+}
+window.addEventListener("beforeunload", flushPracticeProgressWritesIfPending);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushPracticeProgressWritesIfPending();
+});
+window.addEventListener("pagehide", flushPracticeProgressWritesIfPending);
+
+/** Pulls every practice_progress row for this user and merges it into
+    practiceState.progress, keeping whichever copy (local vs cloud) of
+    each topic has the newer updatedAt — same merge-by-recency rule as
+    mergeExamHistories(). Called once on sign-in (see cloudStoreOnSignIn)
+    so progress made on another device shows up here, and local-only
+    progress made before signing in gets pushed up rather than discarded. */
+async function pullPracticeProgress(uid) {
+  const { data, error } = await supabaseClient
+    .from("practice_progress")
+    .select("subject_id, topic_id, answers, current_index, answered_count, updated_at")
+    .eq("firebase_uid", uid);
+  if (error) throw error;
+
+  const toPush = [];
+  (data || []).forEach((row) => {
+    const key = practiceProgressKey(row.subject_id, row.topic_id);
+    const cloudEntry = {
+      answers: row.answers || {},
+      current: row.current_index || 0,
+      answeredCount: row.answered_count || 0,
+      updatedAt: new Date(row.updated_at).getTime(),
+    };
+    const localEntry = practiceState.progress[key];
+    if (!localEntry || cloudEntry.updatedAt >= localEntry.updatedAt) {
+      practiceState.progress[key] = cloudEntry;
+    }
+  });
+
+  // Anything that exists locally but never made it to the server yet
+  // (offline edits, or progress made before this user ever signed in)
+  // gets pushed up so the cloud copy catches up too.
+  const cloudKeys = new Set((data || []).map((row) => practiceProgressKey(row.subject_id, row.topic_id)));
+  Object.keys(practiceState.progress).forEach((key) => {
+    const [subjectId, topicId] = key.split("::");
+    const localEntry = practiceState.progress[key];
+    const cloudRow = (data || []).find((r) => practiceProgressKey(r.subject_id, r.topic_id) === key);
+    const localIsNewer = !cloudRow || localEntry.updatedAt > new Date(cloudRow.updated_at).getTime();
+    if (!cloudKeys.has(key) || localIsNewer) {
+      queuePracticeProgressWrite(subjectId, topicId, localEntry);
+    }
+  });
+
+  savePracticeState();
+}
 
 /** Called once per sign-in. Fetches the user's Supabase row and merges it
     into localStorage. On a genuinely fresh sign-in (not a page-refresh
@@ -1564,6 +1940,18 @@ function cloudStoreOnSignIn(user, isFreshSignIn) {
         examPrefs: getStoredExamPrefs(),
         examHistory: merged,
       });
+
+      // Practice Panel progress lives in its own table (practice_progress,
+      // not user_data), so it's pulled/merged separately here — see
+      // pullPracticeProgress for the same merge-by-recency + push-back-up
+      // logic as exam history above. Re-render Statistics/BCS-Preliminary
+      // once the merge lands, same as renderHomeQuickStats above.
+      pullPracticeProgress(user.uid)
+        .then(() => {
+          if (typeof renderBcsPreliminaryStats === "function") renderBcsPreliminaryStats();
+          if (typeof renderStatisticsPage === "function") renderStatisticsPage();
+        })
+        .catch((err) => console.error("Could not load practice progress:", err));
     })
     .catch((err) => {
       console.error("Could not load cloud data:", err);
@@ -1574,6 +1962,8 @@ function cloudStoreOnSignIn(user, isFreshSignIn) {
 function cloudStoreOnSignOut() {
   pendingCloudWrite = null;
   clearTimeout(cloudWriteTimer);
+  pendingPracticeWrites = new Map();
+  clearTimeout(practiceWriteTimer);
   setSyncStatus("synced");
 }
 
@@ -1843,7 +2233,7 @@ function saveExamHistory(list) {
     // silently losing this session's save.
     console.error("Could not save exam history to localStorage:", e);
     if (typeof showToast === "function") {
-      showToast("Storage is full — couldn't save exam history. Try clearing old exams.", "danger");
+      showToast("Storage is full, couldn't save exam history. Try clearing old exams.", "danger");
     }
   }
   queueCloudWrite({ examHistory: trimmed });
@@ -1857,7 +2247,7 @@ function upsertExamHistory(session) {
   if (!session || !session.exam) return;
   const list = loadExamHistory();
   const idx = list.findIndex((r) => r.sessionId === session.sessionId);
-  const entry = { ...session, updatedAt: Date.now() };
+  const entry = { ...stripLiveExamAnswersForStorage(session), updatedAt: Date.now() };
   if (idx === -1) list.unshift(entry);
   else list[idx] = entry;
   list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
@@ -1873,8 +2263,37 @@ function loadSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || "null"); }
   catch (e) { return null; }
 }
+/** For an in-progress Live Exam session, returns a deep copy with
+    correctAnswer/explanation stripped from every question before it's
+    written to localStorage. A Live Exam's whole server-side design
+    (deny-all RLS + service-role proxy + subject/live-window checks — see
+    live_exam_questions_rls.sql) exists so a student can't see the
+    answer key before submitting; persisting it in plaintext to
+    localStorage the moment they join defeats that regardless of what
+    the UI shows, since anyone can read localStorage from DevTools.
+    Regular AI Mode / practice sessions are untouched — there is no
+    answer-key secrecy requirement once a question was already generated
+    into the student's own browser. Once the exam is submitted
+    (status !== "active"), the answer key is fair to persist again: the
+    student needs it for their own review screen, and the app already
+    gates showing it on the admin's publish flag (see enterStatistics). */
+function stripLiveExamAnswersForStorage(session) {
+  if (!session || !session.exam || !session.exam.liveExamId || session.status !== "active") {
+    return session;
+  }
+  return {
+    ...session,
+    exam: {
+      ...session.exam,
+      questions: session.exam.questions.map((q) => {
+        const { correctAnswer, explanation, ...rest } = q;
+        return rest;
+      }),
+    },
+  };
+}
 function saveSession(session) {
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stripLiveExamAnswersForStorage(session)));
   upsertExamHistory(session);
   return session;
 }
@@ -1969,7 +2388,27 @@ function calculateResult(session) {
     answers: { ...session.answers },
   };
 }
-function submitExam(session) {
+/** Re-attaches correctAnswer/explanation to a session's questions from
+    the in-memory question bank, for a Live Exam session whose questions
+    may have been loaded back from localStorage with those fields
+    stripped (see stripLiveExamAnswersForStorage) — e.g. after a page
+    refresh mid-exam. No-op for anything that isn't a Live Exam session,
+    or one that already has its answers (the common case: the session
+    object still in memory from when the exam was joined). */
+async function rehydrateLiveExamAnswers(session) {
+  if (!session || !session.exam || !session.exam.liveExamId) return session;
+  const alreadyHydrated = session.exam.questions.every((q) => typeof q.correctAnswer === "number");
+  if (alreadyHydrated) return session;
+  const bank = await fetchExamQuestionBank(session.exam.liveExamId);
+  session.exam.questions = session.exam.questions.map((q, i) => {
+    const source = bank[i];
+    if (!source) return q;
+    return { ...q, correctAnswer: source.correctAnswer, explanation: source.explanation || "" };
+  });
+  return session;
+}
+async function submitExam(session) {
+  await rehydrateLiveExamAnswers(session);
   session.status = "submitted";
   session.result = calculateResult(session);
   session.status = "completed";
@@ -2475,15 +2914,31 @@ let liveExamState = { session: null, timerInterval: null };
 // sign-in / startup and appended to locally right after a successful
 // submitLiveExamResultToSupabase() call (see submitExam above).
 let liveExamSubmittedIds = [];
+// This member's own per-exam score, keyed by exam_id — { [examId]:
+// { percentage, obtainedMarks, totalMarks } }. Populated alongside
+// liveExamSubmittedIds above (same query, same lifecycle). This is
+// distinct from centralExamState.merit, which only holds each member's
+// AVERAGE across all their submissions for the leaderboard — using merit
+// here would stamp the same aggregate number onto every exam in
+// getLiveExamResultRecords() instead of that exam's actual score.
+let liveExamOwnScores = {};
 async function refreshLiveExamSubmittedIds() {
   const email = currentMemberEmail();
-  if (!email) { liveExamSubmittedIds = []; return; }
+  if (!email) { liveExamSubmittedIds = []; liveExamOwnScores = {}; return; }
   const { data, error } = await supabaseClient
     .from("live_exam_submissions")
-    .select("exam_id")
+    .select("exam_id, score_percent, obtained_marks, total_marks")
     .eq("member_email", email);
   if (error) { console.error("Could not load submitted live exams:", error); return; }
   liveExamSubmittedIds = (data || []).map((r) => r.exam_id);
+  liveExamOwnScores = {};
+  (data || []).forEach((r) => {
+    liveExamOwnScores[r.exam_id] = {
+      percentage: r.score_percent != null ? Number(r.score_percent) : null,
+      obtainedMarks: r.obtained_marks,
+      totalMarks: r.total_marks,
+    };
+  });
 }
 
 // Stack of previously shown view names, so the various "Back" icon
@@ -2631,18 +3086,19 @@ function navigateToView(target, opts) {
   if (target === "practice-admin" && !isPracticeAdmin()) {
     showToast("This panel is restricted to the site admin.", "danger");
     showView("practice", opts);
-    renderPracticeSubjectList();
+    renderPracticeCategoryList();
     return;
   }
   // Practice Panel (subject/topic list + Practice Mode runner) — real
   // view now, so route + render it like the other sub-pages instead of
   // the earlier placeholder toast.
   showView(target, opts);
-  if (target === "history") renderHistoryPage();
-  else if (target === "statistics") renderStatisticsPage();
+  if (target === "history") { renderHistoryPage(); refreshLiveExamScoresAndRerender("history"); }
+  else if (target === "statistics") { renderStatisticsPage(); refreshPracticeAndRerenderStats(); refreshLiveExamScoresAndRerender("statistics"); }
   else if (target === "live-exam") renderCentralLiveExamHub();
   else if (target === "live-exam-admin") renderLiveExamAdminPanel();
-  else if (target === "practice") { renderPracticeSubjectList(); refreshPracticeAndRerenderPanel(); }
+  else if (target === "practice") { renderPracticeCategoryList(); refreshPracticeAndRerenderPanel(); }
+  else if (target === "practice-subjects") renderPracticeSubjectList();
   else if (target === "practice-admin") { renderPracticeAdminPanel(); refreshPracticeAndRerenderAdmin(); }
 }
 
@@ -2656,11 +3112,31 @@ function navigateToView(target, opts) {
     of the site already works (no live push channel anywhere else either). */
 async function refreshPracticeAndRerenderPanel() {
   const changed = await refreshPracticeManifest();
-  if (changed && document.body.getAttribute("data-page") === "practice") renderPracticeSubjectList();
+  if (changed && document.body.getAttribute("data-page") === "practice") renderPracticeCategoryList();
 }
 async function refreshPracticeAndRerenderAdmin() {
   const changed = await refreshPracticeManifest();
   if (changed && document.body.getAttribute("data-page") === "practice-admin") renderPracticeAdminSubjectList();
+}
+/** Same on-entry sync as the Practice Panel above, for the Statistics
+    page's BCS Preliminary pie/bar charts — these read practiceState.subjects
+    too, so without this they'd keep showing whatever Subject/Topic list was
+    last cached in this browser even after the admin adds/renames one. */
+async function refreshPracticeAndRerenderStats() {
+  const changed = await refreshPracticeManifest();
+  if (changed && document.body.getAttribute("data-page") === "statistics") renderBcsPreliminaryStats();
+}
+/** liveExamOwnScores (this member's own per-exam Live Exam scores) was
+    previously only refreshed on sign-in and right after this member's
+    own submission — not on entering History/Statistics, and not when an
+    admin corrects/publishes a score for an exam already ended. Re-pull
+    it on entry to either page so a freshly-published or corrected score
+    shows up without requiring a sign-out/sign-in to force the refresh. */
+async function refreshLiveExamScoresAndRerender(pageName) {
+  await refreshLiveExamSubmittedIds();
+  if (document.body.getAttribute("data-page") !== pageName) return;
+  if (pageName === "history") renderHistoryPage();
+  else if (pageName === "statistics") renderStatisticsPage();
 }
 
 /* ---------- Generating view ---------- */
@@ -3056,9 +3532,10 @@ function updateTimerDisplay() {
   else el.removeAttribute("data-state");
   if (remaining <= 0) {
     clearInterval(liveExamState.timerInterval);
-    autoSubmitExam(s);
-    showToast("Time is up. Your exam has been submitted automatically.", "warning");
-    setTimeout(enterStatistics, 900);
+    autoSubmitExam(s).then(() => {
+      showToast("Time is up. Your exam has been submitted automatically.", "warning");
+      setTimeout(enterStatistics, 900);
+    });
   }
 }
 function initLiveExamView() {
@@ -3072,9 +3549,9 @@ function initLiveExamView() {
   };
   qs("#submit-exam-btn")?.addEventListener("click", populateSubmitSummary);
   qs("#submit-exam-btn-header")?.addEventListener("click", populateSubmitSummary);
-  qs("#confirm-submit-btn")?.addEventListener("click", () => {
+  qs("#confirm-submit-btn")?.addEventListener("click", async () => {
     clearInterval(liveExamState.timerInterval);
-    submitExam(liveExamState.session);
+    await submitExam(liveExamState.session);
     closeModal("submit-modal");
     // closeModal() calls history.back() to consume the history entry
     // openModal() pushed, but history.back() is asynchronous — the
@@ -3090,9 +3567,18 @@ function initLiveExamView() {
     // after, not before, the browser's Back-button bookkeeping.
     setTimeout(enterStatistics, 0);
   });
-  window.addEventListener("beforeunload", () => {
+  // See flushCloudWriteIfPending's comment above for why beforeunload
+  // alone misses mobile backgrounding — same fallback here so an active
+  // Live Exam session's last answers aren't lost if the app is
+  // backgrounded instead of the tab being formally closed.
+  function flushLiveExamSessionIfActive() {
     if (liveExamState.session && liveExamState.session.status === "active") saveSession(liveExamState.session);
+  }
+  window.addEventListener("beforeunload", flushLiveExamSessionIfActive);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushLiveExamSessionIfActive();
   });
+  window.addEventListener("pagehide", flushLiveExamSessionIfActive);
 }
 
 /* ---------- Statistics view ---------- */
@@ -4314,6 +4800,14 @@ function renderPracticeExamRow(rec) {
   const statusBadge = rec.status === "completed"
     ? `<span class="badge badge-success"><span class="badge__dot"></span>Completed</span>`
     : `<span class="badge badge-warning"><span class="badge__dot"></span>In Progress</span>`;
+  // practiceEvalId (set by startEvaluateModule) marks this as a Practice
+  // Panel "Evaluate" module attempt rather than a regular AI-generated
+  // exam — surface it as its own badge so History can actually tell the
+  // two apart, which was the whole point of tagging it in the first
+  // place (see the comment on startEvaluateModule).
+  const evalBadge = rec.exam.practiceEvalId
+    ? `<span class="badge badge-primary">Evaluate</span><span class="record-row__meta-sep">·</span>`
+    : "";
   const answered = Object.keys(rec.answers || {}).length;
   const sideInfo = rec.status === "completed"
     ? `<div class="record-row__score"><div class="record-row__score-value">${rec.result.percentage}%</div><div class="record-row__score-label">Score</div></div>`
@@ -4325,6 +4819,7 @@ function renderPracticeExamRow(rec) {
           <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")}</div>
           <div class="record-row__topic">${escapeHtml(rec.exam.topic || "")}</div>
           <div class="record-row__meta">
+            ${evalBadge}
             <span>${questionCount} questions</span>
             <span class="record-row__meta-sep">·</span>
             <span>${formatRecordDate(rec)}</span>
@@ -4340,19 +4835,24 @@ function renderPracticeExamRow(rec) {
 }
 
 /** Returns this subscriber's own results from ended, published Central
-    Live Exams — the "Live Exam" tab on the History page. Looks
-    up centralExamState.merit for a "You" row on each published exam;
-    once live exams are backed by a real server this should instead
-    read the subscriber's own per-exam attempt records. */
+    Live Exams — the "Live Exam" tab on the History page, and the
+    Statistics page's Live Exam summary + recent-results list. Reads each
+    exam's actual score from liveExamOwnScores (per-exam, from
+    live_exam_submissions), NOT from centralExamState.merit — merit only
+    holds this member's AVERAGE score across every exam they've taken, so
+    using it here would show the same aggregate number for every exam
+    row instead of what was actually scored on that exam. An exam this
+    member never submitted (or hasn't been scored/published yet) gets
+    percentage: null, same as before. */
 function getLiveExamResultRecords() {
   const now = Date.now();
   return centralExamState.exams
     .filter((exam) => exam.published && now >= exam.start + exam.duration * 60 * 1000)
     .map((exam) => {
-      const selfRow = (centralExamState.merit || []).find((m) => m.self);
+      const own = liveExamOwnScores[exam.id];
       return {
         exam,
-        percentage: selfRow ? selfRow.score : null,
+        percentage: own ? own.percentage : null,
         submittedAt: exam.start + exam.duration * 60 * 1000,
       };
     })
@@ -4403,12 +4903,259 @@ function renderHistoryPage() {
   }
 }
 
+/* ==========================================================================
+   Statistics page — BCS Preliminary card: pie chart of Practice Panel
+   activity across all subjects, expanding per-subject into a per-topic
+   bar chart. Reuses practiceState.subjects/progress (same store Practice
+   Panel itself reads/writes) so this always reflects real activity, no
+   separate data model.
+   ========================================================================== */
+const BCS_PRELIM_PALETTE = [
+  "#6366f1", "#f59e0b", "#10b981", "#ef4444",
+  "#3b82f6", "#a855f7", "#ec4899", "#14b8a6",
+  "#84cc16", "#f97316", "#0ea5e9", "#8b5cf6",
+];
+function bcsPrelimColorFor(index) { return BCS_PRELIM_PALETTE[index % BCS_PRELIM_PALETTE.length]; }
+
+function bcsPrelimAttemptedForTopic(subjectId, topicId) {
+  const entry = practiceState.progress[practiceProgressKey(subjectId, topicId)];
+  if (!entry) return 0;
+  if (typeof entry.answeredCount === "number") return entry.answeredCount;
+  return entry.answers ? Object.keys(entry.answers).length : 0;
+}
+
+function renderBcsPreliminaryStats() {
+  const body = qs("#bcs-prelim-stats-body");
+  const demoBadge = qs("#bcs-prelim-demo-badge");
+  const titleEl = qs("#bcs-prelim-stats-title");
+  if (!body) return;
+  const category = getActivePracticeCategory();
+  const categorySubjects = category ? category.subjects : [];
+  if (titleEl) titleEl.textContent = category ? category.name : t("stats.bcsPrelim.title");
+
+  let subjectRows = categorySubjects.map((subject, i) => {
+    const topics = (subject.topics || []).map((topic) => ({
+      id: topic.id,
+      name: topic.name,
+      attempted: bcsPrelimAttemptedForTopic(subject.id, topic.id),
+    }));
+    const attempted = topics.reduce((sum, tp) => sum + tp.attempted, 0);
+    return { id: subject.id, name: subject.name, color: bcsPrelimColorFor(i), attempted, topics };
+  });
+
+  // Demo/placeholder counts removed: this card now only ever reflects
+  // real Practice Panel activity (bcsPrelimAttemptedForTopic above reads
+  // straight from practiceState.progress). No activity yet just means
+  // an honest empty state below — no fabricated numbers.
+  if (demoBadge) demoBadge.hidden = true;
+
+  const total = subjectRows.reduce((sum, s) => sum + s.attempted, 0);
+
+  if (total === 0) {
+    body.innerHTML = emptyStateRow(t("stats.bcsPrelim.empty"));
+    return;
+  }
+
+  let angleStart = 0;
+  const gradientStops = subjectRows
+    .filter((s) => s.attempted > 0)
+    .map((s) => {
+      const angleEnd = angleStart + (s.attempted / total) * 360;
+      const stop = `${s.color} ${angleStart}deg ${angleEnd}deg`;
+      angleStart = angleEnd;
+      return stop;
+    }).join(", ");
+
+  const legendHtml = subjectRows.map((s) => {
+    const pct = total ? Math.round((s.attempted / total) * 100) : 0;
+    return `
+    <button type="button" class="bcs-prelim-legend-row${s.attempted === 0 ? " bcs-prelim-legend-row--empty" : ""}" data-bcs-subject="${escapeHtml(s.id)}" aria-expanded="false">
+      <span class="bcs-prelim-legend-row__swatch" style="background-color:${s.color};"></span>
+      <span class="bcs-prelim-legend-row__name">${escapeHtml(s.name)}</span>
+      <span class="bcs-prelim-legend-row__pct">${pct}%</span>
+      <svg class="bcs-prelim-legend-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6l6-6"/></svg>
+    </button>
+    <div class="bcs-prelim-topic-panel" id="bcs-prelim-topic-panel-${escapeHtml(s.id)}" hidden></div>`;
+  }).join("");
+
+  body.innerHTML = `
+    <div class="bcs-prelim-layout">
+      <div class="bcs-prelim-pie-wrap">
+        <div class="bcs-prelim-pie" style="background: conic-gradient(${gradientStops});"></div>
+        <div class="bcs-prelim-pie-center">
+          <span class="bcs-prelim-pie-center__value">${total}</span>
+          <span class="bcs-prelim-pie-center__label">${t("stats.bcsPrelim.totalAttempted")}</span>
+        </div>
+      </div>
+      <div class="bcs-prelim-legend">${legendHtml}</div>
+    </div>`;
+
+  body._bcsPrelimSubjects = subjectRows;
+  wireBcsPreliminaryToggle(body);
+}
+
+function wireBcsPreliminaryToggle(body) {
+  if (body._bcsPrelimWired) return;
+  body._bcsPrelimWired = true;
+  body.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-bcs-subject]");
+    if (!btn || !body.contains(btn)) return;
+    const subjectId = btn.getAttribute("data-bcs-subject");
+    const panel = qs(`#bcs-prelim-topic-panel-${CSS.escape(subjectId)}`, body);
+    if (!panel) return;
+    const isOpen = btn.getAttribute("aria-expanded") === "true";
+
+    qsa("[data-bcs-subject]", body).forEach((otherBtn) => {
+      if (otherBtn !== btn) otherBtn.setAttribute("aria-expanded", "false");
+    });
+    qsa(".bcs-prelim-topic-panel", body).forEach((otherPanel) => {
+      if (otherPanel !== panel) { otherPanel.classList.remove("is-open"); otherPanel.hidden = true; otherPanel.innerHTML = ""; }
+    });
+
+    if (isOpen) {
+      btn.setAttribute("aria-expanded", "false");
+      panel.classList.remove("is-open");
+      // Wait for the collapse transition to finish before clearing content/hiding.
+      window.setTimeout(() => {
+        if (btn.getAttribute("aria-expanded") !== "true") {
+          panel.hidden = true;
+          panel.innerHTML = "";
+        }
+      }, 350);
+      return;
+    }
+
+    btn.setAttribute("aria-expanded", "true");
+    const subject = (body._bcsPrelimSubjects || []).find((s) => s.id === subjectId);
+    panel.innerHTML = renderBcsPrelimTopicBarChart(subject);
+    panel.hidden = false;
+    // Force layout so the subsequent class toggle actually transitions.
+    void panel.offsetHeight;
+    panel.classList.add("is-open");
+    // Grow the bars from the baseline once the panel has opened.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        qsa(".bcs-prelim-bar__fill", panel).forEach((fillEl) => {
+          fillEl.style.height = fillEl.dataset.targetHeight || fillEl.style.height;
+        });
+      });
+    });
+  });
+}
+
+function renderBcsPrelimTopicBarChart(subject) {
+  if (!subject) return "";
+  const activeTopics = subject.topics.filter((tp) => tp.attempted > 0);
+  if (activeTopics.length === 0) {
+    return `<div class="bcs-prelim-topic-empty">${escapeHtml(t("stats.bcsPrelim.noTopicActivity"))}</div>`;
+  }
+  const max = Math.max(...activeTopics.map((tp) => tp.attempted));
+  const bars = subject.topics.map((tp) => {
+    const heightPct = max ? Math.round((tp.attempted / max) * 100) : 0;
+    const targetHeight = Math.max(heightPct, tp.attempted > 0 ? 4 : 0);
+    return `
+      <div class="bcs-prelim-bar${tp.attempted === 0 ? " bcs-prelim-bar--empty" : ""}">
+        <div class="bcs-prelim-bar__count">${tp.attempted}</div>
+        <div class="bcs-prelim-bar__track-zone">
+          <div class="bcs-prelim-bar__track">
+            <div class="bcs-prelim-bar__fill" data-target-height="${targetHeight}%" style="height:0%; background-color:${subject.color};"></div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+  const labels = subject.topics.map((tp) => `<div class="bcs-prelim-bar__label">${escapeHtml(tp.name)}</div>`).join("");
+
+  return `
+    <div class="bcs-prelim-bar-scroll">
+      <div class="bcs-prelim-bar-chart">
+        <div class="bcs-prelim-bar-row">${bars}</div>
+        <div class="bcs-prelim-label-row">${labels}</div>
+      </div>
+    </div>`;
+}
+
 /** Renders the "Statistics" overview sub-page: per-subject average score
-    plus a short recent-results list, both from real completed exams. */
+    plus a short recent-results list, both from real completed exams —
+    Practice Exam tab (with the Subject/Topic pie + bar charts) and Live
+    Exam tab each get their own overview cards and recent-results list. */
+/** Category tab bar shown above the BCS Preliminary / Performance-by-
+    subject cards on the Statistics page's Practice Exam tab — lets the
+    student pick which Practice Panel category (বিসিএস প্রিলিমিনারী /
+    ব্যাংক প্রিলিমিনারী / ...) those two cards reflect. Switching tabs
+    just changes activePracticeCategoryId and re-renders both cards. */
+/** Renders one category's icon as either the uploaded image or the emoji
+    fallback — shared between the dropdown trigger and its option rows. */
+function statsCategoryIconHtml(cat) {
+  return cat.icon && cat.icon.startsWith("data:image")
+    ? `<img src="${escapeHtml(cat.icon)}" alt="" />`
+    : escapeHtml(cat.icon || "📚");
+}
+
+function closeStatsCategoryDropdown() {
+  const panel = qs("#stats-category-dropdown-panel");
+  const trigger = qs("#stats-category-dropdown-trigger");
+  if (panel) panel.classList.remove("is-open");
+  if (trigger) trigger.setAttribute("aria-expanded", "false");
+}
+registerGlobalDropdown("stats-category-dropdown", closeStatsCategoryDropdown);
+
+function renderStatsCategoryTabs() {
+  const wrap = qs("#stats-category-dropdown");
+  const trigger = qs("#stats-category-dropdown-trigger");
+  const panel = qs("#stats-category-dropdown-panel");
+  const staticTitle = qs("#bcs-prelim-stats-title-static");
+  if (!wrap || !trigger || !panel) return;
+  const categories = practiceState.categories || [];
+  const multi = categories.length >= 2;
+  wrap.hidden = !multi;
+  // Single category: no need to pick anything, so the plain-text title
+  // (same one renderBcsPreliminaryStats() below already updates) takes
+  // the header's title slot instead of the dropdown.
+  if (staticTitle) staticTitle.hidden = multi;
+  if (!multi) return;
+
+  const active = categories.find((c) => c.id === activePracticeCategoryId) || categories[0];
+  qs("#stats-category-dropdown-trigger-icon").innerHTML = statsCategoryIconHtml(active);
+  qs("#stats-category-dropdown-trigger-name").textContent = active.name;
+
+  panel.innerHTML = categories.map((cat) => `
+    <button type="button" class="stats-category-dropdown__option" role="option" data-stats-category-option="${escapeHtml(cat.id)}" aria-selected="${cat.id === active.id}">
+      <span class="stats-category-dropdown__option-icon">${statsCategoryIconHtml(cat)}</span>
+      <span>${escapeHtml(cat.name)}</span>
+    </button>`).join("");
+
+  trigger.onclick = (e) => {
+    e.stopPropagation();
+    const willOpen = !panel.classList.contains("is-open");
+    closeOtherGlobalDropdowns("stats-category-dropdown");
+    if (willOpen) {
+      panel.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  };
+
+  qsa("[data-stats-category-option]", panel).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      activePracticeCategoryId = btn.getAttribute("data-stats-category-option");
+      closeStatsCategoryDropdown();
+      renderStatisticsPage();
+    });
+  });
+}
+document.addEventListener("click", (e) => {
+  const wrap = qs("#stats-category-dropdown");
+  if (wrap && !wrap.hidden && !wrap.contains(e.target)) closeStatsCategoryDropdown();
+});
+
 function renderStatisticsPage() {
   const bySubject = qs("#subject-breakdown-list");
-  const recent = qs("#stats-recent-list");
-  if (!bySubject || !recent) return;
+  const bySubjectDemoBadge = qs("#by-subject-demo-badge");
+  const recentLive = qs("#stats-recent-live-list");
+  if (!bySubject || !recentLive) return;
+
+  renderStatsCategoryTabs();
+  renderBcsPreliminaryStats();
 
   const completed = getAllExamRecords().filter((rec) => rec.status === "completed");
 
@@ -4420,7 +5167,7 @@ function renderStatisticsPage() {
   if (practiceAvgEl) practiceAvgEl.textContent = `${practiceAvg}%`;
   if (practiceQEl) practiceQEl.textContent = practiceQuestions.toLocaleString();
 
-  // ---- Live Exam tab summary ----
+  // ---- Live Exam tab summary + recent results ----
   const liveResults = getLiveExamResultRecords();
   const liveExamsEl = qs("#stats-overview-live-exams"), liveAvgEl = qs("#stats-overview-live-avg"), liveQEl = qs("#stats-overview-live-questions");
   const liveScored = liveResults.filter((r) => r.percentage != null);
@@ -4430,10 +5177,20 @@ function renderStatisticsPage() {
   if (liveAvgEl) liveAvgEl.textContent = `${liveAvg}%`;
   if (liveQEl) liveQEl.textContent = liveQuestions.toLocaleString();
 
-  if (completed.length === 0) {
-    bySubject.innerHTML = emptyStateRow("No data yet - complete an exam to see your subject breakdown.");
-    recent.innerHTML = emptyStateRow("No completed exams yet.");
-    return;
+  if (liveResults.length === 0) {
+    recentLive.innerHTML = emptyStateRow(t("stats.recentResultsLive.empty"));
+  } else {
+    recentLive.innerHTML = liveResults.slice(0, 5).map((r) => `
+      <div class="record-row record-row--compact-stats">
+        <span class="record-row__icon" style="background-color: var(--color-danger-light); color: var(--color-danger);"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M6.2 6.2a8.1 8.1 0 0 0 0 11.6M17.8 6.2a8.1 8.1 0 0 1 0 11.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <div class="record-row__body">
+          <div class="record-row__title">${escapeHtml(r.exam.subject || "Exam")}</div>
+          <div class="record-row__topic">${escapeHtml(r.exam.topic || "")}</div>
+        </div>
+        <div class="record-row__side">
+          ${r.percentage != null ? `<span class="badge ${scoreBadgeClass(r.percentage)}">${r.percentage}%</span>` : `<span class="badge badge-neutral">-</span>`}
+        </div>
+      </div>`).join("");
   }
 
   const grouped = {};
@@ -4442,32 +5199,31 @@ function renderStatisticsPage() {
     if (!grouped[subject]) grouped[subject] = [];
     grouped[subject].push(rec.result.percentage);
   });
-  const subjects = Object.keys(grouped).map((name) => {
+  let subjects = Object.keys(grouped).map((name) => {
     const scores = grouped[name];
     const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
     return { name, avg };
   }).sort((a, b) => b.avg - a.avg);
 
-  bySubject.innerHTML = subjects.map((s) => `
-    <div class="subject-breakdown-row">
-      <span class="subject-breakdown-row__name">${escapeHtml(s.name)}</span>
-      <span class="subject-breakdown-row__bar-track"><span class="subject-breakdown-row__bar-fill" style="width:${s.avg}%;"></span></span>
-      <span class="subject-breakdown-row__value">${s.avg}%</span>
-    </div>`).join("");
+  // Demo/placeholder averages removed: this card now only ever reflects
+  // real completed exams (grouped above). No completed exams yet just
+  // means an honest empty state below.
+  if (bySubjectDemoBadge) bySubjectDemoBadge.hidden = true;
 
-  const recentRecords = completed.slice(0, 5);
-  recent.innerHTML = recentRecords.map((rec) => `
-    <div class="record-row record-row--compact-stats">
-      <span class="record-row__icon">${EXAM_ICON_SVG}</span>
-      <div class="record-row__body">
-        <div class="record-row__title">${escapeHtml(rec.exam.subject || "Exam")}</div>
-        <div class="record-row__topic">${escapeHtml(rec.exam.topic || "")}</div>
-      </div>
-      <div class="record-row__side">
-        <span class="badge ${scoreBadgeClass(rec.result.percentage)}">${rec.result.percentage}%</span>
-      </div>
-    </div>`).join("");
-  wireRecordRowClicks(recent, recentRecords);
+  if (subjects.length === 0) {
+    bySubject.innerHTML = emptyStateRow(t("stats.bySubject.empty"));
+    return;
+  }
+
+  bySubject.innerHTML = subjects.map((s) => {
+    const hue = subjectHueColor(s.name);
+    return `
+    <div class="subject-breakdown-row" style="border-color:${hue};">
+      <span class="subject-breakdown-row__name">${escapeHtml(s.name)}</span>
+      <span class="subject-breakdown-row__bar-track"><span class="subject-breakdown-row__bar-fill" style="width:${s.avg}%; background-color:${hue};"></span></span>
+      <span class="subject-breakdown-row__value">${s.avg}%</span>
+    </div>`;
+  }).join("");
 }
 
 /* ==========================================================================
@@ -4484,34 +5240,15 @@ const LIVE_EXAM_ADMIN_EMAILS = ["rifat.webflow@gmail.com"];
 // email, matching the same account already used for Live Exam's primary
 // admin. See isPracticeAdmin() below.
 const PRACTICE_ADMIN_EMAILS = ["rifat.webflow@gmail.com"];
-// Base URL of the Cloudflare Worker fronting the R2 bucket that stores
-// Practice Mode's question banks (see /worker/worker.js and its README
-// for deployment). PLACEHOLDER — replace with the real
-// "https://examcamp-practice-api.<your-subdomain>.workers.dev" once the
-// Worker is deployed; every call site below builds off this one constant
-// so that's the only edit needed.
-const PRACTICE_API_BASE = "https://damp-field-441cexamcamp-practice-api.rifat-webflow.workers.dev";
+// Base URL of the Supabase Edge Function fronting Supabase Storage
+// (question banks) + Postgres (AGQ state, Live Exam questions) — replaces
+// the old Cloudflare Worker. Every call site below builds off this one
+// constant, so this is the only edit needed after deploying the Edge
+// Function (see supabase/README.md — "supabase functions deploy api").
+// Format: "https://<project-ref>.supabase.co/functions/v1/api"
+const PRACTICE_API_BASE = "https://ximkiqggugotgmqzwpmm.supabase.co/functions/v1/api";
 
-/* PRACTICE_API_BASE readiness check — fails loudly instead of silently
-   faking success. This file previously had a localStorage-backed mock
-   here that intercepted every call to PRACTICE_API_BASE; it has been
-   removed because a mock that "just works" is exactly what lets a
-   never-deployed Worker slip into production unnoticed. This replacement
-   does nothing to actual requests — it only warns once if the placeholder
-   URL is still set, so the real failure (network error / 404) surfaces
-   normally instead of being masked. Delete this block once you've
-   deployed the Worker per /worker/README.md and updated PRACTICE_API_BASE
-   above — the condition can never be true again after that, so it
-   becomes dead code. */
-if (PRACTICE_API_BASE.includes("YOUR-SUBDOMAIN")) {
-  console.error(
-    "[Practice] PRACTICE_API_BASE is still the placeholder URL — Practice Mode " +
-    "reads/writes will fail until you deploy the Worker and update this constant. " +
-    "See /worker/README.md."
-  );
-}
-
-/** Fetches one topic's question bank from the Worker/R2.
+/** Fetches one topic's question bank from the Edge Function/Supabase Storage.
     Returns the saved-shape question array ({question, options,
     correctAnswer, explanation}[]) — the same shape createMCQBuilder's
     loadExam() already knows how to convert into its editor draft shape,
@@ -4523,7 +5260,7 @@ async function fetchPracticeTopicQuestions(subjectId, topicId) {
   return Array.isArray(data.questions) ? data.questions : [];
 }
 
-/** Overwrites one topic's question bank in R2 via the Worker. Admin-only:
+/** Overwrites one topic's question bank in Supabase Storage via the Edge Function. Admin-only:
     the Worker itself checks the Firebase ID token, but a signed-in check
     here avoids a pointless network round-trip for a request that would
     just come back 401. Throws on any failure so callers (PracticeMCQBuilder's
@@ -4545,9 +5282,9 @@ async function pushPracticeTopicQuestions(subjectId, topicId, questions, languag
   return res.json();
 }
 
-/** Deletes one topic's question bank file from R2 via the Worker — used
-    when the topic itself is deleted in the Subjects tab, so R2 doesn't
-    keep an orphaned file around. Best-effort: a failure here shouldn't
+/** Deletes one topic's question bank file from Supabase Storage via the
+    Edge Function — used when the topic itself is deleted in the Subjects
+    tab, so Storage doesn't keep an orphaned file around. Best-effort: a failure here shouldn't
     block the topic from being removed locally, so callers should treat
     this as fire-and-forget with a logged/toasted warning, not a hard stop. */
 async function deletePracticeTopicQuestions(subjectId, topicId) {
@@ -4562,7 +5299,7 @@ async function deletePracticeTopicQuestions(subjectId, topicId) {
 }
 
 /* ---------- Practice question-bank in-memory cache ----------
-   topic.questions no longer holds the real data (R2/Worker does) — this
+   topic.questions no longer holds the real data (Supabase Storage/Edge Function does) — this
    Map caches per-topic fetches for the current page session so switching
    between the student hub, practice runner, and admin editor doesn't
    re-fetch the same topic repeatedly. Keyed the same way as
@@ -4722,14 +5459,20 @@ async function pullCentralExamStateFromSupabase() {
     // SECURITY: live_exam_questions (which includes correct_answer for
     // every question of every exam, including ones that haven't started
     // and ones the current visitor isn't even enrolled in) is only fetched
-    // in bulk for admins. A non-admin's questionBank starts empty and is
-    // filled in one exam at a time, on demand, by fetchExamQuestionBank()
-    // below — called right before that specific exam is actually opened
-    // (join button / countdown-expiry auto-open), never speculatively.
-    // This is what the hard constraint "never expose correct answers
-    // during an active live exam" actually requires: not just hiding them
-    // in the UI, but never putting them in this visitor's browser at all
-    // for exams they aren't taking.
+    // in bulk for admins, and even then NOT via the anon Supabase key —
+    // live_exam_questions' RLS denies the anon key entirely (see
+    // live_exam_questions_rls.sql), so this goes through the Worker's
+    // /api/live-exam/questions route instead, which re-verifies admin
+    // status server-side before using a service-role key to read the
+    // table (see worker.js's handleLiveExamQuestionsBulkGet). A
+    // non-admin's questionBank starts empty and is filled in one exam at
+    // a time, on demand, by fetchExamQuestionBank() below — called right
+    // before that specific exam is actually opened (join button /
+    // countdown-expiry auto-open), never speculatively. This is what the
+    // hard constraint "never expose correct answers during an active live
+    // exam" actually requires: not just hiding them in the UI, but never
+    // putting them in this visitor's browser at all for exams they
+    // aren't taking.
     const isAdmin = isLiveExamAdmin();
     const baseFetches = [
       supabaseClient.from("subjects").select("*").order("created_at"),
@@ -4737,21 +5480,33 @@ async function pullCentralExamStateFromSupabase() {
       supabaseClient.from("members").select("*"),
       supabaseClient.from("enrollment_requests").select("*").eq("status", "pending").order("submitted_at"),
     ];
-    if (isAdmin) {
-      baseFetches.push(supabaseClient.from("live_exam_questions").select("*").order("position"));
-    }
-    const results = await Promise.all(baseFetches);
-    const [subjectsRes, examsRes, membersRes, enrollRes, questionsRes] = results;
-    [subjectsRes, examsRes, membersRes, enrollRes, questionsRes].forEach((r) => {
+    const [subjectsRes, examsRes, membersRes, enrollRes] = await Promise.all(baseFetches);
+    [subjectsRes, examsRes, membersRes, enrollRes].forEach((r) => {
       if (r && r.error) throw r.error;
     });
+
+    let bulkQuestions = null;
+    if (isAdmin) {
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+        const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/questions`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        bulkQuestions = await res.json();
+      }
+    }
 
     centralExamState.subjects = (subjectsRes.data || []).map(subjectRowToApp);
     centralExamState.exams = (examsRes.data || []).map(examRowToApp);
 
-    if (isAdmin) {
+    if (isAdmin && bulkQuestions) {
       const bank = {};
-      (questionsRes.data || []).forEach((q) => {
+      bulkQuestions.forEach((q) => {
         if (!bank[q.exam_id]) bank[q.exam_id] = [];
         bank[q.exam_id].push({
           question: q.question_html,
@@ -4797,23 +5552,43 @@ async function pullCentralExamStateFromSupabase() {
   }
 }
 
-/** Fetches ONE exam's question bank (with correct answers) from Supabase
-    and stores it into centralExamState.questionBank[examId], for callers
+/** Fetches ONE exam's question bank (with correct answers), for callers
     that don't already have it — i.e. non-admins, who no longer get every
     exam's answers loaded in bulk (see pullCentralExamStateFromSupabase).
     Safe/idempotent to call for an admin too: it's a no-op if already
     cached. Callers (the join-exam click handler, and anywhere else that
     is about to read centralExamState.questionBank[examId] for a specific
-    exam a visitor is actually entitled to take) must await this first. */
+    exam a visitor is actually entitled to take) must await this first.
+
+    Goes through the Worker's /api/live-exam/:examId/questions route
+    (PRACTICE_API_BASE — same Worker as Practice/AGQ, just a different
+    route) instead of calling Supabase directly. live_exam_questions'
+    RLS denies the anon key entirely (see live_exam_questions_rls.sql),
+    so a direct client-side Supabase call here would always return
+    nothing; the Worker verifies this member's Firebase ID token,
+    re-checks subject access and that the exam is currently live, then
+    fetches the rows itself with a service-role key that bypasses RLS.
+    See worker.js's handleLiveExamQuestionsGet for the actual check. */
 async function fetchExamQuestionBank(examId) {
   if (centralExamState.questionBank[examId]) return centralExamState.questionBank[examId];
-  const { data, error } = await supabaseClient
-    .from("live_exam_questions")
-    .select("*")
-    .eq("exam_id", examId)
-    .order("position");
-  if (error) {
-    console.error(`Could not load questions for exam ${examId}:`, error);
+  const currentUser = firebase.auth().currentUser;
+  if (!currentUser) {
+    console.error(`Could not load questions for exam ${examId}: not signed in`);
+    return [];
+  }
+  let data;
+  try {
+    const idToken = await currentUser.getIdToken();
+    const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/${encodeURIComponent(examId)}/questions`, {
+      headers: { Authorization: `Bearer ${idToken}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    data = await res.json();
+  } catch (err) {
+    console.error(`Could not load questions for exam ${examId}:`, err);
     return [];
   }
   const bank = (data || []).map((q) => ({
@@ -4907,23 +5682,31 @@ async function deleteLiveExamFromSupabase(examId) {
   if (error) console.error("Could not delete live exam:", error);
 }
 
-/** Replaces every question for one exam in Supabase (delete-then-insert,
-    simplest correct way to handle reordering/edits from the builder). */
+/** Replaces every question for one exam via the Worker's admin-only PUT
+    route (delete-then-insert happens server-side — see
+    handleLiveExamQuestionsPut in worker.js). Used to call
+    supabaseClient.from("live_exam_questions") directly with the anon
+    key; that no longer works now that live_exam_questions' RLS denies
+    anon writes too (see live_exam_questions_rls.sql) — the Worker
+    verifies admin status via the Firebase ID token, then writes with
+    a service-role key that bypasses RLS. */
 async function saveQuestionBankToSupabase(examId, questions) {
-  const del = await supabaseClient.from("live_exam_questions").delete().eq("exam_id", examId);
-  if (del.error) { console.error("Could not clear old questions:", del.error); return; }
-  if (!questions.length) return;
-  const rows = questions.map((q, i) => ({
-    exam_id: examId,
-    position: i,
-    question_html: q.question,
-    options: q.options,
-    correct_answer: q.correctAnswer,
-    explanation_html: q.explanation || "",
-  }));
-  const { error } = await supabaseClient.from("live_exam_questions").insert(rows);
-  if (error) console.error("Could not save questions:", error);
-  else supabaseClient.from("live_exams").update({ question_count: questions.length }).eq("id", examId).then(() => {});
+  const currentUser = firebase.auth().currentUser;
+  if (!currentUser) { console.error("Could not save questions: not signed in"); return; }
+  try {
+    const idToken = await currentUser.getIdToken();
+    const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/${encodeURIComponent(examId)}/questions`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ questions }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.error("Could not save questions:", err);
+  }
 }
 
 /** Saves one Member (insert or update) to Supabase. */
@@ -4968,6 +5751,7 @@ async function submitLiveExamResultToSupabase(examId, memberEmail, memberName, a
   }, { onConflict: "exam_id,member_email" });
   if (error) { console.error("Could not submit live exam result:", error); return; }
   await refreshMeritFromSupabase();
+  await refreshLiveExamSubmittedIds();
   saveCentralExamState();
   if (typeof renderLiveMerit === "function") renderLiveMerit();
 }
@@ -4996,6 +5780,22 @@ const debouncedPullCentralExamState = debounce(() => pullCentralExamStateFromSup
 // by the debounced pull right after the flag clears.
 let suppressRealtimeSelfEcho = false;
 
+// NOTE on live_exam_questions: this table is deliberately NOT subscribed
+// below. Realtime's postgres_changes feed is filtered by the same RLS
+// that governs SELECT for the connection's role (anon here) — see
+// live_exam_questions_rls.sql, which denies anon SELECT entirely so that
+// devtools can't read every exam's correct answers directly. That means
+// a postgres_changes listener on this table would silently receive
+// nothing (no error, the callback just never fires), which is the exact
+// "breaks silently" failure this comment used to warn about. Instead,
+// question pushes are picked up via live_exams: handleLiveExamQuestionsPut
+// (worker.js) PATCHes live_exams.question_count after every push, so the
+// live_exams listener below already fires whenever a push happens —
+// pullUnlessSelfEcho() then re-pulls, which re-fetches this admin's
+// bulk question bank (pullCentralExamStateFromSupabase -> the Worker's
+// /api/live-exam/questions route) same as before. Non-admin tabs don't
+// need to know about a push at all until they actually join that exam,
+// at which point fetchExamQuestionBank() fetches fresh anyway.
 function subscribeCentralExamRealtime() {
   const pullUnlessSelfEcho = () => {
     if (suppressRealtimeSelfEcho) return;
@@ -5006,7 +5806,6 @@ function subscribeCentralExamRealtime() {
     .on("postgres_changes", { event: "*", schema: "public", table: "subjects" }, pullUnlessSelfEcho)
     .on("postgres_changes", { event: "*", schema: "public", table: "members" }, pullUnlessSelfEcho)
     .on("postgres_changes", { event: "*", schema: "public", table: "live_exams" }, pullUnlessSelfEcho)
-    .on("postgres_changes", { event: "*", schema: "public", table: "live_exam_questions" }, pullUnlessSelfEcho)
     .on("postgres_changes", { event: "*", schema: "public", table: "live_exam_submissions" }, () => {
       refreshMeritFromSupabase().then(() => {
         saveCentralExamState();
@@ -5029,7 +5828,6 @@ function isLiveExamAdmin() {
 // spec ("শুধুমাত্র rifat.webflow@gmail.com" — no other account, ever).
 function isPracticeAdmin() {
   const email = (window.currentUserEmail || (firebase.auth().currentUser && firebase.auth().currentUser.email) || "").toLowerCase();
-  if (!email) return false;
   return PRACTICE_ADMIN_EMAILS.map((e) => e.toLowerCase()).includes(email);
 }
 function currentMemberEmail() {
@@ -5116,17 +5914,35 @@ function upcomingExamsForCurrentUser() {
 /* ---------- Countdown ---------- */
 let liveCountdownInterval = null;
 const LIVE_CAMPAIGN_CARD_HUES = ["hue-1", "hue-2", "hue-3", "hue-4", "hue-5"];
-/** Deterministic subject -> color mapping: the same subject name
-    always lands on the same hue class (so "English Literature" is
-    always e.g. blue everywhere it appears), while different subjects
-    spread across the palette instead of all sharing one color. */
-function subjectColorClass(subjectName) {
+/** Same 5-hue palette as subjectColorClass, as solid hex-ish CSS var
+    colors instead of a card gradient class — for places (e.g. the
+    "Performance by subject" bar fill) that need a plain background-color
+    rather than a class. Index order matches LIVE_CAMPAIGN_CARD_HUES so
+    a given subject name resolves to the same hue in both places. */
+const SUBJECT_HUE_COLORS = [
+  "var(--color-danger)",
+  "var(--color-info)",
+  "var(--color-success)",
+  "var(--color-warning)",
+  "var(--color-primary)",
+];
+function subjectHueIndex(subjectName) {
   let hash = 0;
   const name = String(subjectName || "");
   for (let i = 0; i < name.length; i++) {
     hash = (hash * 31 + name.charCodeAt(i)) | 0;
   }
-  const index = Math.abs(hash) % LIVE_CAMPAIGN_CARD_HUES.length;
+  return Math.abs(hash) % SUBJECT_HUE_COLORS.length;
+}
+function subjectHueColor(subjectName) {
+  return SUBJECT_HUE_COLORS[subjectHueIndex(subjectName)];
+}
+/** Deterministic subject -> color mapping: the same subject name
+    always lands on the same hue class (so "English Literature" is
+    always e.g. blue everywhere it appears), while different subjects
+    spread across the palette instead of all sharing one color. */
+function subjectColorClass(subjectName) {
+  const index = subjectHueIndex(subjectName);
   return "live-campaign-card--" + LIVE_CAMPAIGN_CARD_HUES[index];
 }
 /** Renders one card per subscribed exam into #live-campaign-cards, each
@@ -6727,6 +7543,7 @@ function createMCQBuilder(cfg) {
         </div>
       </div>`;
     document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
 
     /* Attachments state for THIS modal instance only — deliberately a
        fresh local array rather than reusing the Home page's global
@@ -6849,7 +7666,7 @@ function createMCQBuilder(cfg) {
       fileInput.value = ""; // allow re-selecting the same file later
     });
 
-    const close = () => { revokeModalAttachmentPreviews(); overlay.remove(); };
+    const close = () => { revokeModalAttachmentPreviews(); document.body.style.overflow = ""; overlay.remove(); };
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
     qs("#mcqp-ai-close", overlay).addEventListener("click", close);
     qs("#mcqp-ai-cancel", overlay).addEventListener("click", close);
@@ -6872,8 +7689,7 @@ function createMCQBuilder(cfg) {
       btn.disabled = true;
       iconEl.outerHTML = '<span class="mcqp-ai-spinner" id="mcqp-ai-generate-icon" role="status" aria-label="Generating"></span>';
       labelEl.textContent = "Generating…";
-      statusEl.textContent = "Generating questions…";
-      statusEl.className = "mcqp-ai-status is-loading";
+      statusEl.textContent = "";
       try {
         const result = await generateQuestionsWithGemini({
           subject: exam ? exam.subject : "",
@@ -6945,7 +7761,7 @@ function createMCQBuilder(cfg) {
      state again rather than staying in sync automatically. */
   function openPracticeImportModal() {
     if (!currentItemId) { showToast(cfg.selectFirstMessage, "danger"); return; }
-    if (!practiceState.subjects.length) {
+    if (!getPracticeAdminSubjects().length) {
       showToast("No Practice subjects exist yet - add some in the Practice Admin Panel first.", "danger");
       return;
     }
@@ -6965,7 +7781,7 @@ function createMCQBuilder(cfg) {
           </button>
         </div>
         <div class="mcqp-modal__body">
-          <p class="mcqp-hint">Pick any mix of subjects/topics — one topic, several, whole subjects, or everything. Every selected topic's questions get copied in below (as new copies, not linked to Practice).</p>
+          <p class="mcqp-hint">Pick any mix of subjects/topics: one topic, several, whole subjects, or everything. Every selected topic's questions get copied in below (as new copies, not linked to Practice).</p>
           <div class="mcqp-import-tree" id="mcqp-import-tree"></div>
         </div>
         <div class="mcqp-modal__foot">
@@ -6976,9 +7792,11 @@ function createMCQBuilder(cfg) {
         </div>
       </div>`;
     document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
 
     const close = () => {
       document.removeEventListener("keydown", onKeydown);
+      document.body.style.overflow = "";
       overlay.remove();
     };
     const onKeydown = (e) => { if (e.key === "Escape") close(); };
@@ -6991,7 +7809,7 @@ function createMCQBuilder(cfg) {
     // plus a subject-level "select all its topics" checkbox. Topics with
     // zero questions are shown but disabled (nothing useful to import). ----
     const tree = qs("#mcqp-import-tree", overlay);
-    practiceState.subjects.forEach((subject) => {
+    getPracticeAdminSubjects().forEach((subject) => {
       const block = document.createElement("div");
       block.className = "mcqp-import-subject";
 
@@ -7009,7 +7827,7 @@ function createMCQBuilder(cfg) {
       const topicList = document.createElement("div");
       topicList.className = "mcqp-import-topic-list";
       subject.topics.forEach((topic) => {
-        // Question content lives in R2 now, so we can't know a topic's
+        // Question content lives in Supabase Storage now, so we can't know a topic's
         // count synchronously while building this tree. Show every row
         // enabled at first (cached ones get the right state immediately,
         // via the same practiceQuestionCache the admin list reads), then
@@ -7069,7 +7887,7 @@ function createMCQBuilder(cfg) {
       confirmBtn.disabled = n === 0;
     }
 
-    // Resolve each topic's real question count from R2/cache now that the
+    // Resolve each topic's real question count from Storage/cache now that the
     // tree exists, disabling/relabeling any that turn out empty (rows we
     // couldn't know about synchronously when the tree was first built).
     // A row already checked gets unchecked if it turns out empty, so the
@@ -7115,7 +7933,7 @@ function createMCQBuilder(cfg) {
         // independent GET against the Worker (public, no auth needed for
         // reads), so a slow/failed one topic doesn't need to block the
         // others. allSettled means one bad topic (network hiccup, a file
-        // that got deleted from R2 after this modal opened) doesn't
+        // that got deleted from Storage after this modal opened) doesn't
         // throw away every other successful import.
         const results = await Promise.allSettled(
           picks.map((p) => getPracticeTopicQuestions(p.subjectId, p.topicId))
@@ -7883,14 +8701,64 @@ function defaultPracticeSubjects() {
   ];
 }
 
+function defaultPracticeCategories() {
+  return [
+    { id: "bcs-prelim", name: "বিসিএস প্রিলিমিনারী", icon: "🏛️", subjects: defaultPracticeSubjects() },
+  ];
+}
+
+/** Migrates a pre-category save ({subjects, progress}) into the new
+    {categories, progress} shape by wrapping the existing subject tree in
+    a single "বিসিএস প্রিলিমিনারী" category — same subject/topic ids, so
+    practice.progress (keyed subjectId::topicId) and any already-cached
+    Edge Function/Storage question banks stay valid untouched. Runs once per browser,
+    right after load; the migrated shape is what gets saved back. */
+function migratePracticeStateToCategories(saved) {
+  if (Array.isArray(saved.categories)) return saved; // already migrated
+  if (Array.isArray(saved.subjects)) {
+    return {
+      categories: [{ id: "bcs-prelim", name: "বিসিএস প্রিলিমিনারী", icon: "🏛️", subjects: saved.subjects }],
+      progress: saved.progress || {},
+    };
+  }
+  return null;
+}
+
 function loadPracticeState() {
   try {
     const saved = JSON.parse(localStorage.getItem(PRACTICE_STORAGE_KEY) || "null");
-    if (saved && Array.isArray(saved.subjects)) return saved;
+    if (saved) {
+      const migrated = migratePracticeStateToCategories(saved);
+      if (migrated) return migrated;
+    }
   } catch (e) { /* fall through to defaults */ }
-  return { subjects: defaultPracticeSubjects(), progress: {} };
+  return { categories: defaultPracticeCategories(), progress: {} };
 }
 let practiceState = loadPracticeState();
+// Which category the Practice Panel / Admin Panel is currently drilled
+// into. Transient nav state only — never persisted, never read by
+// anything outside the Practice Panel/Admin Panel/Statistics UI layer.
+// Defaults to the first category so existing single-category users land
+// exactly where they used to (straight into the subject list).
+let activePracticeCategoryId = (practiceState.categories[0] || {}).id || null;
+function getActivePracticeCategory() {
+  return practiceState.categories.find((c) => c.id === activePracticeCategoryId) || practiceState.categories[0] || null;
+}
+/** Live reference to the active category's subjects array — every Admin
+    Panel/AGQ read AND write (push/filter/reassign) goes through this so
+    edits land on the right category object instead of a detached copy.
+    Falls back to an empty array only if there is truly no category yet
+    (e.g. every category was deleted), so Admin Panel code that calls
+    .map/.find/.length on the result never throws. */
+function getPracticeAdminSubjects() {
+  const category = getActivePracticeCategory();
+  return category ? category.subjects : [];
+}
+function setPracticeAdminSubjects(subjects) {
+  const category = getActivePracticeCategory();
+  if (category) category.subjects = subjects;
+}
+function practiceCategoryId() { return "pc" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 // Local cache only from here on — see refreshPracticeManifest() below for
 // the real source of truth (the Worker/KV manifest). localStorage is kept
 // so the Practice Panel still has *something* to show instantly on load
@@ -7906,78 +8774,163 @@ function savePracticeState() {
    default list independently and the ids never matched what the admin
    had pushed questions into. GET/PUT /api/practice/manifest (added to
    worker.js alongside this change) makes the tree itself a synced
-   resource, the same way question content already was. */
+   resource, the same way question content already was.
 
-/** Fetches the current Subject/Topic tree from the Worker. Public route,
-    no auth needed. Throws on network/HTTP failure so callers can decide
-    how to degrade (see refreshPracticeManifest). */
+   Categories-aware as of this update: the manifest now carries the full
+   {categories:[{id,name,icon,subjects}]} shape practiceState actually
+   uses, not just a flat subjects[] list. fetchPracticeManifest() still
+   accepts an older flat-shape response from a not-yet-upgraded Worker
+   (wraps it into a single default category) so this doesn't hard-break
+   against worker.js before its /api/practice/manifest route is updated
+   to return {categories: [...]} — update worker.js to return that shape
+   directly once convenient; this fallback can be removed after. */
+
+/** Fetches the current category/Subject/Topic tree from the Worker.
+    Accepts either the current {categories:[...]} response or a legacy
+    {subjects:[...]} response from an older Worker deployment (wrapped
+    into a single "বিসিএস প্রিলিমিনারী" category so callers only ever
+    handle one shape). Throws on network/HTTP failure so callers can
+    decide how to degrade (see refreshPracticeManifest). */
 async function fetchPracticeManifest() {
   const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`);
   if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
   const data = await res.json();
-  return Array.isArray(data.subjects) ? data.subjects : [];
+  if (Array.isArray(data.categories)) return data.categories;
+  if (Array.isArray(data.subjects)) {
+    // Legacy flat-shape Worker response — wrap it so callers still get
+    // the categories[] shape practiceState now expects.
+    return [{ id: "bcs-prelim", name: "বিসিএস প্রিলিমিনারী", icon: "🏛️", subjects: data.subjects }];
+  }
+  return [];
 }
 
-/** Overwrites the Subject/Topic tree on the Worker. Admin-only (the
-    Worker checks the Firebase ID token); only sends id/name/topics/
-    language — never question content, which stays per-topic in its own
-    KV entry via pushPracticeTopicQuestions. */
-async function pushPracticeManifest(subjects) {
+/** Overwrites the full category/Subject/Topic tree on the Worker.
+    Admin-only (the Worker checks the Firebase ID token); only sends
+    id/name/icon/topics/language — never question content, which stays
+    per-topic in its own KV entry via pushPracticeTopicQuestions. */
+async function pushPracticeManifest(categories) {
   if (!isSignedIn()) throw new Error("Not signed in.");
   const idToken = await firebase.auth().currentUser.getIdToken();
-  const slim = subjects.map((s) => ({
-    id: s.id,
-    name: s.name,
-    topics: s.topics.map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
+  const slim = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    icon: c.icon || "",
+    subjects: (c.subjects || []).map((s) => ({
+      id: s.id,
+      name: s.name,
+      topics: (s.topics || []).map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
+    })),
   }));
   const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-    body: JSON.stringify({ subjects: slim }),
+    body: JSON.stringify({ categories: slim }),
   });
   if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
   return res.json();
 }
 
 /** Pulls the latest manifest from the Worker and merges it into
-    practiceState, keeping each topic's already-cached `language` in memory
-    intact and never touching per-user practiceState.progress. Called once
-    at startup (see the call site right after practiceState is first read)
-    and after every admin edit that changes the tree, so every browser —
-    admin's included — converges on the same ids the Worker knows about.
-    Silently keeps the local/default tree on failure (offline, Worker
-    unreachable) rather than blanking the Practice Panel; the panel will
-    just show stale/default subjects until the next successful refresh. */
+    practiceState, keeping each topic's already-cached `language` in
+    memory intact and remapping any already-saved progress whose
+    subject/topic id changed (same name, new id) so a re-sync never
+    silently orphans a student's practice history. Called once at
+    startup (see the call site right after practiceState is first
+    read) and after every admin edit that changes the tree (see
+    syncPracticeManifestAfterEdit). Fails soft: on any network/HTTP
+    error the existing localStorage-cached practiceState is left
+    exactly as it was (same offline-first behavior the rest of this
+    app already relies on), and this returns false so callers know
+    the sync didn't happen. */
 async function refreshPracticeManifest() {
-  let subjects;
   try {
-    subjects = await fetchPracticeManifest();
+    const remoteCategories = await fetchPracticeManifest();
+    if (!Array.isArray(remoteCategories) || remoteCategories.length === 0) return false;
+
+    // Build old-id -> {name, language} lookups per category before
+    // overwriting, so progress keyed on an id that changed server-side
+    // (same subject/topic name, new id) can be remapped instead of lost.
+    const oldLookup = new Map(); // "categoryId::name::name" -> { oldSubjectId, oldTopicId, language }
+    practiceState.categories.forEach((cat) => {
+      (cat.subjects || []).forEach((s) => {
+        (s.topics || []).forEach((tp) => {
+          oldLookup.set(`${cat.id}::${s.name}::${tp.name}`, { oldSubjectId: s.id, oldTopicId: tp.id, language: tp.language });
+        });
+      });
+    });
+
+    const remapped = {}; // newProgressKey -> oldProgressKey, applied after
+    const newCategories = remoteCategories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon || "🏛️",
+      subjects: (cat.subjects || []).map((s) => ({
+        id: s.id,
+        name: s.name,
+        topics: (s.topics || []).map((tp) => {
+          const prior = oldLookup.get(`${cat.id}::${s.name}::${tp.name}`);
+          const newKey = practiceProgressKey(s.id, tp.id);
+          if (prior && (prior.oldSubjectId !== s.id || prior.oldTopicId !== tp.id)) {
+            remapped[newKey] = practiceProgressKey(prior.oldSubjectId, prior.oldTopicId);
+          }
+          return { id: tp.id, name: tp.name, questions: [], language: (prior && prior.language) || tp.language || "en" };
+        }),
+      })),
+    }));
+
+    Object.entries(remapped).forEach(([newKey, oldKey]) => {
+      if (practiceState.progress[oldKey] && !practiceState.progress[newKey]) {
+        practiceState.progress[newKey] = practiceState.progress[oldKey];
+      }
+    });
+
+    // The remap above only updated practiceState.progress (localStorage).
+    // Without also queuing a cloud write under the new subject/topic id,
+    // Supabase keeps the row under the old id forever — so a login on a
+    // different device (or a cleared localStorage here) pulls the old,
+    // pre-remap key and the "migrated" progress looks lost. Push each
+    // remapped entry under its new key the same way any other practice
+    // answer would be queued.
+    Object.entries(remapped).forEach(([newKey]) => {
+      const entry = practiceState.progress[newKey];
+      if (!entry) return;
+      const [newSubjectId, newTopicId] = newKey.split("::");
+      queuePracticeProgressWrite(newSubjectId, newTopicId, entry);
+    });
+
+    practiceState.categories = newCategories;
+    if (!newCategories.find((c) => c.id === activePracticeCategoryId)) {
+      activePracticeCategoryId = (newCategories[0] || {}).id || null;
+    }
+    savePracticeState();
+    return true;
   } catch (e) {
-    console.error("Could not load Practice subjects/topics from server:", e);
+    console.warn("[Practice] Manifest sync failed, staying on cached localStorage data:", e.message);
     return false;
   }
-  if (!subjects.length) return false; // never overwrite local with an empty tree
-  practiceState.subjects = subjects.map((s) => ({
-    id: s.id,
-    name: s.name,
-    topics: s.topics.map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
-  }));
-  savePracticeState();
-  return true;
 }
 
-/** Pushes the in-memory Subject/Topic tree to the Worker after an admin
-    edit, then re-renders anything already on screen that lists subjects/
-    topics so the admin's own view reflects the merged/confirmed state.
-    Throws on failure (network, auth) — callers should catch this the same
-    way pushPracticeTopicQuestions callers already do, so a failed sync
-    surfaces as a toast instead of a silent local-only edit. */
+/** Pushes the current in-memory practiceState.categories tree to the
+    Worker after an admin edit (add/rename/delete subject or topic,
+    category CRUD). Fire-and-forget from the caller's perspective —
+    failures are logged and toasted, not thrown, so a temporarily
+    unreachable Worker never blocks the local edit the admin just made;
+    savePracticeState() (called by every edit site already) keeps that
+    edit safe in localStorage regardless of whether this sync succeeds. */
 async function syncPracticeManifestAfterEdit() {
-  await pushPracticeManifest(practiceState.subjects);
+  try {
+    await pushPracticeManifest(practiceState.categories);
+  } catch (e) {
+    console.warn("[Practice] Failed to sync manifest to server:", e.message);
+    if (typeof showToast === "function") {
+      showToast("সাবজেক্ট/টপিক তালিকা সার্ভারে সিঙ্ক করা যায়নি — এই ডিভাইসে সংরক্ষিত আছে।", "warning");
+    }
+  }
 }
 
 function findPracticeTopic(subjectId, topicId) {
-  const subject = practiceState.subjects.find((s) => s.id === subjectId);
+  const category = getActivePracticeCategory();
+  const subject = (category ? category.subjects : []).find((s) => s.id === subjectId);
   if (!subject) return null;
   const topic = subject.topics.find((t) => t.id === topicId);
   if (!topic) return null;
@@ -7985,20 +8938,67 @@ function findPracticeTopic(subjectId, topicId) {
 }
 function practiceProgressKey(subjectId, topicId) { return `${subjectId}::${topicId}`; }
 
-/* ---------- Practice Panel: subject accordion ---------- */
+/* ---------- Practice Panel: category grid → subject accordion ---------- */
 registerGlobalDropdown("practice-panel-accordion", () => {
   qsa(".pp-subject.is-open", qs("#pp-subject-list") || document).forEach((el) => el.classList.remove("is-open"));
 });
 
-function renderPracticeSubjectList() {
-  const container = qs("#pp-subject-list");
+/** Top-level screen of the Practice Panel (#view-practice): one card per
+    exam category (বিসিএস প্রিলিমিনারী, ব্যাংক প্রিলিমিনারী, ...) — cards
+    only, no subject list on this screen. Picking a card navigates to the
+    separate #view-practice-subjects view (see navigateToPracticeSubjects
+    below) for that category's Subject/Topic accordion. */
+function renderPracticeCategoryList() {
+  const container = qs("#pp-category-list");
   if (!container) return;
-  // Admin entry button on the Practice hub: only visible to the practice
-  // admin (isPracticeAdmin) — mirrors the same hide-for-non-admins pattern
-  // as #live-exam-admin-entry in renderCentralLiveExamHub().
   const adminEntry = qs("#practice-admin-entry");
   if (adminEntry) adminEntry.hidden = !isPracticeAdmin();
-  container.innerHTML = practiceState.subjects.map((subject) => {
+
+  const categories = practiceState.categories || [];
+  container.innerHTML = categories.length
+    ? categories.map((cat) => {
+        const iconHtml = cat.icon && cat.icon.startsWith("data:image")
+          ? `<img class="pp-category-card__icon pp-category-card__icon--img" src="${escapeHtml(cat.icon)}" alt="" />`
+          : `<span class="pp-category-card__icon">${escapeHtml(cat.icon || "📚")}</span>`;
+        return `
+      <button type="button" class="pp-category-card" data-practice-category="${escapeHtml(cat.id)}">
+        ${iconHtml}
+        <span class="pp-category-card__name">${escapeHtml(cat.name)}</span>
+        ${cat.description ? `<span class="pp-category-card__desc">${escapeHtml(cat.description)}</span>` : ""}
+      </button>`;
+      }).join("")
+    : `<div class="pp-subject__empty" data-i18n="practice.category.empty">${escapeHtml(t("practice.category.empty"))}</div>`;
+
+  qsa("[data-practice-category]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activePracticeCategoryId = btn.getAttribute("data-practice-category");
+      navigateToView("practice-subjects");
+    });
+  });
+}
+
+/** Drill-down screen (#view-practice-subjects): the Subject/Topic
+    accordion for whichever category was picked on the category grid —
+    same markup/behavior as before categories existed, just scoped to
+    getActivePracticeCategory() and living in its own view/history entry
+    instead of a hidden-toggle inside #view-practice. */
+function renderPracticeSubjectList() {
+  const container = qs("#pp-subject-list");
+  const pageLabel = qs("#pp-subjects-page-label");
+  const heading = qs("#pp-subjects-heading");
+  if (!container) return;
+  const category = getActivePracticeCategory();
+  if (!category) { navigateToView("practice"); return; }
+
+  if (pageLabel) pageLabel.textContent = category.name;
+  if (heading) {
+    const iconHtml = category.icon && category.icon.startsWith("data:image")
+      ? `<img class="pp-subjects-heading__icon pp-subjects-heading__icon--img" src="${escapeHtml(category.icon)}" alt="" />`
+      : `<span class="pp-subjects-heading__icon">${escapeHtml(category.icon || "📚")}</span>`;
+    heading.innerHTML = `${iconHtml}<span class="pp-subjects-heading__name">${escapeHtml(category.name)}</span>`;
+  }
+
+  container.innerHTML = category.subjects.map((subject) => {
     const topicsHtml = subject.topics.length
       ? subject.topics.map((topic) => `
           <button type="button" class="pp-topic-row" data-practice-topic data-subject-id="${escapeHtml(subject.id)}" data-topic-id="${escapeHtml(topic.id)}">
@@ -8036,9 +9036,177 @@ function renderPracticeSubjectList() {
     btn.addEventListener("click", () => {
       const subjectId = btn.getAttribute("data-subject-id");
       const topicId = btn.getAttribute("data-topic-id");
-      enterPracticeMode(subjectId, topicId);
+      openPracticeInterestModal(subjectId, topicId);
     });
   });
+}
+
+
+
+/* ---------- Practice: Select-your-interest popup (Evaluate / Practice) ----------
+   Opened on every topic tap in the Practice Panel instead of jumping
+   straight into Practice Mode. Both branches re-fetch the topic's
+   question bank themselves (Evaluate needs the full bank to shuffle/
+   split into modules; Practice hands off to the unchanged
+   enterPracticeMode, which does its own fetch) rather than caching it
+   here, keeping this function a thin dispatcher. */
+let practiceInterestTarget = null; // { subjectId, topicId, subject, topic }
+
+function openPracticeInterestModal(subjectId, topicId) {
+  const found = findPracticeTopic(subjectId, topicId);
+  if (!found) { showToast("This topic isn't available.", "danger"); return; }
+  practiceInterestTarget = { subjectId, topicId, subject: found.subject, topic: found.topic };
+  const subjectEl = qs("#practice-interest-modal-subject");
+  const topicEl = qs("#practice-interest-modal-topic");
+  if (subjectEl) subjectEl.textContent = found.subject.name;
+  if (topicEl) topicEl.textContent = found.topic.name;
+  openModal("practice-interest-modal");
+}
+
+function initPracticeInterestModal() {
+  const evaluateBtn = qs("#practice-interest-evaluate-btn");
+  const practiceBtn = qs("#practice-interest-practice-btn");
+  if (evaluateBtn) {
+    evaluateBtn.addEventListener("click", async () => {
+      if (!practiceInterestTarget) return;
+      const { subjectId, topicId } = practiceInterestTarget;
+      closeModal("practice-interest-modal");
+      await openPracticeModuleModal(subjectId, topicId);
+    });
+  }
+  if (practiceBtn) {
+    practiceBtn.addEventListener("click", () => {
+      if (!practiceInterestTarget) return;
+      const { subjectId, topicId } = practiceInterestTarget;
+      closeModal("practice-interest-modal");
+      enterPracticeMode(subjectId, topicId);
+    });
+  }
+}
+
+/* ---------- Practice: Evaluate — module split + module-select popup ----------
+   No difficulty tagging exists on practice-bank questions, so modules
+   are formed by shuffling the full bank once (Fisher–Yates) and
+   slicing it into fixed EVALUATE_MODULE_SIZE chunks in order — every
+   question lands in exactly one module (no repeats across modules,
+   see the user's spec), and each module ends up with a natural mix of
+   difficulties since the source order is randomized first. The final
+   module simply gets whatever remains (may be smaller, or the only
+   module if the bank has fewer than EVALUATE_MODULE_SIZE questions). */
+const EVALUATE_MODULE_SIZE = 50;
+const EVALUATE_MODULE_DURATION_MINUTES = 30;
+
+function shuffleArray(arr) {
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function buildEvaluateModules(questions) {
+  const shuffled = shuffleArray(questions);
+  const modules = [];
+  for (let i = 0; i < shuffled.length; i += EVALUATE_MODULE_SIZE) {
+    modules.push(shuffled.slice(i, i + EVALUATE_MODULE_SIZE));
+  }
+  return modules;
+}
+
+async function openPracticeModuleModal(subjectId, topicId) {
+  const found = findPracticeTopic(subjectId, topicId);
+  if (!found) { showToast("This topic isn't available.", "danger"); return; }
+  const { subject, topic } = found;
+
+  let questions;
+  try {
+    questions = await getPracticeTopicQuestions(subjectId, topicId);
+  } catch (e) {
+    console.error(e);
+    showToast("Couldn't load this topic's questions. Check your connection and try again.", "danger");
+    return;
+  }
+  if (!questions.length) {
+    showToast("No questions have been added to this topic yet.", "info");
+    return;
+  }
+
+  const modules = buildEvaluateModules(questions);
+  const subjectEl = qs("#practice-module-modal-subject");
+  const topicEl = qs("#practice-module-modal-topic");
+  if (subjectEl) subjectEl.textContent = subject.name;
+  if (topicEl) topicEl.textContent = topic.name;
+
+  const list = qs("#practice-module-modal-list");
+  if (list) {
+    list.innerHTML = modules.map((mod, i) => `
+      <button type="button" class="btn btn-outline btn-lg evaluate-module-btn" data-evaluate-module-index="${i}">
+        <span class="evaluate-module-btn__title">Module ${i + 1}</span>
+        <span class="evaluate-module-btn__meta">${mod.length} questions</span>
+      </button>`).join("");
+    qsa("[data-evaluate-module-index]", list).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-evaluate-module-index"));
+        closeModal("practice-module-modal");
+        startEvaluateModule(subject, topic, modules[idx], idx + 1);
+      });
+    });
+  }
+
+  openModal("practice-module-modal");
+}
+
+/** Launches one Evaluate module into the existing Exam Mode player —
+    same shape as buildExamFromLiveExam, tagged with practiceEvalId
+    (instead of liveExamId) so submitExam()/history can tell an
+    Evaluate attempt apart from a Live Exam or AI-generated one without
+    touching either of those paths. Duration/marking follow the
+    student's own Evaluate spec (30 min/module) and the site's default
+    exam marking prefs, same as a regular AI Mode exam. */
+function startEvaluateModule(subject, topic, moduleQuestions, moduleNumber) {
+  const prefs = getStoredExamPrefs();
+  const questions = moduleQuestions.map((q, i) => {
+    const clean = sanitizeQuestionMath(q);
+    return {
+      id: `question-${i + 1}`,
+      question: clean.question, options: clean.options,
+      correctAnswer: clean.correctAnswer, explanation: clean.explanation || "",
+    };
+  });
+  const exam = {
+    examId: genId("exam"),
+    practiceEvalId: `${subject.id}::${topic.id}::module-${moduleNumber}`,
+    subject: subject.name, topic: `${topic.name} (Module ${moduleNumber})`,
+    language: topic.language || "en",
+    questionCount: questions.length,
+    duration: EVALUATE_MODULE_DURATION_MINUTES,
+    marksPerQuestion: 1,
+    negativeMarking: prefs.negativeMarkValue ?? 0.25,
+    questions,
+  };
+  createExamSession(exam);
+  showToast("Starting your evaluation - this reuses your existing Exam Mode player.", "success");
+  showView("exam", { resetHistory: true });
+  enterEvaluateExam();
+}
+
+function enterEvaluateExam() {
+  const session = restoreExamSession();
+  if (!session) { showToast("No active exam found.", "danger"); showView("home"); return; }
+  if (session.status === "completed") { enterStatistics(); return; }
+  liveExamState.session = session;
+
+  const exam = session.exam;
+  qs("#header-subject").textContent = exam.subject || "Exam";
+  qs("#header-topic").textContent = exam.topic || "";
+
+  showView("exam");
+  renderQuestionStream();
+  renderNavigator();
+  renderQuestion();
+  startTimer();
+  initMobileNavStripSync();
 }
 
 /* ---------- Practice Mode: Exam-Mode-styled runner ---------- */
@@ -8049,7 +9217,7 @@ async function enterPracticeMode(subjectId, topicId) {
   if (!found) { showToast("This topic isn't available.", "danger"); return; }
   const { subject, topic } = found;
 
-  // Question content now lives in R2 (see getPracticeTopicQuestions), not
+  // Question content now lives in Supabase Storage (see getPracticeTopicQuestions), not
   // on the local topic object, so this is a network call — show a toast
   // if it's slow/fails rather than leaving the button looking unresponsive.
   let questions;
@@ -8090,15 +9258,22 @@ async function enterPracticeMode(subjectId, topicId) {
 
 function savePracticeProgress() {
   if (!practiceModeState) return;
-  const key = practiceProgressKey(practiceModeState.subjectId, practiceModeState.topicId);
+  const { subjectId, topicId } = practiceModeState;
+  const key = practiceProgressKey(subjectId, topicId);
   const answeredCount = Object.keys(practiceModeState.answers).length;
-  practiceState.progress[key] = {
+  const entry = {
     answers: { ...practiceModeState.answers },
     current: practiceModeState.current,
     answeredCount,
     updatedAt: Date.now(),
   };
+  practiceState.progress[key] = entry;
   savePracticeState();
+  // Mirrors upsertExamHistory's pattern below: local write is always the
+  // synchronous source of truth (Statistics/BCS-Preliminary charts read
+  // practiceState.progress directly and must never wait on a network
+  // round-trip), the cloud write is fire-and-forget on top of it.
+  queuePracticeProgressWrite(subjectId, topicId, entry);
 }
 
 function practiceQuestionOutcome(q, selectedIdx) {
@@ -8115,7 +9290,7 @@ function renderPracticeQuestionStream() {
   // toggle when the questions were pushed (see PracticeMCQBuilder.pushQuestions)
   // — not the site-wide EN/বাংলা toggle, so each topic renders consistently
   // for every student regardless of their own UI language preference.
-  const useLocalized = s.language === "bn";
+  const useLocalized = usesLocalizedLabels(s.language);
   const letters = optionLetters(useLocalized);
 
   s.questions.forEach((q, index) => {
@@ -8448,7 +9623,7 @@ const PracticeMCQBuilder = createMCQBuilder({
   selectFirstMessage: "Select or create a Topic first.",
   getItems() {
     const items = [];
-    practiceState.subjects.forEach((s) => {
+    getPracticeAdminSubjects().forEach((s) => {
       s.topics.forEach((t) => {
         items.push({ id: practiceProgressKey(s.id, t.id), label: `${s.name} - ${t.name}` });
       });
@@ -8467,7 +9642,7 @@ const PracticeMCQBuilder = createMCQBuilder({
     if (!found) return [];
     // Always force a fresh fetch here rather than serving a stale cache
     // hit: this is the admin editor loading a topic to edit, so it needs
-    // the true current state in R2 — not a count-badge estimate from
+    // the true current state in Storage — not a count-badge estimate from
     // somewhere else in the UI.
     return getPracticeTopicQuestions(subjectId, topicId, { forceRefresh: true });
   },
@@ -8521,6 +9696,263 @@ registerGlobalDropdown("practice-admin-accordion", () => {
   renderPracticeAdminSubjectList();
 });
 
+/* ---------- Exam Categories tab: category list + category form ----------
+   Same inline-form UI pattern as the Subjects tab below (one state object,
+   forms render inside the card that's being edited/created), scoped to
+   practiceState.categories instead of a single category's subjects[]. */
+let pracAdminCategoryUI = {
+  editingCategoryId: null,
+  newCategoryOpen: false,
+};
+
+/** Reads an image File and resolves a full data: URI (unlike
+    fileToBase64() above, which strips the prefix for Gemini's inline-data
+    API) — this is what gets stored directly in category.icon and dropped
+    straight into an <img src>. */
+function imageFileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("FILE_READ_ERROR"));
+    reader.readAsDataURL(file);
+  });
+}
+// Holds the icon for whichever category form (new or edit) is currently
+// open, since a data: URI is too long to round-trip through a plain
+// text input's value attribute on every re-render — the preview below
+// the upload button reads from here instead.
+let pracAdminCategoryIconDraft = null;
+function practiceAdminCategoryIconPreviewHtml(icon) {
+  if (!icon) return `<div class="pa-category-icon-preview pa-category-icon-preview--empty">📚</div>`;
+  return icon.startsWith("data:image")
+    ? `<img class="pa-category-icon-preview" src="${escapeHtml(icon)}" alt="" />`
+    : `<div class="pa-category-icon-preview">${escapeHtml(icon)}</div>`;
+}
+function practiceAdminCategoryFormHtml(category) {
+  const icon = pracAdminCategoryIconDraft !== null ? pracAdminCategoryIconDraft : (category ? category.icon || "" : "");
+  return `
+    <div class="card" style="margin: 0 0 var(--space-4);" data-pa-inline-category-form>
+      <div class="card__header">
+        <h3 class="text-h4">${category ? "Edit category" : "New category"}</h3>
+        <button type="button" class="icon-btn" data-pa-admin-category-form-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="pa-category-icon-row">
+        ${practiceAdminCategoryIconPreviewHtml(icon)}
+        <div class="pa-category-icon-row__actions">
+          <button type="button" class="btn btn-outline btn-sm" data-pa-admin-category-icon-upload>Upload icon</button>
+          ${icon ? `<button type="button" class="btn btn-outline btn-sm" data-pa-admin-category-icon-clear>Remove</button>` : ""}
+          <input type="file" class="visually-hidden" id="pa-admin-category-icon-input" accept="image/*" aria-hidden="true" tabindex="-1" />
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="pa-admin-category-name">Category name</label>
+        <input type="text" class="form-control" id="pa-admin-category-name" placeholder="e.g. ব্যাংক প্রিলিমিনারী" value="${category ? escapeHtml(category.name) : ""}" />
+      </div>
+      <div style="margin-top: var(--space-3);">
+        <label class="form-label" for="pa-admin-category-desc">Category details</label>
+        <textarea class="form-control" id="pa-admin-category-desc" rows="3" placeholder="A short description of this exam category">${category ? escapeHtml(category.description || "") : ""}</textarea>
+      </div>
+
+      <div class="pa-inline-form-row__actions" style="margin-top: var(--space-3);">
+        <button type="button" class="btn btn-primary" data-pa-admin-category-save="${category ? escapeHtml(category.id) : ""}">Save Category</button>
+        <button type="button" class="btn btn-secondary" data-pa-admin-category-form-close>Cancel</button>
+      </div>
+    </div>`;
+}
+
+function renderPracticeAdminCategoryList() {
+  const container = qs("#pa-admin-category-list");
+  if (!container) return;
+
+  const categories = practiceState.categories || [];
+  const newCategoryFormHtml = pracAdminCategoryUI.newCategoryOpen ? practiceAdminCategoryFormHtml(null) : "";
+
+  if (!categories.length) {
+    container.innerHTML = newCategoryFormHtml || `<div class="card text-center text-secondary" style="padding: var(--space-8);">No exam categories yet - click "New Category" to add one (e.g. "ব্যাংক প্রিলিমিনারী"). It'll show up as a card on the Practice page.</div>`;
+    wirePracticeAdminCategoryList(container);
+    return;
+  }
+
+  container.innerHTML = newCategoryFormHtml + categories.map((cat) => {
+    const isEditingThisCategory = pracAdminCategoryUI.editingCategoryId === cat.id;
+    const subjectCount = (cat.subjects || []).length;
+    const iconHtml = cat.icon && cat.icon.startsWith("data:image")
+      ? `<img class="pa-category-icon-preview pa-category-icon-preview--sm" src="${escapeHtml(cat.icon)}" alt="" />`
+      : `<span style="font-size: 1.4rem; line-height: 1;">${escapeHtml(cat.icon || "📚")}</span>`;
+    return `
+    <section class="pp-subject is-open" data-category-card="${escapeHtml(cat.id)}">
+      <div class="pp-subject__head" style="cursor: default;">
+        <div class="pp-subject__title-wrap" style="display:flex; align-items:center; gap: var(--space-2);">
+          ${iconHtml}
+          <div>
+            <div class="pp-subject__title">${escapeHtml(cat.name)}</div>
+            ${cat.description ? `<div class="text-muted" style="font-size: var(--font-size-caption); margin-top: 2px;">${escapeHtml(cat.description)}</div>` : ""}
+          </div>
+        </div>
+        <span class="text-muted" style="font-size: var(--font-size-caption); flex-shrink:0;">${subjectCount} subject${subjectCount === 1 ? "" : "s"}</span>
+      </div>
+      <div class="pp-subject__topics">
+        <div class="pp-subject__topics-inner">
+          ${isEditingThisCategory ? practiceAdminCategoryFormHtml(cat) : ""}
+          <div class="admin-subject-card__actions" style="margin-top: ${isEditingThisCategory ? "0" : "var(--space-1)"};">
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-category="${escapeHtml(cat.id)}">Edit</button>
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-category="${escapeHtml(cat.id)}">Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>`;
+  }).join("");
+
+  wirePracticeAdminCategoryList(container);
+}
+
+function wirePracticeAdminCategoryList(container) {
+  qsa("[data-pa-admin-edit-category]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-pa-admin-edit-category");
+      pracAdminCategoryIconDraft = null; // form reads straight from the category being edited
+      pracAdminCategoryUI = { editingCategoryId: id, newCategoryOpen: false };
+      renderPracticeAdminCategoryList();
+    });
+  });
+
+  qsa("[data-pa-admin-delete-category]", container).forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-pa-admin-delete-category");
+      const category = (practiceState.categories || []).find((c) => c.id === id);
+      if (!category) return;
+      if (practiceState.categories.length <= 1) { showToast("At least one exam category is required.", "danger"); return; }
+      const subjectCount = (category.subjects || []).length;
+      const msg = subjectCount
+        ? `"${category.name}" has ${subjectCount} subject(s) under it. Deleting the category also deletes all of its subjects, topics and questions. Continue?`
+        : `Delete the category "${category.name}"?`;
+      if (!confirm(msg)) return;
+
+      practiceState.categories = practiceState.categories.filter((c) => c.id !== id);
+      // If the deleted category was the active one (e.g. shown on the
+      // Subjects tab / Statistics page), fall back to whatever is first
+      // now so nothing is left pointing at a category that no longer
+      // exists.
+      if (activePracticeCategoryId === id) activePracticeCategoryId = (practiceState.categories[0] || {}).id || null;
+      savePracticeState();
+      renderPracticeAdminCategoryList();
+      renderPracticeAdminCategorySelect();
+      renderPracticeAdminSubjectList();
+      showToast("Category deleted.", "success");
+      // Sync the tree to the server so students' browsers stop listing
+      // this category too — same reasoning as the Subjects tab's
+      // delete handlers (see syncPracticeManifestAfterEdit above them).
+      try {
+        await syncPracticeManifestAfterEdit();
+      } catch (e) {
+        console.error("Could not sync category list to server:", e);
+        showToast("Category deleted locally, but the change may not have reached students yet.", "danger");
+      }
+    });
+  });
+
+  qsa("[data-pa-admin-category-form-close]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pracAdminCategoryIconDraft = null;
+      pracAdminCategoryUI = { editingCategoryId: null, newCategoryOpen: false };
+      renderPracticeAdminCategoryList();
+    });
+  });
+
+  // Icon upload: clicking the visible button forwards to the hidden
+  // file input; picking a file reads it into pracAdminCategoryIconDraft
+  // (a data: URI) and re-renders just the form so the preview updates.
+  qs("[data-pa-admin-category-icon-upload]", container)?.addEventListener("click", () => {
+    qs("#pa-admin-category-icon-input")?.click();
+  });
+  qs("#pa-admin-category-icon-input", container)?.addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { showToast("Please choose an image file.", "danger"); return; }
+    try {
+      pracAdminCategoryIconDraft = await imageFileToDataUrl(file);
+      renderPracticeAdminCategoryList();
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't read that image.", "danger");
+    }
+  });
+  qs("[data-pa-admin-category-icon-clear]", container)?.addEventListener("click", () => {
+    pracAdminCategoryIconDraft = "";
+    renderPracticeAdminCategoryList();
+  });
+
+  qsa("[data-pa-admin-category-save]", container).forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const editingId = btn.getAttribute("data-pa-admin-category-save");
+      const name = qs("#pa-admin-category-name").value.trim();
+      const description = qs("#pa-admin-category-desc").value.trim();
+      // The icon lives in pracAdminCategoryIconDraft once the admin has
+      // touched the upload/remove controls (see wiring above); otherwise
+      // fall back to whatever the category already had (edit) or none
+      // (new category, before any upload).
+      const icon = pracAdminCategoryIconDraft !== null ? pracAdminCategoryIconDraft : "";
+      if (!name) { showToast("Category name is required.", "danger"); return; }
+      const categories = practiceState.categories || (practiceState.categories = []);
+      const duplicate = categories.some((c) => c.name.toLowerCase() === name.toLowerCase() && c.id !== editingId);
+      if (duplicate) { showToast("A category with that name already exists.", "danger"); return; }
+
+      if (editingId) {
+        const category = categories.find((c) => c.id === editingId);
+        if (category) {
+          category.name = name;
+          category.description = description;
+          if (pracAdminCategoryIconDraft !== null) category.icon = icon;
+        }
+      } else {
+        const newCategory = { id: practiceCategoryId(), name, description, icon: icon || "📚", subjects: [] };
+        categories.push(newCategory);
+        // New category becomes the active one so the admin lands
+        // straight on its (empty) Subjects list to start adding
+        // subjects/topics right away.
+        activePracticeCategoryId = newCategory.id;
+      }
+      savePracticeState();
+      pracAdminCategoryIconDraft = null;
+      pracAdminCategoryUI = { editingCategoryId: null, newCategoryOpen: false };
+      renderPracticeAdminCategoryList();
+      renderPracticeAdminCategorySelect();
+      renderPracticeAdminSubjectList();
+      showToast("Category saved.", "success");
+      // Same sync-after-edit pattern as the Subjects tab — an
+      // added/renamed/re-iconed category needs to reach other devices,
+      // not just sit in this admin's localStorage.
+      try {
+        await syncPracticeManifestAfterEdit();
+      } catch (e) {
+        console.error("Could not sync category list to server:", e);
+        showToast("Category saved locally, but the change may not have reached students yet.", "danger");
+      }
+    });
+  });
+}
+
+/** Category picker shown above the Subjects tab's subject list — lets the
+    admin choose which category's Subject/Topic tree getPracticeAdminSubjects()
+    reads/writes (activePracticeCategoryId), same category set the Practice
+    Panel and Statistics page use. Hidden entirely when there's only one
+    category, same threshold as renderStatsCategoryTabs(). */
+function renderPracticeAdminCategorySelect() {
+  const wrap = qs("#pa-admin-category-select")?.closest(".form-group");
+  const select = qs("#pa-admin-category-select");
+  if (!select) return;
+  const categories = practiceState.categories || [];
+  if (wrap) wrap.hidden = categories.length < 2;
+  select.innerHTML = categories.map((c) => {
+    const iconText = c.icon && !c.icon.startsWith("data:image") ? c.icon : "";
+    return `<option value="${escapeHtml(c.id)}" ${c.id === activePracticeCategoryId ? "selected" : ""}>${escapeHtml(iconText)} ${escapeHtml(c.name)}</option>`;
+  }).join("");
+}
+
 function practiceAdminSubjectFormHtml(subject) {
   return `
     <div class="card" style="margin: 0 0 var(--space-4);" data-pa-inline-subject-form>
@@ -8556,7 +9988,7 @@ function practiceAdminTopicFormHtml(subject, topic) {
         <div>
           <label class="form-label" for="pa-admin-topic-subject">Subject</label>
           <select class="form-control" id="pa-admin-topic-subject">
-            ${practiceState.subjects.map((s) => `<option value="${escapeHtml(s.id)}" ${s.id === subject.id ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
+            ${getPracticeAdminSubjects().map((s) => `<option value="${escapeHtml(s.id)}" ${s.id === subject.id ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
           </select>
         </div>
         <div>
@@ -8578,19 +10010,19 @@ function renderPracticeAdminSubjectList() {
 
   const newSubjectFormHtml = pracAdminUI.newSubjectOpen ? practiceAdminSubjectFormHtml(null) : "";
 
-  if (!practiceState.subjects.length) {
+  if (!getPracticeAdminSubjects().length) {
     container.innerHTML = newSubjectFormHtml || `<div class="card text-center text-secondary" style="padding: var(--space-8);">No subjects yet - click "New Subject" to start (e.g. "English Grammar"), then add Topics under it.</div>`;
     wirePracticeAdminSubjectList(container);
     return;
   }
 
-  container.innerHTML = newSubjectFormHtml + practiceState.subjects.map((subject) => {
+  container.innerHTML = newSubjectFormHtml + getPracticeAdminSubjects().map((subject) => {
     const isOpen = pracAdminUI.openSubjectId === subject.id;
     const isEditingThisSubject = pracAdminUI.editingSubjectId === subject.id;
 
     const topicRows = subject.topics.length
       ? subject.topics.map((topic) => {
-          // Question content lives in R2 now, not on the local topic
+          // Question content lives in Supabase Storage now, not on the local topic
           // object — show a cached count immediately if we have one
           // (instant, no flicker on re-renders after the first load),
           // else a placeholder that patchPracticeAdminQuestionCounts()
@@ -8627,7 +10059,9 @@ function renderPracticeAdminSubjectList() {
       <div class="pp-subject__topics">
         <div class="pp-subject__topics-inner">
           ${isEditingThisSubject ? practiceAdminSubjectFormHtml(subject) : ""}
-          <div class="admin-subject-card__actions" style="margin-bottom: var(--space-3);">
+          ${topicRows}
+          ${newTopicFormHtml}
+          <div class="admin-subject-card__actions" style="margin-top: var(--space-3);">
             <button type="button" class="btn btn-primary btn-sm" data-pa-admin-new-topic-for="${escapeHtml(subject.id)}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               New Topic
@@ -8635,8 +10069,6 @@ function renderPracticeAdminSubjectList() {
             <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-subject="${escapeHtml(subject.id)}">Edit</button>
             <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-subject="${escapeHtml(subject.id)}">Delete</button>
           </div>
-          ${topicRows}
-          ${newTopicFormHtml}
         </div>
       </div>
     </section>`;
@@ -8646,7 +10078,7 @@ function renderPracticeAdminSubjectList() {
   patchPracticeAdminQuestionCounts(container);
 }
 
-/** Fetches each visible topic's real question count from R2 (or the
+/** Fetches each visible topic's real question count from Storage (or the
     session cache) and patches it into the "N questions" label after the
     initial render, since that data no longer lives on the local topic
     object. Each fetch is independent — one slow/failed topic just leaves
@@ -8720,7 +10152,7 @@ function wirePracticeAdminSubjectList(container) {
       try {
         await deletePracticeTopicQuestions(subjectId, topicId);
       } catch (e) {
-        console.error("Could not delete topic's question bank from R2:", e);
+        console.error("Could not delete topic's question bank from Storage:", e);
       }
     });
   });
@@ -8737,19 +10169,19 @@ function wirePracticeAdminSubjectList(container) {
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const id = btn.getAttribute("data-pa-admin-delete-subject");
-      const subject = practiceState.subjects.find((s) => s.id === id);
+      const subject = getPracticeAdminSubjects().find((s) => s.id === id);
       if (!subject) return;
       if (subject.topics.length && !confirm(`"${subject.name}" has ${subject.topics.length} Topic(s) under it. Deleting the subject also deletes all of them and their questions. Continue?`)) return;
       if (!subject.topics.length && !confirm(`Delete the subject "${subject.name}"?`)) return;
       const topicIds = subject.topics.map((t) => t.id);
-      practiceState.subjects = practiceState.subjects.filter((s) => s.id !== id);
+      setPracticeAdminSubjects(getPracticeAdminSubjects().filter((s) => s.id !== id));
       savePracticeState();
       topicIds.forEach((topicId) => clearPracticeTopicQuestionsCache(id, topicId));
       renderPracticeAdminSubjectList();
       renderPracticeAdminQuestionBank();
       showToast("Subject and its topics deleted.", "success");
       // Sync the tree first (same reasoning as the topic-delete handler
-      // above), then best-effort cleanup in R2 — one failed file shouldn't
+      // above), then best-effort cleanup in Storage — one failed file shouldn't
       // block or roll back the rest.
       try {
         await syncPracticeManifestAfterEdit();
@@ -8779,14 +10211,14 @@ function wirePracticeAdminSubjectList(container) {
       const editingId = btn.getAttribute("data-pa-admin-subject-save");
       const name = qs("#pa-admin-subject-name").value.trim();
       if (!name) { showToast("Subject name is required.", "danger"); return; }
-      const duplicate = practiceState.subjects.some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingId);
+      const duplicate = getPracticeAdminSubjects().some((s) => s.name.toLowerCase() === name.toLowerCase() && s.id !== editingId);
       if (duplicate) { showToast("A subject with that name already exists.", "danger"); return; }
 
       if (editingId) {
-        const subject = practiceState.subjects.find((s) => s.id === editingId);
+        const subject = getPracticeAdminSubjects().find((s) => s.id === editingId);
         if (subject) subject.name = name;
       } else {
-        practiceState.subjects.push({ id: practiceSubjectId(), name, topics: [] });
+        getPracticeAdminSubjects().push({ id: practiceSubjectId(), name, topics: [] });
       }
       savePracticeState();
       pracAdminUI.editingSubjectId = null;
@@ -8823,20 +10255,20 @@ function wirePracticeAdminSubjectList(container) {
       const name = qs("#pa-admin-topic-name").value.trim();
       if (!subjectId) { showToast("Add a Subject first, then pick it here.", "danger"); return; }
       if (!name) { showToast("Topic name is required - e.g. Noun, Tense.", "danger"); return; }
-      const subject = practiceState.subjects.find((s) => s.id === subjectId);
+      const subject = getPracticeAdminSubjects().find((s) => s.id === subjectId);
       if (!subject) { showToast("Subject not found.", "danger"); return; }
 
       let savedTopicId = editingTopicId;
-      let movedFromSubjectId = null; // set only when the topic's R2 file needs to move
+      let movedFromSubjectId = null; // set only when the topic's Storage file needs to move
       if (editingTopicId && editingSubjectId === subjectId) {
         const topic = subject.topics.find((t) => t.id === editingTopicId);
         if (topic) topic.name = name;
       } else if (editingTopicId && editingSubjectId !== subjectId) {
         // Moved to a different subject. The topic keeps its own id, but
-        // R2's key is practice/{subjectId}/{topicId}.json — keyed on
+        // Storage's key is topics/{subjectId}/{topicId}.json — keyed on
         // *both* ids — so its question bank file has to move from the
         // old subject's path to the new one, not just the local metadata.
-        const oldSubject = practiceState.subjects.find((s) => s.id === editingSubjectId);
+        const oldSubject = getPracticeAdminSubjects().find((s) => s.id === editingSubjectId);
         const topic = oldSubject ? oldSubject.topics.find((t) => t.id === editingTopicId) : null;
         if (topic) {
           oldSubject.topics = oldSubject.topics.filter((t) => t.id !== editingTopicId);
@@ -8922,18 +10354,19 @@ function renderPracticeAdminPanel() {
   if (!isPracticeAdmin()) {
     showToast("This panel is restricted to the site admin.", "danger");
     showView("practice");
-    renderPracticeSubjectList();
+    renderPracticeCategoryList();
     return;
   }
+  renderPracticeAdminCategoryList();
+  renderPracticeAdminCategorySelect();
   renderPracticeAdminSubjectList();
   renderPracticeAdminQuestionBank();
 }
 
-// Tabs: Subjects / Questions (2 tabs only — no Results/Users here). Top
-// level (not nested in initPracticeAdminPanel) so both the one-time init
-// wiring and the dynamically re-rendered subject list (which can contain
-// an "Add Question" tab-jump button inside an inline Topic form) can bind
-// to it.
+// Tabs: Categories / Subjects / Questions / AGQ. Top level (not nested in
+// initPracticeAdminPanel) so both the one-time init wiring and the
+// dynamically re-rendered subject list (which can contain an "Add
+// Question" tab-jump button inside an inline Topic form) can bind to it.
 function activatePracticeAdminTab(target) {
   qsa("[data-pa-admin-tab]").forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
   const tabBtn = qs(`[data-pa-admin-tab="${target}"]`);
@@ -8941,6 +10374,11 @@ function activatePracticeAdminTab(target) {
   qsa(".view#view-practice-admin .admin-tab-panel").forEach((p) => (p.style.display = "none"));
   const panel = qs(`#pa-admin-panel-${target}`);
   if (panel) panel.style.display = "";
+  // AGQ's own tab bar (নিয়ন্ত্রণ/রিভিউ কিউ/হিস্টোরি) sits directly under
+  // this outer Subjects/Questions/AGQ bar with no panel content between
+  // them, so the two are visually joined into one grouped control only
+  // while AGQ is active — see .pa-tabs--joined in the CSS.
+  if (tabBtn) tabBtn.closest(".tabs")?.classList.toggle("pa-tabs--joined", target === "agq");
 }
 
 function initPracticeAdminPanel() {
@@ -8955,6 +10393,37 @@ function initPracticeAdminPanel() {
     closeOtherGlobalDropdowns("practice-admin-accordion");
     pracAdminUI = { openSubjectId: null, editingSubjectId: null, newSubjectOpen: true, editingTopic: null, newTopicForSubject: null };
     renderPracticeAdminSubjectList();
+  });
+
+  qs("#pa-admin-new-category-btn")?.addEventListener("click", () => {
+    pracAdminCategoryIconDraft = null;
+    pracAdminCategoryUI = { editingCategoryId: null, newCategoryOpen: true };
+    renderPracticeAdminCategoryList();
+  });
+
+  // Switching the Subjects tab's category picker re-scopes
+  // getPracticeAdminSubjects()/setPracticeAdminSubjects() to the chosen
+  // category (same activePracticeCategoryId the Practice Panel and
+  // Statistics page read) and re-renders that category's subject list.
+  qs("#pa-admin-category-select")?.addEventListener("change", (e) => {
+    activePracticeCategoryId = e.target.value;
+    pracAdminUI = { openSubjectId: null, editingSubjectId: null, newSubjectOpen: false, editingTopic: null, newTopicForSubject: null };
+    renderPracticeAdminSubjectList();
+    // Keep the AGQ tab's own category picker (and everything it drives —
+    // Subject Order, Topic-wise Target) in sync with this same shared
+    // activePracticeCategoryId, in case the user switches tabs next.
+    const agqSelect = document.getElementById("agq-category-select");
+    if (agqSelect) {
+      agqSelect.value = activePracticeCategoryId;
+      const firstSubject = (getPracticeAdminSubjects() || [])[0] || null;
+      if (typeof currentGenSubjectId !== "undefined") {
+        currentGenSubjectId = firstSubject?.id || null;
+        currentGenTopicId = firstSubject?.topics?.[0]?.id || null;
+      }
+      if (typeof renderSubjectList === "function") renderSubjectList(document.getElementById("subjectOrderList"), false);
+      if (typeof populateTargetSubjectSelect === "function") populateTargetSubjectSelect();
+      if (typeof renderTopicTargetList === "function") renderTopicTargetList();
+    }
   });
 
   PracticeMCQBuilder.bindEvents();
@@ -9009,6 +10478,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpaNav();
   initPracticeView();
   initPracticeAdminPanel();
+  initPracticeInterestModal();
 
   // Worker/KV-backed Practice Subject/Topic tree: pull the current
   // manifest once at startup so the Practice Panel (and Practice Admin
@@ -9022,8 +10492,9 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshPracticeManifest().then((changed) => {
     if (!changed) return;
     const page = document.body.getAttribute("data-page");
-    if (page === "practice") renderPracticeSubjectList();
+    if (page === "practice") renderPracticeCategoryList();
     else if (page === "practice-admin") renderPracticeAdminSubjectList();
+    else if (page === "statistics") renderBcsPreliminaryStats();
   });
 
   // Supabase-backed Live Exam data: pull the current state once so the
@@ -9041,3 +10512,2148 @@ document.addEventListener("DOMContentLoaded", () => {
     enterLiveExam();
   }
 });
+
+/* ==========================================================================
+   AGQ (Auto Generation Question) — logic for Practice Admin's third tab.
+   Ported from the standalone AGQ mock: its own showToast() and
+   theme-toggle code were removed (the site's real showToast() and
+   data-theme system already cover both, with matching variant names),
+   and initQueue/initHistory render on load same as before.
+   ========================================================================== */
+/* ==========================================================================
+   AGQ ADMIN UI — self-contained demo/mock. No backend calls yet (per the
+   plan: Worker + KV + R2 cron engine comes later). All state below is
+   in-memory sample data so the interaction design can be reviewed first.
+   AGQ_API_BASE mirrors PRACTICE_API_BASE's readiness pattern: once
+   worker.js grows /api/agq/queue, /api/agq/history and /api/agq/stats
+   routes (see /worker/README.md), pointing this at the deployed Worker
+   makes every "Demo data" badge below disappear automatically and the
+   queue/history/top-bar numbers start reflecting real generated batches —
+   no other code in this file needs to change.
+   ========================================================================== */
+const AGQ_API_BASE = PRACTICE_API_BASE;
+let agqBackendAvailable = false; // flips true once a real fetch below succeeds
+
+// ---------- Subject/topic source ----------
+// AGQ no longer keeps its own hardcoded subject list — সাবজেক্ট অর্ডার,
+// the টপিক-ভিত্তিক টার্গেট subject/topic dropdowns, and the review queue
+// all read live from practiceState.subjects (the same Practice Panel tree
+// Practice Admin edits and refreshPracticeManifest() syncs from the
+// Worker). Adding a subject/topic in Practice Admin makes it show up here
+// automatically — this function is called fresh each time, never cached,
+// so it always reflects the current practiceState. Progress counters
+// (topics done/total per subject) aren't tracked by Practice's manifest,
+// so `done` defaults to 0 and `topics` is just the topic count.
+function getAgqSubjects() {
+  return (getPracticeAdminSubjects() || []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    topics: (s.topics || []).length,
+    done: 0,
+    topicList: (s.topics || []).map((t) => ({ id: t.id, name: t.name })),
+  }));
+}
+
+// Which subject/topic Auto Generation is currently producing questions
+// for — drives the current-position indicator in সাবজেক্ট অর্ডার (subject
+// level) and the টপিক-ভিত্তিক টার্গেট topic dropdown/list (topic level).
+// Defaults to the first subject/topic in the live Practice tree.
+let currentGenSubjectId = (getPracticeAdminSubjects() || [])[0]?.id || null;
+let currentGenTopicId = (getPracticeAdminSubjects() || [])[0]?.topics?.[0]?.id || null;
+
+const TYPE_LABELS = {
+  general: "সাধারণ প্রশ্ন",
+  bcs_past: "BCS বিগত সালের প্রশ্ন",
+  bcs_important: "BCS গুরুত্বপূর্ণ প্রশ্ন",
+  bank: "ব্যাংক প্রিলি",
+  ntrca: "NTRCA/শিক্ষক নিবন্ধন",
+  govt_other: "অন্যান্য সরকারি চাকরি",
+  varsity: "বিশ্ববিদ্যালয় ভর্তি (BCS উপযোগী)",
+};
+const TYPE_CLASS = {
+  general: "", bcs_past: "bcs", bcs_important: "bcs",
+  bank: "bank", ntrca: "teacher", govt_other: "teacher", varsity: "english",
+};
+
+// Review queue is grouped by subject in the UI: several batches can share
+// a subject, and each batch is that subject's topic-level review unit.
+// No flag/QC-warning field exists any more — the per-question `explanation`
+// below is the answer explanation shown in the preview and edited in the
+// modal's ব্যাখ্যা field.
+const SAMPLE_QUEUE = [
+  {
+    id: "batch-1042",
+    subject: "বাংলা ভাষা ও সাহিত্য", topic: "ধ্বনিতত্ত্ব", type: "bcs_past",
+    count: 28, generatedAgo: "৩ ঘন্টা আগে", language: "bn",
+    questions: [
+      {
+        q: "বাংলা ভাষায় মৌলিক স্বরধ্বনি কয়টি?",
+        options: ["৭টি", "৯টি", "১১টি", "১৩টি"],
+        correct: 2,
+        explanation: "বাংলা ভাষায় মৌলিক স্বরধ্বনির সংখ্যা ৭টি হলেও স্বরবর্ণ ১১টি। প্রশ্নে বর্ণের সংখ্যা চাওয়া হয়েছে।",
+      },
+      {
+        q: "নিচের কোনটি অর্ধমাত্রার ব্যঞ্জনবর্ণ?",
+        options: ["ঋ, ৎ, ং, ঃ", "ক, খ, গ, ঘ", "অ, আ, ই, ঈ", "চ, ছ, জ, ঝ"],
+        correct: 0,
+        explanation: null,
+      },
+      {
+        q: "'ধ্বনিতত্ত্ব' শব্দটি কোন ভাষাতাত্ত্বিক শাখার অন্তর্গত?",
+        options: ["রূপতত্ত্ব", "বাক্যতত্ত্ব", "ধ্বনিবিজ্ঞান (Phonology)", "অর্থতত্ত্ব"],
+        correct: 2,
+        explanation: null,
+      },
+    ],
+  },
+  {
+    id: "batch-1043",
+    subject: "বাংলা ভাষা ও সাহিত্য", topic: "সমাস", type: "bcs_important",
+    count: 30, generatedAgo: "৫ ঘন্টা আগে", language: "bn",
+    questions: [
+      {
+        q: "'চৌরাস্তা' কোন সমাসের উদাহরণ?",
+        options: ["দ্বিগু", "দ্বন্দ্ব", "কর্মধারয়", "বহুব্রীহি"],
+        correct: 0,
+        explanation: "সংখ্যাবাচক পদ পূর্বে বসে সমষ্টি বোঝালে তা দ্বিগু সমাস। চার রাস্তার সমাহার = চৌরাস্তা।",
+      },
+      {
+        q: "'নীলকণ্ঠ' কোন সমাস?",
+        options: ["কর্মধারয়", "বহুব্রীহি", "তৎপুরুষ", "অব্যয়ীভাব"],
+        correct: 1,
+        explanation: null,
+      },
+    ],
+  },
+  {
+    id: "batch-1041",
+    subject: "বাংলাদেশ বিষয়াবলী", topic: "মুক্তিযুদ্ধ ১৯৭১", type: "bank",
+    count: 25, generatedAgo: "৯ ঘন্টা আগে", language: "bn",
+    questions: [
+      {
+        q: "মুক্তিযুদ্ধ চলাকালে বাংলাদেশকে কয়টি সেক্টরে ভাগ করা হয়েছিল?",
+        options: ["৯টি", "১০টি", "১১টি", "১২টি"],
+        correct: 2,
+        explanation: null,
+      },
+      {
+        q: "মুজিবনগর সরকার শপথ গ্রহণ করে কোন তারিখে?",
+        options: ["২৬ মার্চ ১৯৭১", "১৭ এপ্রিল ১৯৭১", "১৬ ডিসেম্বর ১৯৭১", "৭ মার্চ ১৯৭১"],
+        correct: 1,
+        explanation: "১৭ এপ্রিল ১৯৭১ মেহেরপুরের বৈদ্যনাথতলায় (মুজিবনগর) অস্থায়ী সরকার শপথ নেয়।",
+      },
+    ],
+  },
+  {
+    id: "batch-1039",
+    subject: "বাংলাদেশ বিষয়াবলী", topic: "ভাষা আন্দোলন", type: "govt_other",
+    count: 20, generatedAgo: "১১ ঘন্টা আগে", language: "bn",
+    questions: [
+      {
+        q: "রাষ্ট্রভাষা বাংলার দাবিতে সর্বদলীয় রাষ্ট্রভাষা সংগ্রাম পরিষদ গঠিত হয় কবে?",
+        options: ["১৯৪৮ সালে", "১৯৫০ সালে", "১৯৫২ সালে", "১৯৫৪ সালে"],
+        correct: 0,
+        explanation: null,
+      },
+    ],
+  },
+  {
+    id: "batch-1040",
+    subject: "English Language", topic: "Voice Change", type: "ntrca",
+    count: 22, generatedAgo: "১৫ ঘন্টা আগে", language: "en",
+    questions: [
+      {
+        q: "Choose the correct passive voice: \"They are building a bridge.\"",
+        options: ["A bridge is being built by them.", "A bridge was built by them.", "A bridge is built by them.", "A bridge has been built by them."],
+        correct: 0,
+        explanation: "Present continuous active becomes 'is/are being + past participle' in the passive.",
+      },
+    ],
+  },
+];
+
+// Processed batches keep the same subject/topic/questions shape as the
+// queue so the History tab can render the very same accordion, read-only.
+const SAMPLE_HISTORY = [
+  {
+    id: "hist-2051", status: "approved",
+    subject: "গণিত (সাধারণ)", topic: "পাটিগণিত", type: "general",
+    count: 26, time: "আজ, ১০:১২ AM", language: "bn",
+    sub: "২৬টি প্রশ্ন লাইভ ব্যাংকে যুক্ত হয়েছে",
+    questions: [
+      {
+        q: "একটি সংখ্যার ৪০% = ৮০ হলে সংখ্যাটি কত?",
+        options: ["১৬০", "২০০", "২৪০", "৩২০"],
+        correct: 1,
+        explanation: "৪০% = ৮০ হলে ১% = ২, সুতরাং ১০০% = ২০০।",
+      },
+      {
+        q: "১২, ১৮ ও ২৪ এর লসাগু কত?",
+        options: ["৩৬", "৪৮", "৭২", "৯৬"],
+        correct: 2,
+        explanation: null,
+      },
+    ],
+  },
+  {
+    id: "hist-2050", status: "approved",
+    subject: "গণিত (সাধারণ)", topic: "শতকরা", type: "bank",
+    count: 22, time: "আজ, ৮:৪৫ AM", language: "bn",
+    sub: "২২টি প্রশ্ন লাইভ ব্যাংকে যুক্ত হয়েছে",
+    questions: [
+      {
+        q: "একটি পণ্য ২০% লাভে ৬০০ টাকায় বিক্রি করলে ক্রয়মূল্য কত?",
+        options: ["৪৮০ টাকা", "৫০০ টাকা", "৫২০ টাকা", "৫৫০ টাকা"],
+        correct: 1,
+        explanation: "ক্রয়মূল্য × ১.২০ = ৬০০ ⇒ ক্রয়মূল্য = ৫০০ টাকা।",
+      },
+    ],
+  },
+  {
+    id: "hist-2049", status: "rejected",
+    subject: "কম্পিউটার ও তথ্যপ্রযুক্তি", topic: "নেটওয়ার্কিং", type: "bcs_important",
+    count: 24, time: "গতকাল, ৬:৪০ PM", language: "bn",
+    sub: "নিম্নমানের কারণে বাতিল করা হয়েছে",
+    questions: [
+      {
+        q: "LAN এর পূর্ণরূপ কী?",
+        options: ["Local Area Network", "Large Area Network", "Linked Access Node", "Logical Array Network"],
+        correct: 0,
+        explanation: null,
+      },
+    ],
+  },
+  {
+    id: "hist-2048", status: "approved",
+    subject: "বাংলাদেশ বিষয়াবলী", topic: "সংবিধান প্রণয়ন", type: "bank",
+    count: 30, time: "গতকাল, ২:০৫ PM", language: "bn",
+    sub: "৩০টি প্রশ্ন লাইভ ব্যাংকে যুক্ত হয়েছে",
+    questions: [
+      {
+        q: "বাংলাদেশের সংবিধান কার্যকর হয় কোন তারিখে?",
+        options: ["১৬ ডিসেম্বর ১৯৭২", "৪ নভেম্বর ১৯৭২", "২৬ মার্চ ১৯৭৩", "১১ জানুয়ারি ১৯৭২"],
+        correct: 0,
+        explanation: "৪ নভেম্বর ১৯৭২ গৃহীত হয়ে সংবিধান কার্যকর হয় ১৬ ডিসেম্বর ১৯৭২ তারিখে।",
+      },
+    ],
+  },
+  {
+    id: "hist-2047", status: "approved",
+    subject: "English Language", topic: "Tense", type: "general",
+    count: 24, time: "২ দিন আগে", language: "en",
+    sub: "২৪টি প্রশ্ন লাইভ ব্যাংকে যুক্ত হয়েছে",
+    questions: [
+      {
+        q: "He ____ here since 2010.",
+        options: ["lives", "lived", "has been living", "is living"],
+        correct: 2,
+        explanation: "'Since + point of time' takes the present perfect continuous for an action still going on.",
+      },
+    ],
+  },
+];
+
+let queueState = JSON.parse(JSON.stringify(SAMPLE_QUEUE));
+let historyState = JSON.parse(JSON.stringify(SAMPLE_HISTORY));
+
+/** Tries the real AGQ endpoints; on any failure (network error, 404 —
+    i.e. the Worker routes don't exist yet) leaves queueState/historyState
+    as the sample data already assigned above and agqBackendAvailable
+    false, so every "Demo data" badge stays visible and nothing here
+    silently pretends to be real. On success, replaces both state arrays
+    with the server's data and flips agqBackendAvailable true so the
+    badges hide and the top-bar stats switch to fetchAgqStats() below. */
+async function loadAgqQueueAndHistory() {
+  try {
+    const [queueRes, historyRes] = await Promise.all([
+      fetch(`${AGQ_API_BASE}/api/agq/queue`),
+      fetch(`${AGQ_API_BASE}/api/agq/history`),
+    ]);
+    if (!queueRes.ok || !historyRes.ok) throw new Error("AGQ endpoints not available yet");
+    const queueData = await queueRes.json();
+    const historyData = await historyRes.json();
+    if (!Array.isArray(queueData.batches) || !Array.isArray(historyData.batches)) {
+      throw new Error("AGQ endpoints returned an unexpected shape");
+    }
+    queueState = queueData.batches;
+    historyState = historyData.batches;
+    agqBackendAvailable = true;
+  } catch (e) {
+    console.warn("[AGQ] Falling back to demo data — real endpoints not reachable yet:", e.message);
+    agqBackendAvailable = false;
+  }
+}
+
+/** Same fallback pattern for the four top-bar counters (today's batch
+    progress, total batches, total questions added, pending review).
+    Returns the sample numbers already hardcoded in applyAgqLocalizedNumbers
+    unless a real /api/agq/stats response is available. */
+async function fetchAgqStats() {
+  const demoStats = { todaysBatchDone: 4, todaysBatchTotal: 4, totalBatches: "5,138", totalQuestionsAdded: "1,28,450", pendingReview: 3 };
+  if (!agqBackendAvailable) return demoStats;
+  try {
+    const res = await fetch(`${AGQ_API_BASE}/api/agq/stats`);
+    if (!res.ok) throw new Error(`AGQ stats endpoint returned ${res.status}`);
+    const data = await res.json();
+    return {
+      todaysBatchDone: data.todaysBatchDone ?? demoStats.todaysBatchDone,
+      todaysBatchTotal: data.todaysBatchTotal ?? demoStats.todaysBatchTotal,
+      totalBatches: data.totalBatches ?? demoStats.totalBatches,
+      totalQuestionsAdded: data.totalQuestionsAdded ?? demoStats.totalQuestionsAdded,
+      pendingReview: data.pendingReview ?? demoStats.pendingReview,
+    };
+  } catch (e) {
+    console.warn("[AGQ] Stats endpoint not reachable yet, using demo numbers:", e.message);
+    return demoStats;
+  }
+}
+
+
+// ---------- Config persistence (master toggle, batch size, subject order) ----------
+// Previously these lived only as in-memory `let` variables, reset to
+// their hardcoded defaults on every page load — the admin's actual
+// settings never survived a refresh. Now backed by GET/PUT
+// /api/agq/config on the Worker (see worker.js), with the same demo-
+// fallback pattern as everything else in this file: if the endpoint
+// isn't reachable, these fall back to their old hardcoded defaults and
+// just don't persist, rather than breaking the UI.
+async function fetchAgqConfig() {
+  const defaults = { autoGenerationOn: true, batchSize: 25, subjectOrder: [], questionTarget: null, questionTypes: null };
+  if (!agqBackendAvailable) return defaults;
+  try {
+    const res = await fetch(`${AGQ_API_BASE}/api/agq/config`);
+    if (!res.ok) throw new Error(`AGQ config endpoint returned ${res.status}`);
+    return { ...defaults, ...(await res.json()) };
+  } catch (e) {
+    console.warn("[AGQ] Config endpoint not reachable, using defaults:", e.message);
+    return defaults;
+  }
+}
+
+/** Debounced (400ms) so rapid stepper clicks or reorder drags collapse
+    into one network write instead of one per click/drop — matches the
+    pattern already used for the rich-text editors elsewhere in this
+    file (see bindEditableEvents' debounced onChange). Fire-and-forget
+    from the caller's perspective: failures are logged + toasted, never
+    thrown, so a temporarily unreachable Worker never blocks the local
+    UI update the admin just made (same reasoning as
+    syncPracticeManifestAfterEdit).
+
+    A plain debounce() would only keep the LAST call's `partial` object —
+    every earlier partial in the same 400ms window is discarded outright,
+    not merged, so e.g. flipping the master toggle and immediately
+    changing the batch size would silently lose the toggle flip. Instead
+    we accumulate every partial into one pending object and flush that
+    merged object once calls stop coming in for 400ms. */
+let pendingAgqConfigPartial = null;
+const flushAgqConfig = debounce(async () => {
+  if (!isSignedIn() || !pendingAgqConfigPartial) return;
+  const partial = pendingAgqConfigPartial;
+  pendingAgqConfigPartial = null;
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch(`${AGQ_API_BASE}/api/agq/config`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+      body: JSON.stringify(partial),
+    });
+    if (!res.ok) throw new Error(`AGQ config endpoint returned ${res.status}`);
+  } catch (e) {
+    console.warn("[AGQ] Could not save config to server:", e.message);
+    showToast("সেটিং সেভ করা যায়নি — সার্ভারে পৌঁছানো যায়নি।", "warning");
+  }
+}, 400);
+function saveAgqConfig(partial) {
+  pendingAgqConfigPartial = { ...pendingAgqConfigPartial, ...partial };
+  flushAgqConfig();
+}
+
+// NOTE: AGQ's own theme-toggle button/icon were part of its standalone
+// navbar, which is intentionally not embedded here — the host page's
+// own Settings-driven data-theme system already governs <html>, and
+// every rule below reads the same var(--color-*) tokens, so this panel
+// follows the site's light/dark mode automatically with no extra JS.
+
+// ---------- Tabs ----------
+document.querySelectorAll(".agq-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".agq-tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".agq-panel").forEach((p) => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+// ---------- Toast ----------
+// AGQ's own toast implementation is intentionally removed here: the host
+// page already defines a global showToast(message, variant) with the
+// same "success"/"danger" variant names AGQ uses, so every call below
+// (unchanged) now renders through the site's real toast system instead
+// of AGQ's now-unused #toastWrap element.
+
+// ---------- Master switch ----------
+const masterToggle = document.getElementById("masterToggle");
+const statusDot = document.getElementById("statusDot");
+masterToggle.addEventListener("change", () => {
+  if (masterToggle.checked) {
+    statusDot.classList.add("on");
+    showToast(t("agq.toast.autoGenOn"), "success");
+  } else {
+    statusDot.classList.remove("on");
+    showToast(t("agq.toast.autoGenOff"), "danger");
+  }
+  saveAgqConfig({ autoGenerationOn: masterToggle.checked });
+});
+
+// ---------- Generate Now (manual trigger, same cycle the cron runs) ----------
+const agqGenerateNowBtn = document.getElementById("agqGenerateNowBtn");
+if (agqGenerateNowBtn) {
+  agqGenerateNowBtn.addEventListener("click", async () => {
+    if (!agqBackendAvailable) {
+      showToast("AGQ backend সংযুক্ত নয় — Worker deploy করুন প্রথমে।", "danger");
+      return;
+    }
+    if (!isSignedIn()) {
+      showToast("সাইন-ইন করুন প্রথমে।", "danger");
+      return;
+    }
+    agqGenerateNowBtn.disabled = true;
+    const originalText = agqGenerateNowBtn.textContent;
+    agqGenerateNowBtn.textContent = "তৈরি হচ্ছে...";
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const res = await fetch(`${AGQ_API_BASE}/api/agq/generate-now`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${idToken}` },
+      });
+      if (!res.ok) throw new Error(`Generate-now endpoint returned ${res.status}`);
+      const result = await res.json();
+      if (!result.ran) {
+        showToast(result.reason || "কিছু তৈরি করার মতো ছিল না।", "warning");
+      } else {
+        showToast(`"${result.subject} / ${result.topic}" থেকে ${result.count}টি প্রশ্ন তৈরি হয়েছে — Queue-তে দেখুন।`, "success");
+        await loadAgqQueueAndHistory();
+        renderQueue();
+        renderHistory();
+        applyAgqLocalizedNumbers();
+      }
+    } catch (e) {
+      console.error("[AGQ] Generate Now failed:", e);
+      showToast("তৈরি করা যায়নি — কানেকশন চেক করে আবার চেষ্টা করুন।", "danger");
+    } finally {
+      agqGenerateNowBtn.disabled = false;
+      agqGenerateNowBtn.textContent = originalText;
+    }
+  });
+}
+
+// ---------- Batch size stepper ----------
+let batchSize = 25;
+const batchSizeValue = document.getElementById("batchSizeValue");
+document.getElementById("batchMinus").addEventListener("click", () => {
+  batchSize = Math.max(5, batchSize - 5);
+  batchSizeValue.textContent = toBnDigits(batchSize);
+  if (typeof updateTopicTargetPreview === "function") updateTopicTargetPreview();
+  saveAgqConfig({ batchSize });
+});
+document.getElementById("batchPlus").addEventListener("click", () => {
+  batchSize = Math.min(50, batchSize + 5);
+  batchSizeValue.textContent = toBnDigits(batchSize);
+  if (typeof updateTopicTargetPreview === "function") updateTopicTargetPreview();
+  saveAgqConfig({ batchSize });
+});
+
+
+// ---------- Generation Settings: Question Target + Question Types ----------
+// Batch size and frequency are already read live by updateTopicTargetPreview()
+// above; this covers the two controls in the same card that previously had
+// no listeners at all (the Question Target number field and the question-
+// type chip checkboxes), plus an explicit Save so the admin gets feedback
+// that a change actually took effect. Persisted to localStorage so it
+// survives a reload, same pattern as the rest of this page's settings.
+const AGQ_GENERATION_SETTINGS_KEY = "mcq-exam-agq-generation-settings";
+const targetInputEl = document.getElementById("targetInput");
+const questionTypeCheckboxes = Array.from(document.querySelectorAll("[data-question-type]"));
+const saveGenerationSettingsBtn = document.getElementById("saveGenerationSettingsBtn");
+
+function getStoredGenerationSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(AGQ_GENERATION_SETTINGS_KEY) || "null") || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+(function restoreGenerationSettings() {
+  const stored = getStoredGenerationSettings();
+  if (targetInputEl && stored.questionTarget != null) targetInputEl.value = stored.questionTarget;
+  if (stored.questionTypes) {
+    questionTypeCheckboxes.forEach((cb) => {
+      const key = cb.getAttribute("data-question-type");
+      if (Object.prototype.hasOwnProperty.call(stored.questionTypes, key)) {
+        cb.checked = !!stored.questionTypes[key];
+      }
+    });
+  }
+})();
+
+if (saveGenerationSettingsBtn) {
+  saveGenerationSettingsBtn.addEventListener("click", () => {
+    const questionTypes = {};
+    questionTypeCheckboxes.forEach((cb) => { questionTypes[cb.getAttribute("data-question-type")] = cb.checked; });
+    const anySelected = Object.values(questionTypes).some(Boolean);
+    if (!anySelected) {
+      showToast(t("agq.generation.selectAtLeastOne"), "danger");
+      return;
+    }
+    const settings = {
+      questionTarget: targetInputEl ? Number(targetInputEl.value) || null : null,
+      questionTypes,
+    };
+    localStorage.setItem(AGQ_GENERATION_SETTINGS_KEY, JSON.stringify(settings));
+    // Previously local-only: the Worker's cron job (runOneGenerationCycle)
+    // had no way to see which question types the admin selected here, so
+    // it always rotated through every type regardless of what was
+    // unchecked. Pushed into agq:config now so cron and "Generate Now"
+    // both respect it — same demo-fallback pattern as the rest of AGQ:
+    // if the Worker isn't reachable yet, the setting still saves locally
+    // above so the UI doesn't lose the admin's choice.
+    saveAgqConfig({ questionTarget: settings.questionTarget, questionTypes });
+    showToast(t("agq.generation.saved"), "success");
+  });
+}
+
+// ---------- Subject order list render ----------
+// AGQ_SUBJECT_ORDER_KEY stores a persisted array of subject IDs reflecting
+// the admin's chosen Auto-Generation order. getAgqSubjects() itself always
+// reflects the live Practice Panel subject list (source of truth for which
+// subjects/topics exist) — this override only controls the ORDER those
+// subjects are shown/generated in, and is re-applied on top of whatever
+// getAgqSubjects() returns. Any subject not present in the stored order
+// (e.g. newly added in Practice Admin) is appended at the end, so nothing
+// added later goes missing from the list.
+const AGQ_SUBJECT_ORDER_KEY = "mcq-exam-agq-subject-order";
+
+function getStoredSubjectOrder() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(AGQ_SUBJECT_ORDER_KEY) || "null");
+    return Array.isArray(stored) ? stored : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function getOrderedAgqSubjects() {
+  const subjects = getAgqSubjects();
+  const order = getStoredSubjectOrder();
+  if (order.length === 0) return subjects;
+  const bySubjectId = new Map(subjects.map((s) => [s.id, s]));
+  const ordered = [];
+  order.forEach((id) => {
+    if (bySubjectId.has(id)) {
+      ordered.push(bySubjectId.get(id));
+      bySubjectId.delete(id);
+    }
+  });
+  // Anything left (new subjects not yet in the saved order) goes at the end,
+  // in their natural getAgqSubjects() order.
+  subjects.forEach((s) => { if (bySubjectId.has(s.id)) ordered.push(s); });
+  return ordered;
+}
+
+// Working copy of the order while the Reorder modal is open, so Cancel can
+// discard changes without touching the persisted order, and each Up/Down
+// click only needs to re-render the modal's own list.
+let reorderDraftIds = null;
+
+function renderSubjectList(container, interactive) {
+  const subjects = interactive && reorderDraftIds
+    ? reorderDraftIds.map((id) => getAgqSubjects().find((s) => s.id === id)).filter(Boolean)
+    : getOrderedAgqSubjects();
+  container.innerHTML = subjects.map((s, idx) => {
+    const isCurrent = s.id === currentGenSubjectId;
+    const pct = Math.round((s.done / s.topics) * 100);
+    return `
+      <div class="subject-order-item ${isCurrent ? "current" : ""}" data-id="${s.id}">
+        ${interactive ? `<span class="order-move-btns">
+          <button type="button" class="order-move-btn" data-move-up="${s.id}" ${idx === 0 ? "disabled" : ""} aria-label="${t("agq.subjectOrder.moveUp")}" title="${t("agq.subjectOrder.moveUp")}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+          </button>
+          <button type="button" class="order-move-btn" data-move-down="${s.id}" ${idx === subjects.length - 1 ? "disabled" : ""} aria-label="${t("agq.subjectOrder.moveDown")}" title="${t("agq.subjectOrder.moveDown")}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </span>` : `<span class="order-num">${toBnDigits(idx + 1)}</span>`}
+        <span class="subj-name">${s.name}</span>
+        ${isCurrent ? `<span class="subj-current-badge" title="${t("agq.topicTarget.currentPosition")}" aria-label="${t("agq.topicTarget.currentPosition")}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+        </span>` : ""}
+        <span class="subj-meta">${toBnDigits(s.done)}/${toBnDigits(s.topics)} ${t("agq.subjectOrder.topics")}</span>
+      </div>`;
+  }).join("");
+
+  if (interactive) {
+    container.querySelectorAll("[data-move-up]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-move-up");
+        const i = reorderDraftIds.indexOf(id);
+        if (i > 0) {
+          [reorderDraftIds[i - 1], reorderDraftIds[i]] = [reorderDraftIds[i], reorderDraftIds[i - 1]];
+          renderSubjectList(container, true);
+        }
+      });
+    });
+    container.querySelectorAll("[data-move-down]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-move-down");
+        const i = reorderDraftIds.indexOf(id);
+        if (i !== -1 && i < reorderDraftIds.length - 1) {
+          [reorderDraftIds[i + 1], reorderDraftIds[i]] = [reorderDraftIds[i], reorderDraftIds[i + 1]];
+          renderSubjectList(container, true);
+        }
+      });
+    });
+  }
+}
+renderSubjectList(document.getElementById("subjectOrderList"), false);
+
+// ---------- Exam category selector ----------
+// AGQ reads subjects/topics via getAgqSubjects() -> getPracticeAdminSubjects(),
+// which is scoped to activePracticeCategoryId — the same variable the
+// Practice Admin Subjects tab uses. So this selector just lets the AGQ
+// panel switch that same shared value, then re-renders every AGQ view
+// that depends on it (Subject Order, Topic-wise Target picker + list).
+// Automation still targets one category at a time; switching here does
+// not run multiple categories in parallel.
+function renderAgqCategorySelect() {
+  const wrap = document.getElementById("agq-category-select-group");
+  const select = document.getElementById("agq-category-select");
+  if (!select) return;
+  const categories = practiceState.categories || [];
+  if (wrap) wrap.closest(".card").hidden = categories.length < 2;
+  select.innerHTML = categories.map((c) => {
+    const iconText = c.icon && !c.icon.startsWith("data:image") ? c.icon : "";
+    return `<option value="${escapeHtml(c.id)}" ${c.id === activePracticeCategoryId ? "selected" : ""}>${escapeHtml(iconText)} ${escapeHtml(c.name)}</option>`;
+  }).join("");
+}
+renderAgqCategorySelect();
+
+document.getElementById("agq-category-select")?.addEventListener("change", (e) => {
+  activePracticeCategoryId = e.target.value;
+  // Reset AGQ's "current position" pointers to the new category's first
+  // subject/topic — the old ids belong to the previous category's tree
+  // and won't resolve against getAgqSubjects() here.
+  const firstSubject = (getPracticeAdminSubjects() || [])[0] || null;
+  currentGenSubjectId = firstSubject?.id || null;
+  currentGenTopicId = firstSubject?.topics?.[0]?.id || null;
+  renderSubjectList(document.getElementById("subjectOrderList"), false);
+  populateTargetSubjectSelect();
+  renderTopicTargetList();
+  // Keep the Subjects/Questions tabs' own category picker in sync if
+  // present, so switching from either tab shows the same category.
+  const paSelect = document.getElementById("pa-admin-category-select");
+  if (paSelect) paSelect.value = activePracticeCategoryId;
+});
+
+// ---------- Reorder modal ----------
+const reorderModal = document.getElementById("reorderModal");
+document.getElementById("reorderBtn").addEventListener("click", () => {
+  // Seed the draft from the current (already-persisted-order-applied) list,
+  // so re-opening the modal continues from wherever it was last saved.
+  reorderDraftIds = getOrderedAgqSubjects().map((s) => s.id);
+  renderSubjectList(document.getElementById("modalSubjectList"), true);
+  reorderModal.classList.add("open");
+});
+function closeReorderModal() { reorderModal.classList.remove("open"); reorderDraftIds = null; }
+document.getElementById("closeReorderModal").addEventListener("click", closeReorderModal);
+document.getElementById("cancelReorderBtn").addEventListener("click", closeReorderModal);
+document.getElementById("saveReorderBtn").addEventListener("click", () => {
+  if (reorderDraftIds) {
+    localStorage.setItem(AGQ_SUBJECT_ORDER_KEY, JSON.stringify(reorderDraftIds));
+    // Refresh the read-only Subject Order list behind the modal so it
+    // reflects the newly saved order immediately.
+    renderSubjectList(document.getElementById("subjectOrderList"), false);
+    // The Worker's cron job (runOneGenerationCycle -> pickNextTarget)
+    // reads subjectOrder as *names*, not ids — it matches against each
+    // target's own subjectName field, which is stable even if a subject
+    // is later deleted and recreated with a new id. localStorage above
+    // stays id-based for this browser's own instant reordering; only the
+    // name list needs to leave this device.
+    const subjects = getAgqSubjects();
+    const orderedNames = reorderDraftIds
+      .map((id) => (subjects.find((s) => s.id === id) || {}).name)
+      .filter(Boolean);
+    saveAgqConfig({ subjectOrder: orderedNames });
+  }
+  closeReorderModal();
+  showToast(t("agq.toast.subjectOrderSaved"), "success");
+});
+reorderModal.addEventListener("click", (e) => { if (e.target === reorderModal) closeReorderModal(); });
+
+// ---------- Per-topic target count ----------
+// language: "bn" | "en" | "en-bn" — decides option-marker style
+// (ক/খ/গ/ঘ vs A/B/C/D) for this topic everywhere it's used: AGQ's own
+// review queue + editor panel, and (once approved) Practice Mode — see
+// usesLocalizedLabels() / optionLetters(), the same helpers Live Exam's
+// session player already uses for its own EN/বাংলা/mixed exams.
+// subjectId/topicName below must match a subject/topic id+name that
+// currently exists in practiceState.subjects (see getAgqSubjects()).
+// Persisted server-side via GET/PUT /api/agq/targets (see worker.js) —
+// loadAgqTargets() below replaces this placeholder array once the
+// fetch resolves, same demo-fallback pattern as everything else here.
+let topicTargets = [
+  { subjectId: "bd-affairs", subjectName: "বাংলাদেশ বিষয়াবলী", topicName: "মুক্তিযুদ্ধ ও ইতিহাস", target: 300, done: 25, language: "bn" },
+  { subjectId: "en-gram", subjectName: "English Grammar", topicName: "Tense", target: 150, done: 150, language: "en" },
+];
+
+/** Loads the real target list from the Worker once agqBackendAvailable
+    is known (called from the same .then() chain as loadAgqQueueAndHistory
+    — see the Init section at the bottom of this file). Leaves the
+    placeholder topicTargets above untouched on any failure. */
+async function loadAgqTargets() {
+  if (!agqBackendAvailable) return;
+  try {
+    const res = await fetch(`${AGQ_API_BASE}/api/agq/targets`);
+    if (!res.ok) throw new Error(`AGQ targets endpoint returned ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data.targets)) topicTargets = data.targets;
+  } catch (e) {
+    console.warn("[AGQ] Targets endpoint not reachable, keeping local list:", e.message);
+  }
+}
+
+/** Persists the full topicTargets array (PUT replaces it wholesale —
+    simpler and safer than per-item PATCH semantics for a list this
+    small). Called after every add/update in setTopicTargetBtn's click
+    handler below. Same fire-and-forget-with-toast pattern as
+    saveAgqConfig. */
+async function saveAgqTargets() {
+  if (!isSignedIn()) return;
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch(`${AGQ_API_BASE}/api/agq/targets`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+      body: JSON.stringify({ targets: topicTargets }),
+    });
+    if (!res.ok) throw new Error(`AGQ targets endpoint returned ${res.status}`);
+    // The server keeps its own `done` counters authoritative (see
+    // handleAgqTargetsPut) rather than trusting whatever this browser
+    // last fetched, so re-sync topicTargets with what it actually
+    // stored — otherwise the UI would keep showing this browser's
+    // possibly-stale `done` values until the next full reload.
+    const result = await res.json().catch(() => null);
+    if (result && Array.isArray(result.targets)) {
+      topicTargets = result.targets;
+      if (typeof renderTopicTargetList === "function") renderTopicTargetList();
+    }
+  } catch (e) {
+    console.warn("[AGQ] Could not save targets to server:", e.message);
+    showToast("টার্গেট সেভ করা যায়নি — সার্ভারে পৌঁছানো যায়নি।", "warning");
+  }
+}
+
+
+const TOPIC_TARGET_LANG_LABELS = { bn: "বাংলা", en: "ইংরেজি", "en-bn": "বাংলা + ইংরেজি" };
+
+const targetSubjectSelect = document.getElementById("targetSubjectSelect");
+const targetTopicSelect = document.getElementById("targetTopicSelect");
+const topicTargetLockedHint = document.getElementById("topicTargetLockedHint");
+const setTopicTargetBtn = document.getElementById("setTopicTargetBtn");
+const topicTargetValueEl = document.getElementById("topicTargetValue");
+const topicTargetPreviewEl = document.getElementById("topicTargetPreview");
+const topicTargetLangSelect = document.getElementById("topicTargetLangSelect");
+let topicTargetValue = 200;
+let topicTargetLanguage = "bn";
+
+function populateTargetSubjectSelect() {
+  const subjects = getAgqSubjects();
+  targetSubjectSelect.innerHTML = subjects.map((s) => `<option value="${s.id}">${s.name}</option>`).join("");
+  populateTargetTopicSelect();
+}
+function populateTargetTopicSelect() {
+  const subjects = getAgqSubjects();
+  const subj = subjects.find((s) => s.id === targetSubjectSelect.value) || subjects[0];
+  const topicList = subj ? subj.topicList : [];
+  targetTopicSelect.innerHTML = topicList.map((t) => `<option value="${t.name}">${t.name}</option>`).join("");
+  updateGenLockState();
+}
+// AI যে সাবজেক্ট-টপিকে বর্তমানে কাজ করছে, সেই কম্বিনেশনে ফর্ম থেকে
+// নতুন করে টার্গেট সেট/আপডেট করা বন্ধ রাখে — যতক্ষণ না সেটি শেষ হয়
+// (অর্থাৎ AI অন্য টপিকে সরে যায়)। অন্য যেকোনো সাবজেক্ট/টপিক নির্বাচনে
+// ফর্ম আগের মতোই সচল থাকবে।
+function isCurrentGenSelection() {
+  if (targetSubjectSelect.value !== currentGenSubjectId) return false;
+  const subjects = getAgqSubjects();
+  const subj = subjects.find((s) => s.id === currentGenSubjectId);
+  const currentTopic = subj ? (subj.topicList.find((t) => t.id === currentGenTopicId) || null) : null;
+  return !!(currentTopic && currentTopic.name === targetTopicSelect.value);
+}
+function updateGenLockState() {
+  const locked = isCurrentGenSelection();
+  topicTargetLockedHint.style.display = locked ? "" : "none";
+  setTopicTargetBtn.disabled = locked;
+  setTopicTargetBtn.classList.toggle("btn-disabled", locked);
+}
+// ---------- Bengali digit helper ----------
+// Language-aware: renders Bengali numerals when the site language is set
+// to বাংলা, and plain Arabic numerals under English — so every AGQ count
+// (queue totals, batch sizes, question numbers, etc.) follows the same
+// EN/বাংলা toggle as the rest of the panel, not just the label text.
+// Moved up here (was previously defined near the bottom of the file) —
+// updateTopicTargetPreview() below calls this synchronously as soon as
+// the page loads, so it must already exist by then. Defining it near the
+// bottom meant this whole script threw "Cannot access 'toLocalizedDigits'
+// before initialization" on every load, before Settings/DOMContentLoaded
+// handlers further down ever got a chance to finish wiring up (the
+// EN/বাংলা navbar toggle and Settings button not working traced back to
+// this same crash).
+function toBnDigits(n) {
+  const lang = localStorage.getItem(LANG_STORAGE_KEY) || "en";
+  if (lang !== "bn") return String(n);
+  const map = { "0":"০","1":"১","2":"২","3":"৩","4":"৪","5":"৫","6":"৬","7":"৭","8":"৮","9":"৯" };
+  return String(n).replace(/[0-9]/g, (d) => map[d]);
+}
+// Alias — used in newly-added AGQ i18n code for clarity; same behavior.
+const toLocalizedDigits = toBnDigits;
+
+function updateTopicTargetPreview() {
+  const batches = Math.ceil(topicTargetValue / batchSize);
+  // The Edge Function's pg_cron schedule only ever wakes up every 2
+  // hours (supabase/migrations/0003_agq_cron.sql), so no matter what's
+  // picked in #frequencySelect, a batch can never actually land faster
+  // than that in practice — clamp the estimate to match what
+  // runOneGenerationCycle()'s self-throttle really does (see
+  // DEFAULT_AGQ_CONFIG.generationFrequencyHours in functions/api/index.ts).
+  const selectedFreqHours = parseInt(document.getElementById("frequencySelect").value, 10) || 2;
+  const freqHours = Math.max(selectedFreqHours, 2);
+  const totalHours = batches * freqHours;
+  const days = Math.round((totalHours / 24) * 10) / 10;
+  topicTargetPreviewEl.innerHTML = t("agq.topicTarget.previewTemplate")
+    .replace("{batchSize}", toLocalizedDigits(batchSize))
+    .replace("{batches}", `<strong>${toLocalizedDigits(batches)}</strong>`)
+    .replace("{freqHours}", toLocalizedDigits(freqHours))
+    .replace("{days}", toLocalizedDigits(days));
+}
+populateTargetSubjectSelect();
+updateTopicTargetPreview();
+
+targetSubjectSelect.addEventListener("change", populateTargetTopicSelect);
+targetTopicSelect.addEventListener("change", updateGenLockState);
+document.getElementById("frequencySelect").addEventListener("change", (e) => {
+  updateTopicTargetPreview();
+  // Previously local-only (only fed the day-estimate preview text
+  // above): the Worker's cron job had no way to see this setting, so
+  // it silently ignored it no matter what the admin picked here.
+  // Pushed into agq:config now so runOneGenerationCycle()'s
+  // self-throttle actually reads it — same pattern as batchSize/
+  // questionTarget/questionTypes elsewhere in this file. See
+  // DEFAULT_AGQ_CONFIG.generationFrequencyHours in worker.js: this can
+  // only slow generation down relative to the Worker's fixed 2-hour
+  // cron, never speed it up.
+  saveAgqConfig({ generationFrequencyHours: parseInt(e.target.value, 10) || 2 });
+});
+document.getElementById("topicTargetMinus").addEventListener("click", () => {
+  topicTargetValue = Math.max(10, topicTargetValue - 10);
+  topicTargetValueEl.textContent = toBnDigits(topicTargetValue);
+  updateTopicTargetPreview();
+});
+document.getElementById("topicTargetPlus").addEventListener("click", () => {
+  topicTargetValue = Math.min(2000, topicTargetValue + 10);
+  topicTargetValueEl.textContent = toBnDigits(topicTargetValue);
+  updateTopicTargetPreview();
+});
+topicTargetLangSelect.addEventListener("change", () => {
+  topicTargetLanguage = topicTargetLangSelect.value;
+});
+
+function renderTopicTargetList() {
+  const container = document.getElementById("topicTargetList");
+  if (topicTargets.length === 0) {
+    container.innerHTML = `<div class="topic-target-empty">${t("agq.topicTarget.noTargetsYet")}</div>`;
+    return;
+  }
+  const subjects = getAgqSubjects();
+  container.innerHTML = topicTargets.map((tt, idx) => {
+    const subj = subjects.find((s) => s.id === tt.subjectId);
+    const currentTopic = subj && subj.id === currentGenSubjectId
+      ? (subj.topicList.find((t) => t.id === currentGenTopicId) || null)
+      : null;
+    const isCurrent = currentTopic && currentTopic.name === tt.topicName;
+    const pct = Math.min(100, Math.round((tt.done / tt.target) * 100));
+    return `
+      <div class="topic-target-row ${isCurrent ? "current" : ""}" data-target-idx="${idx}">
+        <div class="ttr-main">
+          <div class="ttr-title">${subj ? subj.name : tt.subjectId} - ${tt.topicName}${isCurrent ? ` <span class="subj-current-badge" title="${t("agq.topicTarget.currentPosition")}" aria-label="${t("agq.topicTarget.currentPosition")}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>` : ""}</div>
+          <div class="ttr-sub">${toBnDigits(tt.done)} / ${toBnDigits(tt.target)} ${t("agq.topicTarget.questionsCompleted")} (${toBnDigits(pct)}%) · ${TOPIC_TARGET_LANG_LABELS[tt.language || "bn"]}</div>
+          <div class="ttr-progress-track"><div class="ttr-progress-fill" style="width:${pct}%;"></div></div>
+        </div>
+        <button class="ttr-remove" data-remove-target="${idx}" title="${t("agq.topicTarget.removeTarget")}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+  }).join("");
+  container.querySelectorAll("[data-remove-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.removeTarget, 10);
+      topicTargets.splice(idx, 1);
+      renderTopicTargetList();
+      showToast(t("agq.toast.targetRemoved"), "danger");
+    });
+  });
+}
+renderTopicTargetList();
+
+setTopicTargetBtn.addEventListener("click", () => {
+  const subjectId = targetSubjectSelect.value;
+  const topicName = targetTopicSelect.value;
+  if (!topicName) { showToast(t("agq.toast.noTopicFound"), "danger"); return; }
+  if (isCurrentGenSelection()) {
+    showToast(t("agq.toast.aiWorkingWait"), "danger");
+    return;
+  }
+  const matchedSubject = getAgqSubjects().find((s) => s.id === subjectId);
+  if (!matchedSubject) {
+    // Previously this fell through with subjectName silently defaulted
+    // to "" and got saved into topicTargets anyway — pickNextTarget()'s
+    // subjectOrder.indexOf(subjectName) can never match an empty string
+    // against any real subject name in subjectOrder, so that target
+    // would quietly fall out of its intended place in the admin's
+    // generation rotation forever, with no visible error anywhere. Refuse
+    // to save a target with no resolvable subject name instead.
+    showToast(t("agq.toast.noTopicFound"), "danger");
+    return;
+  }
+  const subjectName = matchedSubject.name;
+  const existing = topicTargets.find((tt) => tt.subjectId === subjectId && tt.topicName === topicName);
+  if (existing) {
+    existing.target = topicTargetValue;
+    existing.language = topicTargetLanguage;
+    existing.subjectName = subjectName; // backfill for any target saved before this field existed
+  } else {
+    topicTargets.push({ subjectId, subjectName, topicName, target: topicTargetValue, done: 0, language: topicTargetLanguage });
+  }
+  renderTopicTargetList();
+  showToast(t("agq.toast.targetSaved"), "success");
+  saveAgqTargets();
+});
+
+// ---------- Review queue render ----------
+function batchIconSVG() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+}
+
+// ---------- Subject -> topic grouping (shared by queue + history) ----------
+// Both tabs show one card per subject; opening it reveals that subject's
+// topic list, and opening a topic reveals that topic's questions.
+function groupBySubject(items) {
+  const order = [];
+  const map = new Map();
+  items.forEach((it) => {
+    if (!map.has(it.subject)) { map.set(it.subject, []); order.push(it.subject); }
+    map.get(it.subject).push(it);
+  });
+  return order.map((name) => ({ subject: name, items: map.get(name) }));
+}
+
+// Re-renders collapse everything by default, so remember what the user had
+// open (per tab) and restore it — otherwise approving one batch would shut
+// the whole accordion.
+const openSubjects = { queue: new Set(), history: new Set() };
+const openTopics = { queue: new Set(), history: new Set() };
+
+function chevronSVG() {
+  return '<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+}
+
+// One question block in a topic's review list. editKey === null renders it
+// read-only (History); otherwise an edit button carrying "batchId::index".
+function questionPreviewHTML(q, i, letters, editKey) {
+  return `
+    <div class="q-preview-item">
+      <div class="q-preview-main">
+        <div class="q-preview-head">
+          <div class="q-preview-num">${t("agq.queue.questionNum")} ${toBnDigits(i + 1)}</div>
+          ${editKey ? `<button class="q-preview-edit-btn" data-edit-question="${editKey}" title="${t("agq.queue.editQuestion")}" aria-label="Edit question">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>` : ""}
+        </div>
+        <div class="q-preview-text">${escapeHtml(q.q)}</div>
+        <div class="q-preview-options">
+          ${q.options.map((opt, oi) => `
+            <div class="opt ${oi === q.correct ? "correct" : ""}">
+              <span class="opt-letter">${letters[oi]}</span>
+              <span>${escapeHtml(opt)}</span>
+            </div>`).join("")}
+        </div>
+        ${q.explanation ? `<div class="q-expl-note"><b>${t("agq.queue.explanation")}</b> ${escapeHtml(q.explanation)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+// Click wiring shared by both accordions.
+function wireAccordion(list, scope) {
+  list.querySelectorAll("[data-subject-toggle]").forEach((head) => {
+    head.addEventListener("click", () => {
+      const card = head.closest(".subject-card");
+      const name = head.dataset.subjectToggle;
+      const nowOpen = !card.classList.contains("expanded");
+      card.classList.toggle("expanded", nowOpen);
+      if (nowOpen) openSubjects[scope].add(name); else openSubjects[scope].delete(name);
+    });
+  });
+  list.querySelectorAll("[data-topic-toggle]").forEach((head) => {
+    head.addEventListener("click", () => {
+      const item = head.closest(".topic-item");
+      const id = head.dataset.topicToggle;
+      const nowOpen = !item.classList.contains("expanded");
+      item.classList.toggle("expanded", nowOpen);
+      if (nowOpen) openTopics[scope].add(id); else openTopics[scope].delete(id);
+    });
+  });
+}
+
+// When an AGQ batch is approved into the live bank, carry its language
+// (বাংলা / ইংরেজি / বাংলা+ইংরেজি, set via the টপিক-ভিত্তিক টার্গেট toggle)
+// into Practice Mode's own topic.language — the same field
+// PracticeMCQBuilder.pushQuestions() sets when questions are pushed
+// through the manual builder, so Practice Mode renders ক/খ/গ/ঘ vs A/B/C/D
+// consistently regardless of which route the questions came in through.
+// Matched by subject/topic *name* (AGQ's queue only carries names, not
+// practiceState ids), and only overwrites a topic still on the default
+// "en" — an explicit prior choice sticks, same rule as elsewhere.
+function syncApprovedBatchLanguageToPractice(batch) {
+  if (!batch || !batch.language) return;
+  const subject = getPracticeAdminSubjects().find((s) => s.name === batch.subject);
+  if (!subject) return;
+  const topic = subject.topics.find((t) => t.name === batch.topic);
+  if (!topic) return;
+  if (!topic.language || topic.language === "en") {
+    topic.language = batch.language;
+    savePracticeState();
+    if (typeof syncPracticeManifestAfterEdit === "function") {
+      syncPracticeManifestAfterEdit().catch((e) => console.error("Could not sync practice manifest language:", e));
+    }
+  }
+}
+
+function renderQueue() {
+  const list = document.getElementById("queueList");
+  const empty = document.getElementById("queueEmptyState");
+  const groups = groupBySubject(queueState);
+
+  document.getElementById("queueTabCount").textContent = toBnDigits(queueState.length);
+  document.getElementById("queueVisibleCount").textContent = toBnDigits(queueState.length);
+  document.getElementById("queueSubjectCount").textContent = toBnDigits(groups.length);
+
+  // Injected banner (no separate markup dependency) rather than a
+  // pre-existing element like Statistics' #bcs-prelim-demo-badge, so
+  // this works even though the AGQ tab's HTML never had a demo badge
+  // to begin with. Disappears the moment loadAgqQueueAndHistory()
+  // successfully pulls real data and flips agqBackendAvailable true.
+  const demoBanner = agqBackendAvailable ? "" : `
+    <div class="badge badge-warning" style="display:flex; align-items:center; gap:6px; margin-bottom: var(--space-4); padding: var(--space-2) var(--space-3); width:fit-content;">
+      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Worker/KV/R2) is not connected yet."}
+    </div>`;
+
+  if (queueState.length === 0) {
+    list.innerHTML = demoBanner;
+    empty.style.display = "block";
+    if (typeof updateMassSelectionUI === "function") updateMassSelectionUI();
+    return;
+  }
+  empty.style.display = "none";
+
+  list.innerHTML = demoBanner + groups.map((group) => {
+    const totalQ = group.items.reduce((n, b) => n + b.count, 0);
+    const subjOpen = openSubjects.queue.has(group.subject);
+    return `
+    <div class="card subject-card ${subjOpen ? "expanded" : ""}" data-subject="${group.subject}">
+      <div class="subject-head" data-subject-toggle="${group.subject}">
+        <div class="subject-head-left">
+          <div>
+            <p class="subject-name">${group.subject}</p>
+            <div class="subject-sub">${toBnDigits(group.items.length)}${t("agq.queue.topicsLabel")} · ${toBnDigits(totalQ)}${t("agq.queue.questionsWaiting")}</div>
+          </div>
+        </div>
+        <div class="batch-head-right">
+          <span class="qcount-pill">${toBnDigits(group.items.length)}${t("agq.queue.topicsLabel")}</span>
+          ${chevronSVG()}
+        </div>
+      </div>
+      <div class="subject-body"><div class="subject-body-inner">
+        ${group.items.map((batch) => {
+          const letters = optionLetters(usesLocalizedLabels(batch.language || "bn"));
+          const topicOpen = openTopics.queue.has(batch.id);
+          return `
+          <div class="topic-item ${topicOpen ? "expanded" : ""}" data-batch="${batch.id}">
+            <div class="topic-head" data-topic-toggle="${batch.id}">
+              <input type="checkbox" class="topic-select-checkbox" data-select-batch="${batch.id}" title="${t("agq.queue.selectTopic")}" />
+              <div class="topic-head-main">
+                <p class="topic-name">${batch.topic}</p>
+              </div>
+              <div class="batch-head-right">
+                <span class="qcount-pill">${toBnDigits(batch.count)} ${t("agq.control.questions")}</span>
+                ${chevronSVG()}
+              </div>
+            </div>
+            <div class="topic-body"><div class="topic-body-inner">
+              <div class="batch-actions">
+                <button class="btn btn-success btn-sm" data-approve="${batch.id}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Approve All
+                </button>
+                <button class="btn btn-danger btn-sm" data-reject="${batch.id}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Reject All
+                </button>
+              </div>
+              <div class="q-preview-list">
+                ${batch.questions.map((q, i) => questionPreviewHTML(q, i, letters, `${batch.id}::${i}`)).join("")}
+                ${batch.count > batch.questions.length ? `<p style="text-align:center; font-size:0.78rem; color:var(--color-text-muted); margin: 10px 0 2px;">
+                  + ${toBnDigits(batch.count - batch.questions.length)} ${t("agq.queue.moreQuestionsInTopic")}
+                </p>` : ""}
+              </div>
+            </div></div>
+          </div>`;
+        }).join("")}
+      </div></div>
+    </div>`;
+  }).join("");
+
+  // wire up interactions after render
+  wireAccordion(list, "queue");
+  list.querySelectorAll("[data-approve]").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.approve;
+      const approvedBatch = queueState.find((b) => b.id === id);
+      if (!approvedBatch) return;
+
+      if (agqBackendAvailable) {
+        // Real path: the Worker's /approve route does the actual work —
+        // moves the batch to history AND appends its questions into the
+        // real Practice question bank (see approveAgqBatch in worker.js).
+        // Local-only pushToHistory()/syncApprovedBatchLanguageToPractice()
+        // below never touched the real question bank, which was the
+        // core gap this whole change fixes — don't call them here too,
+        // or the batch would double-count once the server's own
+        // queue/history state gets pulled back on the next refresh.
+        btn.disabled = true;
+        try {
+          const idToken = await firebase.auth().currentUser.getIdToken();
+          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/approve`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${idToken}` },
+          });
+          if (!res.ok) throw new Error(`Approve endpoint returned ${res.status}`);
+          const result = await res.json();
+          await loadAgqQueueAndHistory();
+          renderQueue();
+          renderHistory();
+          applyAgqLocalizedNumbers();
+          if (result.warning) {
+            showToast(result.warning, "warning");
+          } else {
+            showToast(t("agq.toast.batchApproved"), "success");
+          }
+        } catch (err) {
+          console.error("[AGQ] Approve failed:", err);
+          showToast("Approve failed — check your connection and try again.", "danger");
+          btn.disabled = false;
+        }
+        return;
+      }
+
+      // Demo-mode fallback (no backend reachable): keep the old local-
+      // only behavior so the UI still demonstrates the flow visually.
+      syncApprovedBatchLanguageToPractice(approvedBatch);
+      pushToHistory(approvedBatch, "approved");
+      queueState = queueState.filter((b) => b.id !== id);
+      openTopics.queue.delete(id);
+      renderQueue();
+      showToast(t("agq.toast.batchApproved"), "success");
+    });
+  });
+  list.querySelectorAll("[data-reject]").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.reject;
+      const rejected = queueState.find((b) => b.id === id);
+      if (!rejected) return;
+
+      if (agqBackendAvailable) {
+        btn.disabled = true;
+        try {
+          const idToken = await firebase.auth().currentUser.getIdToken();
+          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/reject`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${idToken}` },
+          });
+          if (!res.ok) throw new Error(`Reject endpoint returned ${res.status}`);
+          await loadAgqQueueAndHistory();
+          renderQueue();
+          renderHistory();
+          applyAgqLocalizedNumbers();
+          showToast(t("agq.toast.batchRejected"), "danger");
+        } catch (err) {
+          console.error("[AGQ] Reject failed:", err);
+          showToast("Reject failed — check your connection and try again.", "danger");
+          btn.disabled = false;
+        }
+        return;
+      }
+
+      pushToHistory(rejected, "rejected");
+      queueState = queueState.filter((b) => b.id !== id);
+      openTopics.queue.delete(id);
+      renderQueue();
+      showToast(t("agq.toast.batchRejected"), "danger");
+    });
+  });
+  list.querySelectorAll("[data-edit-question]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const [batchId, qIndex] = btn.dataset.editQuestion.split("::");
+      openQuestionEditor(batchId, parseInt(qIndex, 10));
+    });
+  });
+  list.querySelectorAll("[data-select-batch]").forEach((cb) => {
+    cb.addEventListener("click", (e) => e.stopPropagation());
+    cb.addEventListener("change", updateMassSelectionUI);
+  });
+  if (typeof updateMassSelectionUI === "function") updateMassSelectionUI();
+}
+
+// Approved/rejected batches move into the History tab's own subject ->
+// topic accordion, newest first, carrying their questions along so they
+// stay reviewable there.
+function pushToHistory(batch, status) {
+  historyState.unshift({
+    id: batch.id + "-" + status,
+    status,
+    subject: batch.subject,
+    topic: batch.topic,
+    type: batch.type,
+    count: batch.count,
+    language: batch.language || "bn",
+    time: t("agq.toast.justNow"),
+    sub: status === "approved"
+      ? toBnDigits(batch.count) + t("agq.toast.addedToLiveBank")
+      : t("agq.toast.batchRejectedShort"),
+    questions: JSON.parse(JSON.stringify(batch.questions || [])),
+  });
+  if (typeof renderHistory === "function") renderHistory();
+}
+
+// ---------- Per-question internal MCQ editor ----------
+// Rich version: same mcqp2-qcard editor (contenteditable, format toolbar,
+// math/symbol tools, layout picker) used by Live Exam Admin's Question tab
+// (createMCQBuilder / MCQBuilder), rebuilt here as a small standalone,
+// self-contained instance for editing exactly one AGQ review-queue
+// question at a time. Kept independent of createMCQBuilder's own private
+// closures (that module only knows how to render/save a whole question
+// LIST against its own #mcqp-questions-list / #pa-mcqp-questions-list
+// containers) — this is a single-card version of the same UI wired to
+// queueState's { q, options, correct, explanation } shape instead.
+const editModal = document.getElementById("editQuestionModal");
+const agqEditorCardBody = document.getElementById("agqEditorCardBody");
+let editingContext = null; // { batchId, qIndex }
+let agqActiveEditorEl = null;
+let agqSavedRange = null;
+
+const AGQ_MATH_SYMBOLS = [
+  "²", "³", "⁴", "½", "⅓", "¼", "√", "∛", "∑", "∫", "∞", "≈",
+  "≠", "≤", "≥", "±", "×", "÷", "α", "β", "γ", "δ", "θ", "π",
+  "λ", "μ", "Ω", "Δ", "∂", "∇", "→", "⇌", "°", "‰", "·", "…",
+];
+const AGQ_MATH_TEMPLATES = [
+  { key: "fraction", label: "Fraction (a⁄b)", display: "a/b", text: "$\\frac{}{}$", cursorAt: 7 },
+  { key: "reaction", label: "Chemical equation", display: "A→B", text: "$ \\rightarrow $", cursorAt: 1 },
+];
+
+function agqStripHtml(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html || "";
+  return (tmp.textContent || tmp.innerText || "").trim();
+}
+function agqSanitizeHtml(html) {
+  if (window.DOMPurify) {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "sup", "sub", "span", "br", "ul", "ol", "li", "font", "div"],
+      ALLOWED_ATTR: ["style", "class"],
+    });
+  }
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  tmp.querySelectorAll("script, style, iframe, object, embed").forEach((el) => el.remove());
+  tmp.querySelectorAll("*").forEach((el) => { [...el.attributes].forEach((attr) => { if (/^on/i.test(attr.name)) el.removeAttribute(attr.name); }); });
+  return tmp.innerHTML;
+}
+function agqDebounce(fn, wait) {
+  let t = null;
+  return function debounced(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
+}
+function agqToggleEmptyState(el) { el.classList.toggle("is-empty", agqStripHtml(el.innerHTML) === ""); }
+function agqSetEditorContent(el, html) { el.innerHTML = html || ""; agqToggleEmptyState(el); }
+function agqRememberSelection(el) {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0 && el.contains(sel.anchorNode)) agqSavedRange = sel.getRangeAt(0).cloneRange();
+}
+function agqRestoreSelection() {
+  if (!agqSavedRange) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(agqSavedRange);
+}
+function agqExecCommand(cmd, value = null) {
+  if (!agqActiveEditorEl) return;
+  agqActiveEditorEl.focus();
+  agqRestoreSelection();
+  try { document.execCommand(cmd, false, value); } catch (err) {
+    document.execCommand("styleWithCSS", false, true);
+    try { document.execCommand(cmd, false, value); } catch (e2) { /* no-op */ }
+  }
+  agqRememberSelection(agqActiveEditorEl);
+  agqToggleEmptyState(agqActiveEditorEl);
+  agqActiveEditorEl.dispatchEvent(new Event("input", { bubbles: true }));
+}
+function agqInsertTextAtCursor(el, text, cursorOffset) {
+  if (!el) return;
+  el.focus();
+  agqRestoreSelection();
+  document.execCommand("insertText", false, text);
+  if (typeof cursorOffset === "number") {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      const node = range.startContainer;
+      const pos = range.startOffset;
+      if (node.nodeType === Node.TEXT_NODE && pos - cursorOffset >= 0) {
+        range.setStart(node, pos - cursorOffset);
+        range.setEnd(node, pos - cursorOffset);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }
+  agqRememberSelection(el);
+  agqToggleEmptyState(el);
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+}
+function agqBindEditableEvents(el, onChange) {
+  const debounced = agqDebounce(() => onChange(agqSanitizeHtml(el.innerHTML)), 180);
+  el.addEventListener("input", () => { agqToggleEmptyState(el); debounced(); });
+  el.addEventListener("focus", () => { agqActiveEditorEl = el; });
+  el.addEventListener("keyup", () => agqRememberSelection(el));
+  el.addEventListener("mouseup", () => agqRememberSelection(el));
+  el.addEventListener("keydown", (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    const key = e.key.toLowerCase();
+    if (key === "b") { e.preventDefault(); agqExecCommand("bold"); }
+    else if (key === "i") { e.preventDefault(); agqExecCommand("italic"); }
+    else if (key === "u") { e.preventDefault(); agqExecCommand("underline"); }
+  });
+}
+function agqHasMathMarkup(text) { return /\$[^$]+\$/.test(text || ""); }
+function agqBindMathPreview(editorEl, previewEl) {
+  const label = document.createElement("span");
+  label.className = "mcqp2-math-preview__label";
+  label.textContent = t("agq.editModal.preview");
+  previewEl.appendChild(label);
+  const body = document.createElement("span");
+  previewEl.appendChild(body);
+  const update = agqDebounce(() => {
+    const raw = agqStripHtml(editorEl.innerHTML);
+    if (!agqHasMathMarkup(raw)) { previewEl.classList.remove("is-visible"); return; }
+    body.textContent = raw;
+    previewEl.classList.add("is-visible");
+    renderMathIn(previewEl);
+  }, 180);
+  editorEl.addEventListener("input", update);
+  update();
+}
+// Same length-based heuristic as createMCQBuilder's computeAutoLayout, so
+// short options (e.g. "৭টি"/"৯টি") land side-by-side by default here too.
+function agqComputeAutoLayout(optionHtmls) {
+  const lengths = optionHtmls.map((h) => agqStripHtml(h).length);
+  const maxLen = Math.max(0, ...lengths);
+  const totalLen = lengths.reduce((a, b) => a + b, 0);
+  if (totalLen === 0) return window.matchMedia("(max-width: 640px)").matches ? "vertical" : "grid";
+  if (maxLen <= 6 && totalLen <= 20) return "horizontal";
+  if (maxLen <= 18 && totalLen <= 56) return "grid";
+  return "vertical";
+}
+
+// Builds the single mcqp2-qcard for the question currently being edited.
+// draft: { questionHtml, options:[{html}], correctIndex, explanationHtml, optionsLayout, layoutLocked }
+function buildAgqEditorCard(draft) {
+  const card = document.createElement("div");
+  card.className = "mcqp2-qcard is-focused";
+
+  const layout = draft.optionsLayout || agqComputeAutoLayout(draft.options.map((o) => o.html));
+
+  // No number/type badge here — the modal's own header (প্রশ্ন ১ / টাইপ)
+  // already shows that, so this head row holds only the format/layout
+  // controls, right-aligned.
+  const head = document.createElement("div");
+  head.className = "mcqp2-qcard__head";
+  head.style.justifyContent = "flex-end";
+
+  const controls = document.createElement("div");
+  controls.className = "mcqp2-qcard__controls";
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "mcqp2-toolbar";
+  toolbar.setAttribute("role", "toolbar");
+  const tools = [
+    { cmd: "bold", icon: "bold", label: "Bold" },
+    { cmd: "italic", icon: "italic", label: "Italic" },
+    { cmd: "underline", icon: "underline", label: "Underline" },
+    { sep: true },
+    { cmd: "superscript", text: "x²", label: "Superscript" },
+    { cmd: "subscript", text: "x₂", label: "Subscript" },
+    { sep: true },
+    { cmd: "insertUnorderedList", icon: "list", label: "Bullet list" },
+    { cmd: "insertOrderedList", icon: "list-ordered", label: "Numbered list" },
+    { sep: true },
+  ];
+  tools.forEach((t) => {
+    if (t.sep) { const sep = document.createElement("span"); sep.className = "rt-sep"; toolbar.appendChild(sep); return; }
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "rt-btn"; btn.dataset.cmd = t.cmd;
+    btn.setAttribute("aria-label", t.label); btn.title = t.label;
+    if (t.icon) { const i = document.createElement("i"); i.setAttribute("data-lucide", t.icon); btn.appendChild(i); }
+    else if (t.text) { btn.textContent = t.text; }
+    toolbar.appendChild(btn);
+  });
+
+  const mathDropdown = document.createElement("div");
+  mathDropdown.className = "rt-dropdown";
+  const mathBtn = document.createElement("button");
+  mathBtn.type = "button"; mathBtn.className = "rt-btn";
+  mathBtn.setAttribute("aria-label", "Insert math symbol"); mathBtn.title = "Math & symbols";
+  const mathIcon = document.createElement("i"); mathIcon.setAttribute("data-lucide", "sigma"); mathBtn.appendChild(mathIcon);
+  mathDropdown.appendChild(mathBtn);
+  const mathPanel = document.createElement("div");
+  mathPanel.className = "rt-dropdown__panel"; mathPanel.hidden = true;
+  AGQ_MATH_TEMPLATES.forEach((tpl) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "rt-math-template"; b.dataset.template = tpl.key;
+    b.title = tpl.label; b.setAttribute("aria-label", tpl.label);
+    b.textContent = tpl.display;
+    mathPanel.appendChild(b);
+  });
+  const templateSep = document.createElement("span");
+  templateSep.className = "rt-math-template-sep";
+  mathPanel.appendChild(templateSep);
+  AGQ_MATH_SYMBOLS.forEach((sym) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "rt-math-symbol"; b.dataset.symbol = sym; b.textContent = sym;
+    mathPanel.appendChild(b);
+  });
+  mathDropdown.appendChild(mathPanel);
+  toolbar.appendChild(mathDropdown);
+
+  const colorSep = document.createElement("span"); colorSep.className = "rt-sep"; toolbar.appendChild(colorSep);
+  const colorLabel = document.createElement("label");
+  colorLabel.className = "rt-color"; colorLabel.title = "Text color";
+  const colorIcon = document.createElement("i"); colorIcon.setAttribute("data-lucide", "palette"); colorLabel.appendChild(colorIcon);
+  const colorInput = document.createElement("input");
+  colorInput.type = "color"; colorInput.dataset.cmd = "foreColor"; colorInput.value = "#111111";
+  colorInput.setAttribute("aria-label", "Text color");
+  colorLabel.appendChild(colorInput);
+  toolbar.appendChild(colorLabel);
+
+  const clearSep = document.createElement("span"); clearSep.className = "rt-sep"; toolbar.appendChild(clearSep);
+  const eraseBtn = document.createElement("button");
+  eraseBtn.type = "button"; eraseBtn.className = "rt-btn"; eraseBtn.dataset.cmd = "removeFormat";
+  eraseBtn.setAttribute("aria-label", "Clear formatting"); eraseBtn.title = "Clear formatting";
+  const eraseIcon = document.createElement("i"); eraseIcon.setAttribute("data-lucide", "eraser"); eraseBtn.appendChild(eraseIcon);
+  toolbar.appendChild(eraseBtn);
+
+  const closeSep = document.createElement("span"); closeSep.className = "rt-sep"; toolbar.appendChild(closeSep);
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button"; closeBtn.className = "rt-close"; closeBtn.setAttribute("aria-label", "Close formatting tools");
+  closeBtn.title = "Close toolbar"; closeBtn.textContent = "×";
+  toolbar.appendChild(closeBtn);
+
+  controls.appendChild(toolbar);
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button"; toggleBtn.className = "mcqp2-format-toggle";
+  toggleBtn.setAttribute("aria-label", "Toggle formatting tools"); toggleBtn.title = "Formatting tools";
+  const toggleIcon = document.createElement("i"); toggleIcon.setAttribute("data-lucide", "pencil"); toggleBtn.appendChild(toggleIcon);
+  controls.appendChild(toggleBtn);
+
+  const layoutPicker = document.createElement("div");
+  layoutPicker.className = "mcqp2-layout-picker"; layoutPicker.setAttribute("role", "group");
+  [
+    { value: "vertical", icon: "rows-3", label: "Vertical" },
+    { value: "horizontal", icon: "columns-3", label: "Horizontal" },
+    { value: "grid", icon: "grid-2x2", label: "Rectangular" },
+  ].forEach((l) => {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = `mcqp2-qc-btn${layout === l.value ? " is-active" : ""}`;
+    btn.dataset.layout = l.value; btn.setAttribute("aria-label", l.label); btn.title = l.label;
+    const i = document.createElement("i"); i.setAttribute("data-lucide", l.icon); btn.appendChild(i);
+    layoutPicker.appendChild(btn);
+  });
+  controls.appendChild(layoutPicker);
+
+  head.appendChild(controls);
+  card.appendChild(head);
+
+  const body = document.createElement("div");
+  body.className = "mcqp2-qcard__body";
+
+  const qEditor = document.createElement("div");
+  qEditor.className = "mcqp2-editor-area mcqp2-question-editor";
+  qEditor.contentEditable = "true"; qEditor.dataset.role = "question";
+  qEditor.dataset.placeholder = t("agq.editModal.questionPlaceholder");
+  qEditor.setAttribute("aria-label", "Question text");
+  agqSetEditorContent(qEditor, draft.questionHtml);
+  body.appendChild(qEditor);
+  const qPreview = document.createElement("div");
+  qPreview.className = "mcqp2-math-preview";
+  body.appendChild(qPreview);
+  agqBindMathPreview(qEditor, qPreview);
+  agqBindEditableEvents(qEditor, (html) => { draft.questionHtml = html; });
+
+  const optionsList = document.createElement("div");
+  optionsList.className = `mcqp2-options-list layout-${layout}`;
+  draft.options.forEach((opt, oi) => {
+    optionsList.appendChild(buildAgqOptionRow(draft, opt, oi, (anyCorrect) => {
+      explBox.classList.toggle("is-correct-picked", anyCorrect);
+      if (anyCorrect) setTimeout(() => explEditor.focus(), 0);
+    }));
+  });
+  body.appendChild(optionsList);
+
+  const explBox = document.createElement("div");
+  explBox.className = "mcq-editor-expl-block mcqp2-option-explanation" + (draft.correctIndex >= 0 ? " is-correct-picked" : "");
+  const explLabel = document.createElement("span");
+  explLabel.className = "mcq-field-label mcqp2-option-explanation__label";
+  explLabel.textContent = t("agq.editModal.explanationLabel");
+  explBox.appendChild(explLabel);
+  const explEditor = document.createElement("div");
+  explEditor.className = "mcqp2-editor-area mcqp2-option-explanation__editor";
+  explEditor.contentEditable = "true"; explEditor.dataset.role = "explanation";
+  explEditor.dataset.placeholder = t("agq.editModal.explanationPlaceholder");
+  explEditor.setAttribute("aria-label", "Explanation");
+  agqSetEditorContent(explEditor, draft.explanationHtml);
+  explBox.appendChild(explEditor);
+  agqBindEditableEvents(explEditor, (html) => { draft.explanationHtml = html; });
+  const explPreview = document.createElement("div");
+  explPreview.className = "mcqp2-math-preview";
+  explBox.appendChild(explPreview);
+  agqBindMathPreview(explEditor, explPreview);
+  body.appendChild(explBox);
+  card.appendChild(body);
+
+  layoutPicker.querySelectorAll(".mcqp2-qc-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      draft.optionsLayout = btn.dataset.layout;
+      draft.layoutLocked = true;
+      layoutPicker.querySelectorAll(".mcqp2-qc-btn").forEach((b) => b.classList.toggle("is-active", b === btn));
+      optionsList.className = `mcqp2-options-list layout-${draft.optionsLayout}`;
+    });
+  });
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toolbar.classList.toggle("is-visible");
+    toggleBtn.classList.toggle("is-active");
+    if (!toolbar.classList.contains("is-visible")) mathPanel.hidden = true;
+  });
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toolbar.classList.remove("is-visible");
+    toggleBtn.classList.remove("is-active");
+    mathPanel.hidden = true;
+  });
+
+  function positionMathPanel() {
+    const margin = 8;
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const mathBtnRect = mathBtn.getBoundingClientRect();
+    mathPanel.style.left = "0px"; mathPanel.style.top = "0px"; mathPanel.style.bottom = "auto"; mathPanel.style.transform = "none";
+    const panelW = Math.min(mathPanel.offsetWidth || 190, window.innerWidth - margin * 2);
+    const panelH = mathPanel.offsetHeight || 180;
+    const spaceAbove = toolbarRect.top;
+    const spaceBelow = window.innerHeight - toolbarRect.bottom;
+    let top;
+    mathPanel.classList.remove("is-below");
+    if (spaceAbove >= panelH + margin || spaceAbove >= spaceBelow) {
+      top = toolbarRect.top - panelH - margin;
+      if (top < margin) top = margin;
+    } else {
+      top = toolbarRect.bottom + margin;
+      mathPanel.classList.add("is-below");
+      const maxTop = window.innerHeight - panelH - margin;
+      if (top > maxTop) top = Math.max(margin, maxTop);
+    }
+    let left = mathBtnRect.left + (mathBtnRect.width / 2) - (panelW / 2);
+    left = Math.max(margin, Math.min(left, window.innerWidth - panelW - margin));
+    const maxAvailableH = window.innerHeight - margin * 2;
+    mathPanel.style.maxHeight = panelH > maxAvailableH ? `${maxAvailableH}px` : "";
+    mathPanel.style.left = `${left}px`;
+    mathPanel.style.top = `${top}px`;
+  }
+
+  mathBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!toolbar.classList.contains("is-visible")) { toolbar.classList.add("is-visible"); toggleBtn.classList.add("is-active"); }
+    const isHidden = mathPanel.hidden;
+    mathPanel.hidden = !isHidden;
+    if (!mathPanel.hidden) positionMathPanel();
+  });
+
+  card._positionMathPanel = positionMathPanel;
+  card._mathPanel = mathPanel;
+  card._mathDropdown = mathDropdown;
+
+  return card;
+}
+
+function buildAgqOptionRow(draft, opt, index, onCorrectToggle) {
+  const wrap = document.createElement("div");
+  wrap.className = "mcqp2-option-row-wrap";
+
+  const row = document.createElement("div");
+  row.className = "mcqp2-option-row";
+
+  const label = document.createElement("button");
+  label.type = "button";
+  label.className = "mcqp2-option-row__label" + (draft.correctIndex === index ? " is-correct" : "");
+  const letterText = (draft.letters || OPTION_LETTERS_EN)[index];
+  label.textContent = letterText;
+  label.title = "Mark as correct answer";
+  label.setAttribute("aria-pressed", draft.correctIndex === index ? "true" : "false");
+  label.setAttribute("aria-label", `Mark correct answer: ${letterText}`);
+  row.appendChild(label);
+
+  const editor = document.createElement("div");
+  editor.className = "mcqp2-editor-area";
+  editor.contentEditable = "true";
+  editor.dataset.role = "option";
+  editor.dataset.placeholder = t("agq.editModal.optionPlaceholder");
+  editor.setAttribute("aria-label", `Option ${letterText}`);
+  agqSetEditorContent(editor, opt.html);
+  row.appendChild(editor);
+  wrap.appendChild(row);
+  const optPreview = document.createElement("div");
+  optPreview.className = "mcqp2-math-preview";
+  wrap.appendChild(optPreview);
+  agqBindMathPreview(editor, optPreview);
+
+  agqBindEditableEvents(editor, (html) => {
+    opt.html = html;
+    if (!draft.layoutLocked) {
+      draft.optionsLayout = agqComputeAutoLayout(draft.options.map((o) => o.html));
+      const list = wrap.parentElement;
+      if (list) list.className = `mcqp2-options-list layout-${draft.optionsLayout}`;
+    }
+  });
+
+  label.addEventListener("click", () => {
+    const wasCorrect = draft.correctIndex === index;
+    draft.correctIndex = wasCorrect ? -1 : index;
+    const card = row.closest(".mcqp2-qcard");
+    if (card) {
+      card.querySelectorAll(".mcqp2-option-row").forEach((r, ri) => {
+        const isNowCorrect = draft.correctIndex === ri;
+        const l = r.querySelector(".mcqp2-option-row__label");
+        if (l) { l.classList.toggle("is-correct", isNowCorrect); l.setAttribute("aria-pressed", isNowCorrect ? "true" : "false"); }
+      });
+    }
+    if (onCorrectToggle) onCorrectToggle(draft.correctIndex >= 0);
+  });
+
+  return wrap;
+}
+
+// Toolbar/math-panel event delegation, scoped to this modal only (mirrors
+// createMCQBuilder's initToolbar(), but targeting #agqEditorCardBody so it
+// never collides with the Live Exam / Practice question-bank builders).
+(function initAgqEditorToolbar() {
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("#agqEditorCardBody .mcqp2-toolbar .rt-btn[data-cmd]");
+    if (btn) { e.preventDefault(); agqExecCommand(btn.dataset.cmd); }
+    const symbolBtn = e.target.closest("#agqEditorCardBody .mcqp2-toolbar .rt-math-symbol[data-symbol]");
+    if (symbolBtn) { e.preventDefault(); agqInsertTextAtCursor(agqActiveEditorEl, symbolBtn.dataset.symbol); }
+    const templateBtn = e.target.closest("#agqEditorCardBody .mcqp2-toolbar .rt-math-template[data-template]");
+    if (templateBtn) {
+      e.preventDefault();
+      const tpl = AGQ_MATH_TEMPLATES.find((t) => t.key === templateBtn.dataset.template);
+      if (tpl) agqInsertTextAtCursor(agqActiveEditorEl, tpl.text, tpl.cursorAt);
+    }
+  });
+  document.addEventListener("input", (e) => {
+    const input = e.target.closest('#agqEditorCardBody .mcqp2-toolbar .rt-color input[type="color"]');
+    if (input) {
+      document.execCommand("styleWithCSS", false, true);
+      agqExecCommand(input.dataset.cmd, input.value);
+    }
+  });
+  document.addEventListener("click", (e) => {
+    const toolbar = e.target.closest("#agqEditorCardBody .mcqp2-toolbar");
+    const toggle = e.target.closest("#agqEditorCardBody .mcqp2-format-toggle");
+    const card = e.target.closest("#agqEditorCardBody .mcqp2-qcard");
+    if (!toggle && !toolbar && !card) {
+      qsa("#agqEditorCardBody .mcqp2-toolbar.is-visible").forEach((tb) => {
+        tb.classList.remove("is-visible");
+        const parentToggle = tb.closest(".mcqp2-qcard__controls")?.querySelector(".mcqp2-format-toggle");
+        if (parentToggle) parentToggle.classList.remove("is-active");
+        const mp = tb.querySelector(".rt-dropdown__panel");
+        if (mp) mp.hidden = true;
+      });
+    }
+  });
+  document.addEventListener("click", (e) => {
+    const card = agqEditorCardBody.querySelector(".mcqp2-qcard");
+    if (card && card._mathDropdown && card._mathPanel && !card._mathDropdown.contains(e.target) && !card._mathPanel.contains(e.target)) {
+      card._mathPanel.hidden = true;
+    }
+  });
+  window.addEventListener("resize", () => {
+    const card = agqEditorCardBody.querySelector(".mcqp2-qcard");
+    if (card && card._mathPanel && !card._mathPanel.hidden) card._positionMathPanel();
+  });
+})();
+
+let agqDraft = null; // working draft for the question currently open in the modal
+
+function openQuestionEditor(batchId, qIndex) {
+  const batch = queueState.find((b) => b.id === batchId);
+  if (!batch) return;
+  const q = batch.questions[qIndex];
+  if (!q) return;
+  editingContext = { batchId, qIndex };
+
+  document.getElementById("editQuestionNum").textContent = t("agq.queue.questionNum") + " " + toBnDigits(qIndex + 1);
+  document.getElementById("editQuestionType").textContent = TYPE_LABELS[batch.type];
+  document.getElementById("editQuestionType").className = "type-tag " + TYPE_CLASS[batch.type];
+  document.getElementById("editMetaSubject").textContent = batch.subject;
+  document.getElementById("editMetaTopic").textContent = batch.topic;
+
+  agqDraft = {
+    questionHtml: escapeHtml(q.q || ""),
+    options: (q.options || ["", "", "", ""]).slice(0, 4).map((t) => ({ html: escapeHtml(t || "") })),
+    correctIndex: typeof q.correct === "number" ? q.correct : -1,
+    explanationHtml: escapeHtml(q.explanation || ""),
+    optionsLayout: null,
+    layoutLocked: false,
+    // Option markers (ক/খ/গ/ঘ vs A/B/C/D) follow this batch's own
+    // language — set by the টপিক-ভিত্তিক টার্গেট language toggle when
+    // the batch was generated. Same usesLocalizedLabels()/optionLetters()
+    // helpers Live Exam and Practice Mode already use.
+    letters: optionLetters(usesLocalizedLabels(batch.language || "bn")),
+  };
+
+  agqEditorCardBody.innerHTML = "";
+  agqEditorCardBody.appendChild(buildAgqEditorCard(agqDraft));
+  if (window.lucide) lucide.createIcons();
+
+  editModal.classList.add("open");
+}
+function closeEditModal() {
+  editModal.classList.remove("open");
+  editingContext = null;
+  agqDraft = null;
+  agqEditorCardBody.innerHTML = "";
+}
+document.getElementById("closeEditModal").addEventListener("click", closeEditModal);
+document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
+editModal.addEventListener("click", (e) => { if (e.target === editModal) closeEditModal(); });
+
+document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  if (!editingContext || !agqDraft) return;
+  const { batchId, qIndex } = editingContext;
+  const batch = queueState.find((b) => b.id === batchId);
+  if (!batch) return;
+  const q = batch.questions[qIndex];
+  const updated = {
+    q: agqStripHtml(agqDraft.questionHtml),
+    options: agqDraft.options.map((o) => agqStripHtml(o.html)),
+    correct: agqDraft.correctIndex,
+    explanation: agqStripHtml(agqDraft.explanationHtml) || null,
+  };
+
+  if (agqBackendAvailable) {
+    // Persist to KV before approve can ever read the batch — otherwise
+    // approveAgqBatch() reads the un-edited original straight from KV
+    // and the "saved" toast below would be false, same bug as the old
+    // local-only mutation this replaces.
+    const saveBtn = document.getElementById("saveEditBtn");
+    saveBtn.disabled = true;
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${idToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      if (!res.ok) throw new Error(`Update endpoint returned ${res.status}`);
+      Object.assign(q, updated);
+      closeEditModal();
+      renderQueue();
+      showToast(t("agq.toast.questionSaved"), "success");
+    } catch (err) {
+      console.error("[AGQ] Question save failed:", err);
+      showToast("Save failed — check your connection and try again.", "danger");
+      saveBtn.disabled = false;
+    }
+    return;
+  }
+
+  // Demo-mode fallback (no backend reachable): local-only mutation.
+  Object.assign(q, updated);
+  closeEditModal();
+  renderQueue();
+  showToast(t("agq.toast.questionSaved"), "success");
+});
+
+document.getElementById("deleteQuestionBtn").addEventListener("click", async () => {
+  if (!editingContext) return;
+  const { batchId, qIndex } = editingContext;
+  const batch = queueState.find((b) => b.id === batchId);
+  if (!batch) return;
+
+  if (agqBackendAvailable) {
+    const delBtn = document.getElementById("deleteQuestionBtn");
+    delBtn.disabled = true;
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${idToken}` },
+      });
+      if (!res.ok) throw new Error(`Delete endpoint returned ${res.status}`);
+      const result = await res.json();
+      batch.questions.splice(qIndex, 1);
+      batch.count = typeof result.count === "number" ? result.count : Math.max(0, batch.count - 1);
+      closeEditModal();
+      renderQueue();
+      showToast(t("agq.toast.questionDeleted"), "danger");
+    } catch (err) {
+      console.error("[AGQ] Question delete failed:", err);
+      showToast("Delete failed — check your connection and try again.", "danger");
+      delBtn.disabled = false;
+    }
+    return;
+  }
+
+  batch.questions.splice(qIndex, 1);
+  batch.count = Math.max(0, batch.count - 1);
+  closeEditModal();
+  renderQueue();
+  showToast(t("agq.toast.questionDeleted"), "danger");
+});
+
+// ---------- Massive (bulk) actions across batches ----------
+const selectAllBatches = document.getElementById("selectAllBatches");
+const massApproveBtn = document.getElementById("massApproveBtn");
+const massDeleteBtn = document.getElementById("massDeleteBtn");
+const massSelectedCount = document.getElementById("massSelectedCount");
+
+function getSelectedBatchIds() {
+  return Array.from(document.querySelectorAll("[data-select-batch]:checked")).map((cb) => cb.dataset.selectBatch);
+}
+function updateMassSelectionUI() {
+  const selected = getSelectedBatchIds();
+  const allBoxes = document.querySelectorAll("[data-select-batch]");
+  massApproveBtn.disabled = selected.length === 0;
+  massDeleteBtn.disabled = selected.length === 0;
+  if (selected.length > 0) {
+    massSelectedCount.style.display = "inline-flex";
+    massSelectedCount.textContent = toBnDigits(selected.length) + t("agq.queue.selected");
+  } else {
+    massSelectedCount.style.display = "none";
+  }
+  selectAllBatches.checked = allBoxes.length > 0 && selected.length === allBoxes.length;
+}
+selectAllBatches.addEventListener("change", () => {
+  document.querySelectorAll("[data-select-batch]").forEach((cb) => { cb.checked = selectAllBatches.checked; });
+  updateMassSelectionUI();
+});
+massApproveBtn.addEventListener("click", async () => {
+  const selected = getSelectedBatchIds();
+  if (selected.length === 0) return;
+  const count = selected.length;
+
+  if (agqBackendAvailable) {
+    // Real path: same as the single-batch approve button — call the
+    // Worker's /approve route per selected id, then refresh from the
+    // server. Do NOT also call the local-only pushToHistory()/
+    // syncApprovedBatchLanguageToPractice() helpers here, or the batch
+    // would double-count once the server's own queue/history gets
+    // pulled back (same reasoning as the single-button handler above).
+    massApproveBtn.disabled = true;
+    massDeleteBtn.disabled = true;
+    let succeeded = 0;
+    let failed = 0;
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      for (const id of selected) {
+        try {
+          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/approve`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${idToken}` },
+          });
+          if (!res.ok) throw new Error(`Approve endpoint returned ${res.status}`);
+          succeeded++;
+        } catch (err) {
+          console.error(`[AGQ] Mass approve failed for batch ${id}:`, err);
+          failed++;
+        }
+      }
+      await loadAgqQueueAndHistory();
+      renderQueue();
+      renderHistory();
+      applyAgqLocalizedNumbers();
+      if (failed === 0) {
+        showToast(toBnDigits(succeeded) + t("agq.toast.massPushed"), "success");
+      } else {
+        showToast(`${toBnDigits(succeeded)} approved, ${toBnDigits(failed)} failed — check your connection and try again.`, "warning");
+      }
+    } finally {
+      updateMassSelectionUI();
+    }
+    return;
+  }
+
+  // Demo-mode fallback (no backend reachable): keep the old local-only
+  // behavior so the UI still demonstrates the flow visually.
+  queueState.filter((b) => selected.includes(b.id)).forEach((b) => {
+    syncApprovedBatchLanguageToPractice(b);
+    pushToHistory(b, "approved");
+  });
+  queueState = queueState.filter((b) => !selected.includes(b.id));
+  selected.forEach((id) => openTopics.queue.delete(id));
+  renderQueue();
+  showToast(toBnDigits(count) + t("agq.toast.massPushed"), "success");
+});
+massDeleteBtn.addEventListener("click", async () => {
+  const selected = getSelectedBatchIds();
+  if (selected.length === 0) return;
+  const count = selected.length;
+
+  if (agqBackendAvailable) {
+    massApproveBtn.disabled = true;
+    massDeleteBtn.disabled = true;
+    let succeeded = 0;
+    let failed = 0;
+    try {
+      const idToken = await firebase.auth().currentUser.getIdToken();
+      for (const id of selected) {
+        try {
+          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/reject`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${idToken}` },
+          });
+          if (!res.ok) throw new Error(`Reject endpoint returned ${res.status}`);
+          succeeded++;
+        } catch (err) {
+          console.error(`[AGQ] Mass delete failed for batch ${id}:`, err);
+          failed++;
+        }
+      }
+      await loadAgqQueueAndHistory();
+      renderQueue();
+      renderHistory();
+      applyAgqLocalizedNumbers();
+      if (failed === 0) {
+        showToast(toBnDigits(succeeded) + t("agq.toast.massDeleted"), "danger");
+      } else {
+        showToast(`${toBnDigits(succeeded)} deleted, ${toBnDigits(failed)} failed — check your connection and try again.`, "warning");
+      }
+    } finally {
+      updateMassSelectionUI();
+    }
+    return;
+  }
+
+  queueState.filter((b) => selected.includes(b.id)).forEach((b) => pushToHistory(b, "rejected"));
+  queueState = queueState.filter((b) => !selected.includes(b.id));
+  selected.forEach((id) => openTopics.queue.delete(id));
+  renderQueue();
+  showToast(toBnDigits(count) + t("agq.toast.massDeleted"), "danger");
+});
+
+// ---------- History render ----------
+// Mirrors renderQueue()'s subject -> topic accordion: one card per subject,
+// opening it lists that subject's processed topics, opening a topic shows
+// its questions for review (read-only — no edit/approve actions here).
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  const empty = document.getElementById("historyEmptyState");
+  const groups = groupBySubject(historyState);
+
+  document.getElementById("historySubjectCount").textContent = toBnDigits(groups.length);
+  document.getElementById("historyTopicCount").textContent = toBnDigits(historyState.length);
+
+  const demoBanner = agqBackendAvailable ? "" : `
+    <div class="badge badge-warning" style="display:flex; align-items:center; gap:6px; margin-bottom: var(--space-4); padding: var(--space-2) var(--space-3); width:fit-content;">
+      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Worker/KV/R2) is not connected yet."}
+    </div>`;
+
+  if (historyState.length === 0) {
+    list.innerHTML = demoBanner;
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  list.innerHTML = demoBanner + groups.map((group) => {
+    const approved = group.items.filter((h) => h.status === "approved").length;
+    const rejected = group.items.length - approved;
+    const subjOpen = openSubjects.history.has(group.subject);
+    return `
+    <div class="card subject-card ${subjOpen ? "expanded" : ""}" data-subject="${group.subject}">
+      <div class="subject-head" data-subject-toggle="${group.subject}">
+        <div class="subject-head-left">
+          <div>
+            <p class="subject-name">${group.subject}</p>
+            <div class="subject-sub">${toBnDigits(group.items.length)}${t("agq.queue.topicsLabel")} · ${toBnDigits(approved)} ${t("agq.history.approved")}${rejected > 0 ? " · " + toBnDigits(rejected) + " " + t("agq.history.rejected") : ""}</div>
+          </div>
+        </div>
+        <div class="batch-head-right">
+          <span class="qcount-pill">${toBnDigits(group.items.length)}${t("agq.queue.topicsLabel")}</span>
+          ${chevronSVG()}
+        </div>
+      </div>
+      <div class="subject-body"><div class="subject-body-inner">
+        ${group.items.map((h) => {
+          const letters = optionLetters(usesLocalizedLabels(h.language || "bn"));
+          const topicOpen = openTopics.history.has(h.id);
+          const qs = h.questions || [];
+          return `
+          <div class="topic-item ${topicOpen ? "expanded" : ""}" data-history="${h.id}">
+            <div class="topic-head" data-topic-toggle="${h.id}">
+              <span class="history-dot ${h.status}"></span>
+              <div class="topic-head-main">
+                <p class="topic-name">${h.topic}</p>
+              </div>
+              <div class="batch-head-right">
+                <span class="status-tag ${h.status}">${h.status === "approved" ? "Approved" : "Rejected"}</span>
+                <span class="qcount-pill">${toBnDigits(h.count)} ${t("agq.control.questions")}</span>
+                ${chevronSVG()}
+              </div>
+            </div>
+            <div class="topic-body"><div class="topic-body-inner">
+              <div class="q-preview-list">
+                <p style="font-size:0.8rem; color:var(--color-text-muted); margin: 6px 0 2px; font-weight:700;">${h.sub}</p>
+                ${qs.map((q, i) => questionPreviewHTML(q, i, letters, null)).join("")}
+                ${h.count > qs.length ? `<p style="text-align:center; font-size:0.78rem; color:var(--color-text-muted); margin: 10px 0 2px;">
+                  + ${toBnDigits(h.count - qs.length)} ${t("agq.history.moreQuestionsWere")}
+                </p>` : ""}
+              </div>
+            </div></div>
+          </div>`;
+        }).join("")}
+      </div></div>
+    </div>`;
+  }).join("");
+
+  wireAccordion(list, "history");
+}
+
+// ---------- Static number re-render on language switch ----------
+// These four values (today's batch, total batches, total questions,
+// pending review) are the only AGQ numbers that live as plain static
+// HTML rather than being generated by renderQueue()/renderHistory()/etc,
+// so setLanguage() calls this directly (see the hook added next to
+// initRecentExamState()) to keep them in sync with the EN/বাংলা toggle.
+// The underlying sample values are fixed demo data, matched to what's
+// already in the markup.
+function applyAgqLocalizedNumbers() {
+  const setDigits = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = toBnDigits(value);
+  };
+  fetchAgqStats().then((stats) => {
+    setDigits("agqTodaysBatchDone", stats.todaysBatchDone);
+    setDigits("agqTodaysBatchTotal", stats.todaysBatchTotal);
+    setDigits("agqTotalBatches", stats.totalBatches);
+    setDigits("agqTotalQuestionsAdded", stats.totalQuestionsAdded);
+    setDigits("agqPendingReview", stats.pendingReview);
+  });
+  setDigits("batchSizeValue", batchSize);
+  setDigits("topicTargetValue", topicTargetValue);
+  // Queue/history lists, the review-tab count badge, and the topic-target
+  // list are all built from JS templates that call toBnDigits() at
+  // render time, so a full re-render (not just a digit swap) is what
+  // actually applies the new language to them.
+  if (typeof renderQueue === "function") renderQueue();
+  if (typeof renderHistory === "function") renderHistory();
+  if (typeof renderTopicTargetList === "function") renderTopicTargetList();
+  if (typeof renderSubjectList === "function" && document.getElementById("subjectOrderList")) {
+    renderSubjectList(document.getElementById("subjectOrderList"), false);
+  }
+}
+applyAgqLocalizedNumbers();
+
+// ---------- Init ----------
+// Render immediately from sample data (so the tab is never blank while
+// the network call is in flight), then try the real endpoints; if they
+// answer, loadAgqQueueAndHistory() swaps queueState/historyState to real
+// data and we re-render + refresh the top-bar stats to match.
+renderQueue();
+renderHistory();
+loadAgqQueueAndHistory().then(async () => {
+  renderQueue();
+  renderHistory();
+  applyAgqLocalizedNumbers();
+
+  // Config + targets depend on agqBackendAvailable, which
+  // loadAgqQueueAndHistory() just resolved above — load them after,
+  // not in parallel with, that first call.
+  const config = await fetchAgqConfig();
+  masterToggle.checked = config.autoGenerationOn;
+  statusDot.classList.toggle("on", config.autoGenerationOn);
+  batchSize = config.batchSize;
+  batchSizeValue.textContent = toBnDigits(batchSize);
+  // Restore the Frequency/Batch dropdown from the server config too —
+  // it used to only drive the local day-estimate preview text and was
+  // never actually saved anywhere, so a page reload silently reset it
+  // to "Every 2 hours" regardless of what the Worker was really doing.
+  // See DEFAULT_AGQ_CONFIG.generationFrequencyHours in worker.js for
+  // what this value actually controls (a self-throttle, not the cron
+  // interval itself).
+  const frequencySelectEl = document.getElementById("frequencySelect");
+  if (frequencySelectEl && config.generationFrequencyHours != null) {
+    frequencySelectEl.value = String(config.generationFrequencyHours);
+  }
+  if (typeof updateTopicTargetPreview === "function") updateTopicTargetPreview();
+  if (Array.isArray(config.subjectOrder) && config.subjectOrder.length && typeof renderSubjectList === "function") {
+    renderSubjectList(document.getElementById("subjectOrderList"), false);
+  }
+  // Question target + question-type checkboxes: restoreGenerationSettings()
+  // (near the top of this section) already applied whatever was cached in
+  // this browser's localStorage so the fields aren't blank while this
+  // fetch is in flight; once the server config resolves, its copy wins
+  // (it's the one the cron job actually reads) so a second device shows
+  // the same settings instead of silently drifting from what admin last
+  // saved elsewhere.
+  if (agqBackendAvailable) {
+    if (config.questionTarget != null && targetInputEl) targetInputEl.value = config.questionTarget;
+    if (config.questionTypes) {
+      questionTypeCheckboxes.forEach((cb) => {
+        const key = cb.getAttribute("data-question-type");
+        if (Object.prototype.hasOwnProperty.call(config.questionTypes, key)) {
+          cb.checked = !!config.questionTypes[key];
+        }
+      });
+      localStorage.setItem(AGQ_GENERATION_SETTINGS_KEY, JSON.stringify({
+        questionTarget: config.questionTarget,
+        questionTypes: config.questionTypes,
+      }));
+    }
+  }
+
+  await loadAgqTargets();
+  if (typeof renderTopicTargetList === "function") renderTopicTargetList();
+});
+
+
