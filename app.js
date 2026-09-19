@@ -5254,7 +5254,7 @@ const PRACTICE_API_BASE = "https://ximkiqggugotgmqzwpmm.supabase.co/functions/v1
     loadExam() already knows how to convert into its editor draft shape,
     so callers can feed the result straight into that same conversion. */
 async function fetchPracticeTopicQuestions(subjectId, topicId) {
-  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`);
+  const res = await fetch(`${PRACTICE_API_BASE}/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`);
   if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
   const data = await res.json();
   return Array.isArray(data.questions) ? data.questions : [];
@@ -5273,7 +5273,7 @@ async function fetchPracticeTopicQuestions(subjectId, topicId) {
 async function pushPracticeTopicQuestions(subjectId, topicId, questions, language) {
   if (!isSignedIn()) throw new Error("Not signed in.");
   const idToken = await firebase.auth().currentUser.getIdToken();
-  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
+  const res = await fetch(`${PRACTICE_API_BASE}/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
     body: JSON.stringify({ questions, language: language || "en" }),
@@ -5290,7 +5290,7 @@ async function pushPracticeTopicQuestions(subjectId, topicId, questions, languag
 async function deletePracticeTopicQuestions(subjectId, topicId) {
   if (!isSignedIn()) throw new Error("Not signed in.");
   const idToken = await firebase.auth().currentUser.getIdToken();
-  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
+  const res = await fetch(`${PRACTICE_API_BASE}/practice/${encodeURIComponent(subjectId)}/${encodeURIComponent(topicId)}`, {
     method: "DELETE",
     headers: { "Authorization": `Bearer ${idToken}` },
   });
@@ -5490,7 +5490,7 @@ async function pullCentralExamStateFromSupabase() {
       const currentUser = firebase.auth().currentUser;
       if (currentUser) {
         const idToken = await currentUser.getIdToken();
-        const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/questions`, {
+        const res = await fetch(`${PRACTICE_API_BASE}/live-exam/questions`, {
           headers: { Authorization: `Bearer ${idToken}` },
         });
         if (!res.ok) {
@@ -5579,7 +5579,7 @@ async function fetchExamQuestionBank(examId) {
   let data;
   try {
     const idToken = await currentUser.getIdToken();
-    const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/${encodeURIComponent(examId)}/questions`, {
+    const res = await fetch(`${PRACTICE_API_BASE}/live-exam/${encodeURIComponent(examId)}/questions`, {
       headers: { Authorization: `Bearer ${idToken}` },
     });
     if (!res.ok) {
@@ -5695,7 +5695,7 @@ async function saveQuestionBankToSupabase(examId, questions) {
   if (!currentUser) { console.error("Could not save questions: not signed in"); return; }
   try {
     const idToken = await currentUser.getIdToken();
-    const res = await fetch(`${PRACTICE_API_BASE}/api/live-exam/${encodeURIComponent(examId)}/questions`, {
+    const res = await fetch(`${PRACTICE_API_BASE}/live-exam/${encodeURIComponent(examId)}/questions`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
       body: JSON.stringify({ questions }),
@@ -8792,7 +8792,7 @@ function savePracticeState() {
     handle one shape). Throws on network/HTTP failure so callers can
     decide how to degrade (see refreshPracticeManifest). */
 async function fetchPracticeManifest() {
-  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`);
+  const res = await fetch(`${PRACTICE_API_BASE}/practice/manifest`);
   if (!res.ok) throw new Error(`Practice API returned ${res.status}`);
   const data = await res.json();
   if (Array.isArray(data.categories)) return data.categories;
@@ -8821,7 +8821,7 @@ async function pushPracticeManifest(categories) {
       topics: (s.topics || []).map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
     })),
   }));
-  const res = await fetch(`${PRACTICE_API_BASE}/api/practice/manifest`, {
+  const res = await fetch(`${PRACTICE_API_BASE}/practice/manifest`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
     body: JSON.stringify({ categories: slim }),
@@ -10050,12 +10050,16 @@ function renderPracticeAdminSubjectList() {
 
     return `
     <section class="pp-subject${isOpen ? " is-open" : ""}" data-subject-card="${escapeHtml(subject.id)}">
-      <button type="button" class="pp-subject__head" data-subject-toggle="${escapeHtml(subject.id)}">
-        <div class="pp-subject__title-wrap">
+      <div class="pp-subject__head" style="cursor: default;">
+        <button type="button" class="pp-subject__title-wrap" data-subject-toggle="${escapeHtml(subject.id)}" style="display:flex; align-items:center; gap: var(--space-3); flex: 1; min-width: 0; background: none; border: none; padding: 0; text-align: left; cursor: pointer;">
           <div class="pp-subject__title">${escapeHtml(subject.name)}</div>
+          <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="admin-subject-card__actions" style="flex-shrink: 0;">
+          <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-subject="${escapeHtml(subject.id)}">Edit</button>
+          <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-subject="${escapeHtml(subject.id)}">Delete</button>
         </div>
-        <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
+      </div>
       <div class="pp-subject__topics">
         <div class="pp-subject__topics-inner">
           ${isEditingThisSubject ? practiceAdminSubjectFormHtml(subject) : ""}
@@ -10066,8 +10070,6 @@ function renderPracticeAdminSubjectList() {
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               New Topic
             </button>
-            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-edit-subject="${escapeHtml(subject.id)}">Edit</button>
-            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-subject="${escapeHtml(subject.id)}">Delete</button>
           </div>
         </div>
       </div>
@@ -10286,7 +10288,7 @@ function wirePracticeAdminSubjectList(container) {
       pracAdminUI.openSubjectId = subjectId;
       renderPracticeAdminSubjectList();
 
-      // Sync the tree itself before touching R2 question content below —
+      // Sync the tree itself before touching Storage question content below —
       // students need the new/renamed/moved topic id to exist in the
       // manifest before there's any point fetching questions for it.
       let manifestSyncFailed = false;
@@ -10304,7 +10306,7 @@ function wirePracticeAdminSubjectList(container) {
         // one — and do this BEFORE renderPracticeAdminQuestionBank()
         // below. That call triggers the editor's getBank(), which always
         // force-fetches the new subjectId::topicId key (see getBank's
-        // own comment) — if the copy hasn't landed in R2 yet, that fetch
+        // own comment) — if the copy hasn't landed in Storage yet, that fetch
         // returns an empty bank and the editor would show "0 questions"
         // for a topic that actually still has its questions, just not
         // copied to the new path yet. Awaiting the move first means the
@@ -10316,7 +10318,7 @@ function wirePracticeAdminSubjectList(container) {
           await deletePracticeTopicQuestions(movedFromSubjectId, editingTopicId);
           clearPracticeTopicQuestionsCache(movedFromSubjectId, editingTopicId);
         } catch (err) {
-          console.error("Could not move topic's question bank in R2:", err);
+          console.error("Could not move topic's question bank in Storage:", err);
           moveFailed = true;
           showToast("Topic moved, but its questions may not have followed - check both subjects.", "danger");
         }
@@ -10522,7 +10524,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ========================================================================== */
 /* ==========================================================================
    AGQ ADMIN UI — self-contained demo/mock. No backend calls yet (per the
-   plan: Worker + KV + R2 cron engine comes later). All state below is
+   plan: Supabase Edge Function + Postgres + Storage cron engine). All state below is
    in-memory sample data so the interaction design can be reviewed first.
    AGQ_API_BASE mirrors PRACTICE_API_BASE's readiness pattern: once
    worker.js grows /api/agq/queue, /api/agq/history and /api/agq/stats
@@ -10766,8 +10768,8 @@ let historyState = JSON.parse(JSON.stringify(SAMPLE_HISTORY));
 async function loadAgqQueueAndHistory() {
   try {
     const [queueRes, historyRes] = await Promise.all([
-      fetch(`${AGQ_API_BASE}/api/agq/queue`),
-      fetch(`${AGQ_API_BASE}/api/agq/history`),
+      fetch(`${AGQ_API_BASE}/agq/queue`),
+      fetch(`${AGQ_API_BASE}/agq/history`),
     ]);
     if (!queueRes.ok || !historyRes.ok) throw new Error("AGQ endpoints not available yet");
     const queueData = await queueRes.json();
@@ -10792,7 +10794,7 @@ async function fetchAgqStats() {
   const demoStats = { todaysBatchDone: 4, todaysBatchTotal: 4, totalBatches: "5,138", totalQuestionsAdded: "1,28,450", pendingReview: 3 };
   if (!agqBackendAvailable) return demoStats;
   try {
-    const res = await fetch(`${AGQ_API_BASE}/api/agq/stats`);
+    const res = await fetch(`${AGQ_API_BASE}/agq/stats`);
     if (!res.ok) throw new Error(`AGQ stats endpoint returned ${res.status}`);
     const data = await res.json();
     return {
@@ -10821,7 +10823,7 @@ async function fetchAgqConfig() {
   const defaults = { autoGenerationOn: true, batchSize: 25, subjectOrder: [], questionTarget: null, questionTypes: null };
   if (!agqBackendAvailable) return defaults;
   try {
-    const res = await fetch(`${AGQ_API_BASE}/api/agq/config`);
+    const res = await fetch(`${AGQ_API_BASE}/agq/config`);
     if (!res.ok) throw new Error(`AGQ config endpoint returned ${res.status}`);
     return { ...defaults, ...(await res.json()) };
   } catch (e) {
@@ -10852,7 +10854,7 @@ const flushAgqConfig = debounce(async () => {
   pendingAgqConfigPartial = null;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const res = await fetch(`${AGQ_API_BASE}/api/agq/config`, {
+    const res = await fetch(`${AGQ_API_BASE}/agq/config`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
       body: JSON.stringify(partial),
@@ -10922,7 +10924,7 @@ if (agqGenerateNowBtn) {
     agqGenerateNowBtn.textContent = "তৈরি হচ্ছে...";
     try {
       const idToken = await firebase.auth().currentUser.getIdToken();
-      const res = await fetch(`${AGQ_API_BASE}/api/agq/generate-now`, {
+      const res = await fetch(`${AGQ_API_BASE}/agq/generate-now`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${idToken}` },
       });
@@ -11212,7 +11214,7 @@ let topicTargets = [
 async function loadAgqTargets() {
   if (!agqBackendAvailable) return;
   try {
-    const res = await fetch(`${AGQ_API_BASE}/api/agq/targets`);
+    const res = await fetch(`${AGQ_API_BASE}/agq/targets`);
     if (!res.ok) throw new Error(`AGQ targets endpoint returned ${res.status}`);
     const data = await res.json();
     if (Array.isArray(data.targets)) topicTargets = data.targets;
@@ -11230,7 +11232,7 @@ async function saveAgqTargets() {
   if (!isSignedIn()) return;
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
-    const res = await fetch(`${AGQ_API_BASE}/api/agq/targets`, {
+    const res = await fetch(`${AGQ_API_BASE}/agq/targets`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
       body: JSON.stringify({ targets: topicTargets }),
@@ -11552,7 +11554,7 @@ function renderQueue() {
   // successfully pulls real data and flips agqBackendAvailable true.
   const demoBanner = agqBackendAvailable ? "" : `
     <div class="badge badge-warning" style="display:flex; align-items:center; gap:6px; margin-bottom: var(--space-4); padding: var(--space-2) var(--space-3); width:fit-content;">
-      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Worker/KV/R2) is not connected yet."}
+      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Supabase Edge Function) is not connected yet."}
     </div>`;
 
   if (queueState.length === 0) {
@@ -11641,7 +11643,7 @@ function renderQueue() {
         btn.disabled = true;
         try {
           const idToken = await firebase.auth().currentUser.getIdToken();
-          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/approve`, {
+          const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(id)}/approve`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${idToken}` },
           });
@@ -11685,7 +11687,7 @@ function renderQueue() {
         btn.disabled = true;
         try {
           const idToken = await firebase.auth().currentUser.getIdToken();
-          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/reject`, {
+          const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(id)}/reject`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${idToken}` },
           });
@@ -12289,7 +12291,7 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
     saveBtn.disabled = true;
     try {
       const idToken = await firebase.auth().currentUser.getIdToken();
-      const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
+      const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
         method: "PATCH",
         headers: { "Authorization": `Bearer ${idToken}`, "Content-Type": "application/json" },
         body: JSON.stringify(updated),
@@ -12325,7 +12327,7 @@ document.getElementById("deleteQuestionBtn").addEventListener("click", async () 
     delBtn.disabled = true;
     try {
       const idToken = await firebase.auth().currentUser.getIdToken();
-      const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
+      const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(batchId)}/questions/${qIndex}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${idToken}` },
       });
@@ -12397,7 +12399,7 @@ massApproveBtn.addEventListener("click", async () => {
       const idToken = await firebase.auth().currentUser.getIdToken();
       for (const id of selected) {
         try {
-          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/approve`, {
+          const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(id)}/approve`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${idToken}` },
           });
@@ -12448,7 +12450,7 @@ massDeleteBtn.addEventListener("click", async () => {
       const idToken = await firebase.auth().currentUser.getIdToken();
       for (const id of selected) {
         try {
-          const res = await fetch(`${AGQ_API_BASE}/api/agq/queue/${encodeURIComponent(id)}/reject`, {
+          const res = await fetch(`${AGQ_API_BASE}/agq/queue/${encodeURIComponent(id)}/reject`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${idToken}` },
           });
@@ -12495,7 +12497,7 @@ function renderHistory() {
 
   const demoBanner = agqBackendAvailable ? "" : `
     <div class="badge badge-warning" style="display:flex; align-items:center; gap:6px; margin-bottom: var(--space-4); padding: var(--space-2) var(--space-3); width:fit-content;">
-      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Worker/KV/R2) is not connected yet."}
+      <span class="badge__dot"></span>${t("agq.demoBanner") || "Demo data — AGQ backend (Supabase Edge Function) is not connected yet."}
     </div>`;
 
   if (historyState.length === 0) {
@@ -12655,5 +12657,3 @@ loadAgqQueueAndHistory().then(async () => {
   await loadAgqTargets();
   if (typeof renderTopicTargetList === "function") renderTopicTargetList();
 });
-
-
