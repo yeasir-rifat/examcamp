@@ -11414,10 +11414,11 @@ setTopicTargetBtn.addEventListener("click", () => {
   const subjectId = targetSubjectSelect.value;
   const topicName = targetTopicSelect.value;
   if (!topicName) { showToast(t("agq.toast.noTopicFound"), "danger"); return; }
-  if (isCurrentGenSelection()) {
-    showToast(t("agq.toast.aiWorkingWait"), "danger");
-    return;
-  }
+  // isCurrentGenSelection() guard removed — see updateGenLockState() above
+  // for why: currentGenSubjectId/currentGenTopicId are only ever the
+  // category's FIRST subject/topic, never real "AI is generating this
+  // right now" data, so this check always false-positived on that first
+  // topic and blocked setting a target for it forever.
   const matchedSubject = getAgqSubjects().find((s) => s.id === subjectId);
   if (!matchedSubject) {
     // Previously this fell through with subjectName silently defaulted
