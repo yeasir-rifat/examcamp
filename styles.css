@@ -4371,6 +4371,7 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .pp-subject__head {
  display: flex;
  align-items: center;
+ flex-wrap: wrap;
  gap: var(--space-3);
  width: 100%;
  padding: var(--space-4) var(--space-4);
@@ -7994,4 +7995,3 @@ body[data-page="practice-mode"] {
 @media (max-width: 480px) {
   .agq-embed .modal-sheet { max-height: 92vh; }
 }
-
