@@ -11291,10 +11291,15 @@ function isCurrentGenSelection() {
   return !!(currentTopic && currentTopic.name === targetTopicSelect.value);
 }
 function updateGenLockState() {
-  const locked = isCurrentGenSelection();
-  topicTargetLockedHint.style.display = locked ? "" : "none";
-  setTopicTargetBtn.disabled = locked;
-  setTopicTargetBtn.classList.toggle("btn-disabled", locked);
+  // Lock feature disabled: currentGenSubjectId/currentGenTopicId are only
+  // ever initialized to each category's FIRST subject/topic (see their
+  // declarations above) and are never synced with which topic AGQ is
+  // actually generating for server-side. That made this lock permanently
+  // false-positive on category's first subject/topic regardless of real
+  // AGQ activity, so the "Set Target" button is no longer disabled here.
+  topicTargetLockedHint.style.display = "none";
+  setTopicTargetBtn.disabled = false;
+  setTopicTargetBtn.classList.remove("btn-disabled");
 }
 // ---------- Bengali digit helper ----------
 // Language-aware: renders Bengali numerals when the site language is set
