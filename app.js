@@ -5246,7 +5246,7 @@ const PRACTICE_ADMIN_EMAILS = ["rifat.webflow@gmail.com"];
 // constant, so this is the only edit needed after deploying the Edge
 // Function (see supabase/README.md — "supabase functions deploy api").
 // Format: "https://<project-ref>.supabase.co/functions/v1/api"
-const PRACTICE_API_BASE = "https://ximkiqggugotgmqzwpmm.supabase.co/functions/v1/api";
+const PRACTICE_API_BASE = "https://ximkiqggugotgmqzwpmm.supabase.co/functions/v1/clever-service";
 
 /** Fetches one topic's question bank from the Edge Function/Supabase Storage.
     Returns the saved-shape question array ({question, options,
