@@ -122,7 +122,7 @@
       document.documentElement.setAttribute("data-theme-preference", stored);
     })();
   </script>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-page="home">
 <div class="view is-active" id="view-home">
@@ -1411,18 +1411,18 @@
         <div class="field-row field-row--triple">
           <div>
             <label data-i18n="agq.topicTarget.subject">Subject</label>
-            <select class="select-input form-control" id="targetSubjectSelect" style="max-width:100%;"></select>
+            <select class="select-input" id="targetSubjectSelect" style="max-width:100%;"></select>
           </div>
           <div>
             <label data-i18n="agq.topicTarget.topic">Topic</label>
-            <select class="select-input form-control" id="targetTopicSelect" style="max-width:100%;"></select>
+            <select class="select-input" id="targetTopicSelect" style="max-width:100%;"></select>
           </div>
           <div>
             <label data-i18n="agq.topicTarget.questionLanguage">Question Language</label>
             <!-- অপশন মার্কার ক/খ/গ/ঘ নাকি A/B/C/D তা এই সেটিং ঠিক করবে — বাংলা / বাংলা+English
                  নির্বাচনে ক, খ, গ, ঘ হবে; English নির্বাচনে A, B, C, D হবে — রিভিউ কিউ, এডিটর
                  প্যানেল ও প্র্যাকটিস মোড, তিন জায়গাতেই। -->
-            <select class="select-input form-control" id="topicTargetLangSelect" style="max-width:100%;">
+            <select class="select-input" id="topicTargetLangSelect" style="max-width:100%;">
               <option value="bn" selected>বাংলা</option>
               <option value="en">English</option>
               <option value="en-bn">বাংলা + English</option>
@@ -1491,7 +1491,7 @@
                in functions/api/index.ts for the full explanation. -->
           <div class="generation-control">
             <label data-i18n="agq.generation.frequencyPerBatch" style="font-size: 0.78rem;">Frequency/Batch</label>
-            <select class="select-input form-control" id="frequencySelect">
+            <select class="select-input" id="frequencySelect">
               <option value="1" data-i18n="agq.generation.every1h">Every 1 hours</option>
               <option value="2" selected data-i18n="agq.generation.every2h">Every 2 hours (actual cron interval)</option>
               <option value="3" data-i18n="agq.generation.every3h">Every 3 hours</option>
@@ -2307,7 +2307,7 @@
   </div>
 
   <!-- Main application script (config, state, and all view logic). -->
-  <script src="app.js" defer></script>
+  <script src="app.js"></script>
 
   <!-- Examcamp PWA registration -->
   <script src="pwa-register.js" defer></script>
