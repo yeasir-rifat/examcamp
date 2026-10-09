@@ -7130,6 +7130,7 @@ function createMCQBuilder(cfg) {
         explanationHtml: escapeHtml(q.explanation || ""),
         options: opts.map((t, i) => ({ id: ["a", "b", "c", "d"][i], html: escapeHtml(t) })),
         correctIndex: typeof q.correctAnswer === "number" ? q.correctAnswer : -1,
+        subtopic: q.subtopic || "",
       };
     });
     renderQuestions();
@@ -7699,7 +7700,13 @@ function createMCQBuilder(cfg) {
       options: q.options.map((o) => sanitizeHtml(o.html).trim()),
       correctAnswer: q.correctIndex,
       explanation: sanitizeHtml(q.explanationHtml).trim(),
+      ...(q.subtopic ? { subtopic: q.subtopic } : {}),
     }));
+    // Optional subtopic: applied to every question in this batch, and only
+    // written when filled in, so Live Exam questions are unaffected.
+    const subtopicName = cfg.getSubtopic ? String(cfg.getSubtopic() || "").trim() : "";
+    // The field fills in questions that have no subtopic yet; tagged questions keep theirs.
+    if (subtopicName) converted.forEach((q) => { if (!q.subtopic) q.subtopic = subtopicName; });
 
     // Practice's pushQuestions now does a real network PUT to the Worker,
     // which can fail (offline, auth expired, etc.) — don't claim success
@@ -9074,7 +9081,8 @@ async function pushPracticeManifest(categories) {
     subjects: (c.subjects || []).map((s) => ({
       id: s.id,
       name: s.name,
-      topics: (s.topics || []).map((t) => ({ id: t.id, name: t.name, language: t.language || "en" })),
+      mainTopics: s.mainTopics || [],
+      topics: (s.topics || []).map((t) => ({ id: t.id, name: t.name, language: t.language || "en", mainTopicId: t.mainTopicId || null })),
     })),
   }));
   const res = await fetch(`${PRACTICE_API_BASE}/practice/manifest`, {
@@ -9123,13 +9131,14 @@ async function refreshPracticeManifest() {
       subjects: (cat.subjects || []).map((s) => ({
         id: s.id,
         name: s.name,
+        mainTopics: s.mainTopics || [],
         topics: (s.topics || []).map((tp) => {
           const prior = oldLookup.get(`${cat.id}::${s.name}::${tp.name}`);
           const newKey = practiceProgressKey(s.id, tp.id);
           if (prior && (prior.oldSubjectId !== s.id || prior.oldTopicId !== tp.id)) {
             remapped[newKey] = practiceProgressKey(prior.oldSubjectId, prior.oldTopicId);
           }
-          return { id: tp.id, name: tp.name, questions: [], language: (prior && prior.language) || tp.language || "en" };
+          return { id: tp.id, name: tp.name, questions: [], language: (prior && prior.language) || tp.language || "en", mainTopicId: tp.mainTopicId || null };
         }),
       })),
     }));
@@ -9259,13 +9268,25 @@ function renderPracticeSubjectList() {
   }
 
   container.innerHTML = category.subjects.map((subject) => {
-    const topicsHtml = subject.topics.length
-      ? subject.topics.map((topic) => `
+    const topicRow = (topic) => `
           <button type="button" class="pp-topic-row" data-practice-topic data-subject-id="${escapeHtml(subject.id)}" data-topic-id="${escapeHtml(topic.id)}">
             <span class="pp-topic-row__name">${escapeHtml(topic.name)}</span>
             <svg class="pp-topic-row__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          </button>`).join("")
-      : `<div class="pp-subject__empty">No topics yet</div>`;
+          </button>`;
+    const mainTopics = subject.mainTopics || [];
+    const groupsHtml = mainTopics.map((main) => {
+      const inGroup = subject.topics.filter((t) => t.mainTopicId === main.id);
+      return `
+        <div class="pp-main">
+          <button type="button" class="pp-main__head" data-main-toggle aria-expanded="false">
+            <span class="pp-main__name">${escapeHtml(main.name)}</span>
+            <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="pp-main__topics">${inGroup.map(topicRow).join("") || `<div class="pp-subject__empty">No topics yet</div>`}</div>
+        </div>`;
+    }).join("");
+    const ungrouped = subject.topics.filter((t) => !mainTopics.some((m) => m.id === t.mainTopicId));
+    const topicsHtml = (groupsHtml + ungrouped.map(topicRow).join("")) || `<div class="pp-subject__empty">No topics yet</div>`;
     return `
     <section class="pp-subject" data-subject-card="${escapeHtml(subject.id)}">
       <button type="button" class="pp-subject__head" data-subject-toggle="${escapeHtml(subject.id)}" aria-expanded="false">
@@ -9299,6 +9320,13 @@ function renderPracticeSubjectList() {
       btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
   });
+  qsa("[data-main-toggle]", container).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const group = btn.closest(".pp-main");
+      const open = group.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
   qsa("[data-practice-topic]", container).forEach((btn) => {
     btn.addEventListener("click", () => {
       const subjectId = btn.getAttribute("data-subject-id");
@@ -9317,12 +9345,75 @@ function renderPracticeSubjectList() {
    split into modules; Practice hands off to the unchanged
    enterPracticeMode, which does its own fetch) rather than caching it
    here, keeping this function a thin dispatcher. */
+/* Topic tap: if the topic's questions carry subtopic names, first ask
+   which subtopic to practise; otherwise go straight to the interest popup
+   exactly as before. */
+async function openPracticeTopicEntry(subjectId, topicId) {
+  let questions = [];
+  try {
+    questions = await getPracticeTopicQuestions(subjectId, topicId);
+  } catch (e) {
+    console.error(e);
+    openPracticeInterestModal(subjectId, topicId);
+    return;
+  }
+  const counts = new Map();
+  questions.forEach((q) => {
+    const name = (q.subtopic || "").trim();
+    if (name) counts.set(name, (counts.get(name) || 0) + 1);
+  });
+  if (counts.size === 0) { openPracticeInterestModal(subjectId, topicId); return; }
+  openPracticeSubtopicPicker(subjectId, topicId, questions.length, counts);
+}
+
+function openPracticeSubtopicPicker(subjectId, topicId, total, counts) {
+  let overlay = document.getElementById("practice-subtopic-modal");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.id = "practice-subtopic-modal";
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="practice-subtopic-title">
+        <div class="modal__header">
+          <h2 id="practice-subtopic-title" class="text-h3">Choose subtopic</h2>
+          <button type="button" class="icon-btn" data-subtopic-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="modal__body" id="practice-subtopic-list" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal("practice-subtopic-modal"); });
+    qs("[data-subtopic-close]", overlay).addEventListener("click", () => closeModal("practice-subtopic-modal"));
+  }
+  const list = document.getElementById("practice-subtopic-list");
+  const rows = [{ key: "", label: "All questions", count: total }]
+    .concat([...counts.entries()].map(([name, count]) => ({ key: name, label: name, count })));
+  list.innerHTML = rows.map((r, i) => `
+    <button type="button" class="btn btn-outline" data-subtopic-index="${i}" style="justify-content: space-between; width: 100%;">
+      <span>${escapeHtml(r.label)}</span><span class="text-muted">${r.count}</span>
+    </button>`).join("");
+  qsa("[data-subtopic-index]", list).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const pick = rows[Number(btn.getAttribute("data-subtopic-index"))];
+      closeModal("practice-subtopic-modal");
+      // Wait for closeModal's history step to settle before opening the next popup.
+      setTimeout(() => openPracticeInterestModal(subjectId, topicId, pick.key || null), 80);
+    });
+  });
+  openModal("practice-subtopic-modal");
+}
+
 let practiceInterestTarget = null; // { subjectId, topicId, subject, topic }
 
-function openPracticeInterestModal(subjectId, topicId) {
+function openPracticeInterestModal(subjectId, topicId, subtopic = null) {
   const found = findPracticeTopic(subjectId, topicId);
   if (!found) { showToast("This topic isn't available.", "danger"); return; }
-  practiceInterestTarget = { subjectId, topicId, subject: found.subject, topic: found.topic };
+  practiceInterestTarget = { subjectId, topicId, subject: found.subject, topic: found.topic, subtopic: subtopic || null };
+  // Evaluate works on the whole topic bank, so it is hidden for a subtopic.
+  const evalBtnEl = qs("#practice-interest-evaluate-btn");
+  if (evalBtnEl) evalBtnEl.hidden = !!subtopic;
   const subjectEl = qs("#practice-interest-modal-subject");
   const topicEl = qs("#practice-interest-modal-topic");
   if (subjectEl) subjectEl.textContent = found.subject.name;
@@ -9346,7 +9437,7 @@ function initPracticeInterestModal() {
       if (!practiceInterestTarget) return;
       const { subjectId, topicId } = practiceInterestTarget;
       closeModal("practice-interest-modal");
-      enterPracticeMode(subjectId, topicId);
+      enterPracticeMode(subjectId, topicId, practiceInterestTarget.subtopic);
     });
   }
 }
@@ -9479,7 +9570,7 @@ function enterEvaluateExam() {
 /* ---------- Practice Mode: Exam-Mode-styled runner ---------- */
 let practiceModeState = null; // { subjectId, topicId, questions, answers: {qId: idx}, current }
 
-async function enterPracticeMode(subjectId, topicId) {
+async function enterPracticeMode(subjectId, topicId, subtopic = null) {
   const found = findPracticeTopic(subjectId, topicId);
   if (!found) { showToast("This topic isn't available.", "danger"); return; }
   const { subject, topic } = found;
@@ -9495,15 +9586,19 @@ async function enterPracticeMode(subjectId, topicId) {
     showToast("Couldn't load this topic's questions. Check your connection and try again.", "danger");
     return;
   }
+  if (subtopic) questions = questions.filter((q) => (q.subtopic || "").trim() === subtopic);
   if (!questions.length) {
     showToast("No questions have been added to this topic yet.", "info");
     return;
   }
 
-  const savedProgress = practiceState.progress[practiceProgressKey(subjectId, topicId)];
+  // A subtopic session keeps its own run in memory only, so it never
+  // overwrites or mixes with the whole-topic saved progress.
+  const savedProgress = subtopic ? null : practiceState.progress[practiceProgressKey(subjectId, topicId)];
   practiceModeState = {
     subjectId,
     topicId,
+    subtopic: subtopic || null,
     subjectName: subject.name,
     topicName: topic.name,
     language: topic.language || "en",
@@ -9524,7 +9619,7 @@ async function enterPracticeMode(subjectId, topicId) {
 }
 
 function savePracticeProgress() {
-  if (!practiceModeState) return;
+  if (!practiceModeState || practiceModeState.subtopic) return;
   const { subjectId, topicId } = practiceModeState;
   const key = practiceProgressKey(subjectId, topicId);
   const answeredCount = Object.keys(practiceModeState.answers).length;
@@ -9903,6 +9998,10 @@ const PracticeMCQBuilder = createMCQBuilder({
     if (!found) return null;
     return { subject: found.subject.name, topic: found.topic.name, language: found.topic.language || "en" };
   },
+  getSubtopic() {
+    const el = document.getElementById("pa-mcqp-subtopic");
+    return el ? el.value : "";
+  },
   async getBank(itemId) {
     const [subjectId, topicId] = itemId.split("::");
     const found = findPracticeTopic(subjectId, topicId);
@@ -10259,6 +10358,13 @@ function practiceAdminTopicFormHtml(subject, topic) {
           </select>
         </div>
         <div>
+          <label class="form-label" for="pa-admin-topic-main">Main topic</label>
+          <select class="form-control" id="pa-admin-topic-main">
+            <option value="">— No main topic —</option>
+            ${(subject.mainTopics || []).map((m) => `<option value="${escapeHtml(m.id)}" ${topic && topic.mainTopicId === m.id ? "selected" : ""}>${escapeHtml(m.name)}</option>`).join("")}
+          </select>
+        </div>
+        <div>
           <label class="form-label" for="pa-admin-topic-name">Topic name</label>
           <input type="text" class="form-control" id="pa-admin-topic-name" placeholder="e.g. Noun, Tense, Subject-Verb Agreement" value="${topic ? escapeHtml(topic.name) : ""}" />
         </div>
@@ -10287,18 +10393,11 @@ function renderPracticeAdminSubjectList() {
     const isOpen = pracAdminUI.openSubjectId === subject.id;
     const isEditingThisSubject = pracAdminUI.editingSubjectId === subject.id;
 
-    const topicRows = subject.topics.length
-      ? subject.topics.map((topic) => {
-          // Question content lives in Supabase Storage now, not on the local topic
-          // object — show a cached count immediately if we have one
-          // (instant, no flicker on re-renders after the first load),
-          // else a placeholder that patchPracticeAdminQuestionCounts()
-          // fills in once its fetch resolves.
-          const key = `${subject.id}::${topic.id}`;
-          const cached = practiceQuestionCache.get(key);
-          const qCountLabel = cached ? `${cached.length} question${cached.length === 1 ? "" : "s"}` : "…";
-          const isEditingThisTopic = pracAdminUI.editingTopic && pracAdminUI.editingTopic.subjectId === subject.id && pracAdminUI.editingTopic.topicId === topic.id;
-          return `
+    const renderAdminTopicRow = (topic) => {
+      const cached = practiceQuestionCache.get(`${subject.id}::${topic.id}`);
+      const qCountLabel = cached ? `${cached.length} question${cached.length === 1 ? "" : "s"}` : "…";
+      const isEditingThisTopic = pracAdminUI.editingTopic && pracAdminUI.editingTopic.subjectId === subject.id && pracAdminUI.editingTopic.topicId === topic.id;
+      return `
           <div class="live-admin-exam-row">
             <div class="live-admin-exam-row__body">
               <div class="live-admin-exam-row__title">${escapeHtml(topic.name || "Untitled topic")}</div>
@@ -10310,10 +10409,34 @@ function renderPracticeAdminSubjectList() {
             </div>
           </div>
           ${isEditingThisTopic ? practiceAdminTopicFormHtml(subject, topic) : ""}`;
-        }).join("")
-      : `<div class="pp-subject__empty">No Topics yet under "${escapeHtml(subject.name)}" - add one like Noun or Tense.</div>`;
+    };
+    const mainTopics = subject.mainTopics || [];
+    const groupsHtml = mainTopics.map((main) => {
+      const inGroup = subject.topics.filter((t) => t.mainTopicId === main.id);
+      return `
+        <div class="pa-main-group">
+          <div class="pa-main-group__head">
+            <span class="pa-main-group__name">${escapeHtml(main.name)}</span>
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-delete-main="${escapeHtml(subject.id)}::${escapeHtml(main.id)}">Delete</button>
+          </div>
+          ${inGroup.length ? inGroup.map(renderAdminTopicRow).join("") : `<div class="pp-subject__empty">No topics under "${escapeHtml(main.name)}" yet.</div>`}
+        </div>`;
+    }).join("");
+    const ungrouped = subject.topics.filter((t) => !mainTopics.some((m) => m.id === t.mainTopicId));
+    const ungroupedHtml = ungrouped.length
+      ? (mainTopics.length ? `<div class="pa-main-group__name" style="margin: var(--space-3) 0 var(--space-2);">Without main topic</div>` : "") + ungrouped.map(renderAdminTopicRow).join("")
+      : "";
+    const topicRows = (groupsHtml + ungroupedHtml) || `<div class="pp-subject__empty">No Topics yet under "${escapeHtml(subject.name)}" - add one like Noun or Tense.</div>`;
 
     const newTopicFormHtml = pracAdminUI.newTopicForSubject === subject.id ? practiceAdminTopicFormHtml(subject, null) : "";
+    const newMainFormHtml = pracAdminUI.newMainForSubject === subject.id ? `
+      <div class="card" style="margin: var(--space-3) 0 0;">
+        <label class="form-label" for="pa-admin-main-name">Main topic name</label>
+        <input type="text" class="form-control" id="pa-admin-main-name" placeholder="e.g. প্রাচীন যুগ" />
+        <div class="pa-topic-form-actions">
+          <button type="button" class="btn btn-primary btn-sm" data-pa-admin-main-save="${escapeHtml(subject.id)}">Save Main Topic</button>
+        </div>
+      </div>` : "";
 
     return `
     <section class="pp-subject${isOpen ? " is-open" : ""}" data-subject-card="${escapeHtml(subject.id)}">
@@ -10331,11 +10454,15 @@ function renderPracticeAdminSubjectList() {
         <div class="pp-subject__topics-inner">
           ${isEditingThisSubject ? practiceAdminSubjectFormHtml(subject) : ""}
           ${topicRows}
+          ${newMainFormHtml}
           ${newTopicFormHtml}
           <div class="admin-subject-card__actions" style="margin-top: var(--space-3);">
             <button type="button" class="btn btn-primary btn-sm" data-pa-admin-new-topic-for="${escapeHtml(subject.id)}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               New Topic
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" data-pa-admin-new-main="${escapeHtml(subject.id)}" style="margin-left: var(--space-2);">
+              New Main Topic
             </button>
           </div>
         </div>
@@ -10367,6 +10494,55 @@ function patchPracticeAdminQuestionCounts(container) {
 }
 
 function wirePracticeAdminSubjectList(container) {
+  qsa("[data-pa-admin-new-main]", container).forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const subjectId = btn.getAttribute("data-pa-admin-new-main");
+      pracAdminUI = { openSubjectId: subjectId, editingSubjectId: null, newSubjectOpen: false, editingTopic: null, newTopicForSubject: null, newMainForSubject: subjectId };
+      renderPracticeAdminSubjectList();
+    });
+  });
+  qsa("[data-pa-admin-main-save]", container).forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const subjectId = btn.getAttribute("data-pa-admin-main-save");
+      const name = qs("#pa-admin-main-name").value.trim();
+      if (!name) { showToast("Main topic name is required.", "danger"); return; }
+      const subject = getPracticeAdminSubjects().find((s) => s.id === subjectId);
+      if (!subject) return;
+      subject.mainTopics = [...(subject.mainTopics || []), { id: practiceTopicId(), name }];
+      pracAdminUI.newMainForSubject = null;
+      pracAdminUI.openSubjectId = subjectId;
+      savePracticeState();
+      renderPracticeAdminSubjectList();
+      await syncPracticeManifestAfterEdit();
+    });
+  });
+  qsa("[data-pa-admin-delete-main]", container).forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const [subjectId, mainId] = btn.getAttribute("data-pa-admin-delete-main").split("::");
+      const subject = getPracticeAdminSubjects().find((s) => s.id === subjectId);
+      if (!subject) return;
+      const main = (subject.mainTopics || []).find((m) => m.id === mainId);
+      if (!main) return;
+      if (!confirm(`Delete the main topic "${main.name}"? Its topics stay, but move to "Without main topic".`)) return;
+      subject.mainTopics = subject.mainTopics.filter((m) => m.id !== mainId);
+      subject.topics.forEach((t) => { if (t.mainTopicId === mainId) t.mainTopicId = null; });
+      savePracticeState();
+      renderPracticeAdminSubjectList();
+      await syncPracticeManifestAfterEdit();
+    });
+  });
+  qsa("#pa-admin-topic-subject", container).forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const subject = getPracticeAdminSubjects().find((s) => s.id === sel.value);
+      const mainSel = qs("#pa-admin-topic-main");
+      if (!mainSel) return;
+      mainSel.innerHTML = `<option value="">— No main topic —</option>` +
+        ((subject && subject.mainTopics) || []).map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join("");
+    });
+  });
   qsa("[data-subject-toggle]", container).forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-subject-toggle");
@@ -10549,6 +10725,9 @@ function wirePracticeAdminSubjectList(container) {
         savedTopicId = practiceTopicId();
         subject.topics.push({ id: savedTopicId, name, questions: [], language: "en" });
       }
+      const mainSel = qs("#pa-admin-topic-main");
+      const savedTopic = subject.topics.find((t) => t.id === savedTopicId);
+      if (savedTopic) savedTopic.mainTopicId = mainSel && mainSel.value ? mainSel.value : null;
       savePracticeState();
       pracAdminUI.editingTopic = null;
       pracAdminUI.newTopicForSubject = null;
@@ -13301,7 +13480,7 @@ loadAgqQueueAndHistory().then(async () => {
         if (liveBtn) liveBtn.hidden = !isLiveExamAdmin();
         if (practiceBtn) practiceBtn.hidden = !isPracticeAdmin();
       }
-    
+
       // Close the drawer first (its close may consume a history entry),
       // then navigate once that has settled.
       function openAdminPanel(target) {
