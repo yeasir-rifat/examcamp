@@ -10,7 +10,7 @@
 
 "use strict";
 
-const CACHE_VERSION = "examcamp-v11";
+const CACHE_VERSION = "examcamp-v12";
 
 const APP_CACHE = `${CACHE_VERSION}-app`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
