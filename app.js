@@ -13301,7 +13301,7 @@ loadAgqQueueAndHistory().then(async () => {
         if (liveBtn) liveBtn.hidden = !isLiveExamAdmin();
         if (practiceBtn) practiceBtn.hidden = !isPracticeAdmin();
       }
-
+    
       // Close the drawer first (its close may consume a history entry),
       // then navigate once that has settled.
       function openAdminPanel(target) {
