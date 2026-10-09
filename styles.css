@@ -180,16 +180,16 @@ fieldset {
  --color-focus-ring: rgba(99, 102, 241, 0.35);
 
  /* ---------- Typography ---------- */
- /* Site-wide root typefaces are fixed: Lato for English (sans), Noto
-  Serif Bengali for Bengali — not user-configurable. Typography is
+ /* Site-wide root typefaces are fixed: Lato for English (sans),
+  Noto Serif Bengali for Bengali — not user-configurable. Typography is
   only customizable in the Download/Print Preview page's PDF settings
   panel (see --pdf-font-en / --pdf-font-bn), which is a separate,
   independent font stack used only for the printed/exported paper. */
  --font-family-en: "Lato", -apple-system,
   BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
   "Apple Color Emoji", "Segoe UI Emoji";
- --font-family-bn: "Noto Serif Bengali", "Lato", -apple-system,
-  BlinkMacSystemFont, "Segoe UI", serif;
+ --font-family-bn: "Lato", "Noto Serif Bengali", -apple-system,
+  BlinkMacSystemFont, "Segoe UI", sans-serif;
 
  /* Mixed-content stack: Lato leads for Latin glyphs, Noto Serif Bengali
   covers Bengali glyphs the browser falls through to automatically. */
@@ -389,15 +389,12 @@ body[data-page="stats"] .review-explanation {
  Lato still covers any Latin characters mixed into the same string. The
  reverse applies for lang="en". Utility classes are provided for cases
  where language needs to be set on a fragment rather than an ancestor.
- The 0.95em size step below is a visual-size correction, not a script
- change: Noto Serif Bengali's glyphs sit taller/heavier than Lato's at
- the same pixel size, so Bengali text is scaled down slightly to read
- as the same visual size next to Lato. em is relative to the inherited
- size, so this scales correctly whether the surrounding text is a
- heading, body copy, or a button label. */
+ Bengali is no longer scaled down (it used to be 0.95em when Noto Serif
+ Bengali led the stack, whose glyphs sit taller than Lato's); Kalpurush
+ reads at the same visual size as Lato at 1em. */
 [lang="bn"] {
  font-family: var(--font-family-bn);
- font-size: 0.95em;
+ font-size: 1em;
 }
 
 [lang="en"] {
@@ -410,48 +407,23 @@ body[data-page="stats"] .review-explanation {
 
 .font-bn {
  font-family: var(--font-family-bn);
- font-size: 0.95em;
+ font-size: 1em;
 }
 
-/* ---------- Bengali weight cap ----------
- Noto Serif Bengali (and Bengali serif fonts generally) don't have
- well-hinted 600/700 "bold" weight variants — at those weights Bengali
- conjuncts and matras can render heavy/muddy or clip. (The English side
- doesn't share this problem: Lato's own 300/400/700/900 files are
- loaded, so --font-weight-semibold/--font-weight-bold resolve to a real
- Lato weight rather than synthetic bold — this cap is specifically
- about Bengali script correctness, which synthetic bold does not fix,
- not about matching English's own weight ceiling.) Only 400 and 500 are
- loaded for Noto Serif Bengali (see the Google Fonts <link> above,
- wght@400;500) and no Bengali-rendered text anywhere in the app's own
- UI should ever request a weight outside that pair — never
- synthetic/forced bold. Heading-level text (h1–h4 / .text-h1–.text-h4)
- gets 500; everything else (body copy, subheadings, buttons, badges,
- nav, dashboard tiles, etc.) gets 400 — regardless of what
- --font-weight-medium / --font-weight-semibold / --font-weight-bold
- resolve to for the English side of the same component. An
- unconditional, !important script-correctness rule rather than one
- that depends on beating every component's selector weight one by
- one.
- Deliberately excluded: .paper-canvas (the PDF/Print Preview paper).
- That surface has its own independent font system (--pdf-font-en /
- --pdf-font-bn, user-configurable in PDF Settings — see the comment
- near --font-family-bn above) with its own bold usage for question
- numbers and correct/wrong marking (.paper-question__num, .pq-correct,
- .pq-wrong), and its option layout (chooseBestOptionLayout()) measures
- real rendered text width at that exact weight during pagination — an
- !important cap reaching in here would both fight the user's own font
- choice and desync the already-measured layout from what's rendered. */
-:lang(bn):not(.paper-canvas, .paper-canvas *),
-[lang="bn"]:not(.paper-canvas, .paper-canvas *) {
- font-weight: 400 !important;
-}
-:lang(bn):not(.paper-canvas, .paper-canvas *) :is(h1, h2, h3, h4, .text-h1, .text-h2, .text-h3, .text-h4),
-[lang="bn"]:not(.paper-canvas, .paper-canvas *) :is(h1, h2, h3, h4, .text-h1, .text-h2, .text-h3, .text-h4),
-:is(h1, h2, h3, h4, .text-h1, .text-h2, .text-h3, .text-h4):lang(bn):not(.paper-canvas, .paper-canvas *),
-:is(h1, h2, h3, h4, .text-h1, .text-h2, .text-h3, .text-h4)[lang="bn"]:not(.paper-canvas, .paper-canvas *) {
- font-weight: 500 !important;
-}
+/* ---------- Font weights: Lato + Noto Serif Bengali ----------
+ Both families are loaded with their real weight files (Lato 300/400/
+ 700/900, Noto Serif Bengali 400/500/600/700), and the components keep
+ using the shared --font-weight-* tokens, so nothing is forced or faked:
+   regular  400 -> Lato 400            | Noto Serif Bengali 400
+   medium   500 -> Lato 400 (no 500)   | Noto Serif Bengali 500
+   semibold 600 -> Lato 700 (no 600)   | Noto Serif Bengali 600
+   bold     600 -> Lato 700 (no 600)   | Noto Serif Bengali 600
+ Anything heavier than 700 (e.g. 800/900) resolves to the real 700 file
+ for Bengali, never to a synthetic bold. The old blanket "Bengali is
+ always 400/500 !important" cap was removed — it existed only because
+ Noto Serif Bengali's 600/700 files weren't loaded.
+ Deliberately untouched: .paper-canvas (the PDF/Print Preview paper) has
+ its own independent font system (--pdf-font-en / --pdf-font-bn). */
 
 /* ---------- Typography scale ----------
  Every class carries font-family: var(--font-family-base) explicitly so
@@ -1355,12 +1327,10 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 }
 
 /* Statistics page — the two bottom cards on the Practice Exam tab
-   ("BCS Preliminary" / category breakdown, and "Performance by
-   subject") get a light brand-color border instead of the default
+   ("BCS Preliminary" / category breakdown) get a light brand-color border instead of the default
    neutral one, to tie them together visually as this page's headline
    cards. */
-#bcs-prelim-stats-card,
-#subject-breakdown-card {
+#bcs-prelim-stats-card {
  border-color: var(--color-primary-border);
 }
 
@@ -1931,9 +1901,84 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 
 /* practice-interest-modal / practice-module-modal are flat blocks like
    #submit-modal (see the comment above) — same scoped padding fix. */
+#print-prefs-modal .modal,
 #practice-interest-modal .modal,
 #practice-module-modal .modal {
  padding: var(--space-6);
+}
+
+/* print-prefs-modal fix: buttons were overflowing the card's right edge
+   and crowding the close button. Let them shrink (min-width:0), use a
+   slightly smaller font, and give the close button its own clearance. */
+#print-prefs-modal .modal { box-sizing: border-box; overflow: hidden; }
+#print-prefs-modal .modal-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  gap: var(--space-3);
+  margin-top: var(--space-6) !important;
+}
+#print-prefs-modal .modal-actions .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  font-size: 14px;
+  white-space: nowrap;
+}
+#print-prefs-modal .modal > .icon-btn {
+  width: 36px;
+  height: 36px;
+  top: var(--space-3) !important;
+  right: var(--space-3) !important;
+}
+#print-prefs-modal .modal > h2 {
+  font-size: 18px;
+  padding-right: 48px !important;
+}
+
+/* Loading state for the download-preferences popup: spinner inside the
+   tapped button + a full-screen overlay while the sheet is being built. */
+#print-prefs-modal .btn.is-loading { position: relative; pointer-events: none; }
+#print-prefs-modal .btn.is-loading .btn-label { opacity: 0.85; }
+#print-prefs-modal .btn.is-loading::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+#print-prefs-modal .btn:disabled:not(.is-loading) { opacity: 0.45; }
+#sheet-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(8, 9, 13, 0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+#sheet-loading-overlay.is-visible { display: flex; }
+#sheet-loading-overlay .sheet-loading__spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 /* Module picker: each module is a full-width outline button styled as
@@ -2447,6 +2492,34 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 #settings-modal .settings-modal__body {
  max-height: none;
  flex: 1;
+}
+
+/* Settings drawer: every section (Appearance, AI Configuration, Exam
+ Preferences) is shown at once in one scrolling list, each under its own
+ icon + title heading, instead of being split into tabs. */
+.settings-section + .settings-section {
+ margin-top: var(--space-6);
+ padding-top: var(--space-6);
+ border-top: 1px solid var(--color-border);
+}
+.settings-section__head {
+ display: flex;
+ align-items: center;
+ gap: var(--space-2);
+ margin-bottom: var(--space-5);
+ color: var(--color-primary);
+}
+.settings-section__icon {
+ width: 18px;
+ height: 18px;
+ flex-shrink: 0;
+}
+.settings-section__title {
+ margin: 0;
+ font-size: var(--font-size-body);
+ font-weight: var(--font-weight-semibold);
+ line-height: var(--line-height-tight);
+ color: var(--color-text-primary);
 }
 
 .settings-field {
@@ -4474,6 +4547,83 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  color: var(--color-text-secondary);
 }
 
+/* ---------- Practice Panel subjects: simple FAQ-style accordion ----------
+   Scoped to #pp-subject-list (Practice Admin lists reuse .pp-subject
+   markup and are not affected). Behaviour is the classic FAQ dropdown:
+   tapping a subject slides ONE panel open/closed; the topic cards inside
+   are completely static (no fade, no padding/size change) and are simply
+   revealed as the panel grows. Layout: header -> panel (height only) ->
+   clip -> inner (fixed padding + gap) -> topic rows. */
+#pp-subject-list .pp-subject {
+ border: 1px solid var(--color-primary-border);
+ border-radius: var(--radius-lg);
+ background-color: var(--color-surface);
+ overflow: hidden;
+}
+#pp-subject-list .pp-subject__head,
+#pp-subject-list .pp-subject.is-open .pp-subject__head {
+ flex-wrap: nowrap;
+ padding: var(--space-4);
+ background: none;
+ box-shadow: none;
+ line-height: normal;
+}
+#pp-subject-list .pp-subject__title {
+ top: 0;
+ font-weight: var(--font-weight-semibold);
+ line-height: normal;
+ color: var(--color-primary); /* brand color */
+}
+#pp-subject-list .pp-subject__chevron {
+ color: var(--color-primary); /* brand color */
+ transition: transform 250ms ease;
+}
+/* The only animated thing: the panel's height. */
+#pp-subject-list .pp-subject__topics {
+ display: grid;
+ grid-template-rows: 0fr;
+ opacity: 1;
+ overflow: visible;
+ transition: grid-template-rows 250ms ease;
+}
+#pp-subject-list .pp-subject.is-open .pp-subject__topics {
+ grid-template-rows: 1fr;
+}
+#pp-subject-list .pp-subject__topics-clip {
+ min-height: 0;
+ overflow: hidden;
+ visibility: hidden; /* closed topics can't be tabbed to */
+ transition: visibility 0s linear 250ms;
+}
+#pp-subject-list .pp-subject.is-open .pp-subject__topics-clip {
+ visibility: visible;
+ transition: visibility 0s;
+}
+#pp-subject-list .pp-subject__topics-inner,
+#pp-subject-list .pp-subject.is-open .pp-subject__topics-inner {
+ display: flex;
+ flex-direction: column;
+ gap: var(--space-3);
+ padding: 0 var(--space-3) var(--space-3);
+ background: transparent;
+ overflow: visible;
+ min-height: 0;
+ transition: none;
+}
+/* Topic cards: unchanged look, never resized by the accordion. */
+#pp-subject-list .pp-topic-row {
+ flex-shrink: 0;
+ padding: var(--space-3);
+ border-radius: var(--radius-lg);
+ transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+#pp-subject-list .pp-topic-row__name {
+ font-weight: var(--font-weight-semibold);
+ color: var(--color-text-primary);
+ line-height: normal;
+}
+#pp-subject-list .pp-topic-row__arrow { color: var(--color-text-secondary); }
+
 /* ---------- Practice Panel: category grid (top-level screen,
    বিসিএস প্রিলিমিনারী / ব্যাংক প্রিলিমিনারী / ...) ---------- */
 .pp-category-list {
@@ -4864,48 +5014,6 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .stats-overview-card__trend--up { color: var(--color-success); }
 .stats-overview-card__trend--down { color: var(--color-danger); }
 
-.subject-breakdown-row {
- display: flex;
- align-items: center;
- gap: var(--space-4);
- padding: var(--space-3) var(--space-4);
- border: 1px dashed var(--color-border);
- border-radius: var(--radius-md);
- margin-bottom: var(--space-2);
-}
-.subject-breakdown-row:last-child { margin-bottom: 0; }
-.subject-breakdown-row__name {
- width: 140px;
- flex-shrink: 0;
- font-weight: var(--font-weight-medium);
- color: var(--color-text-primary);
- white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
-}
-.subject-breakdown-row__bar-track {
- flex: 1;
- height: 8px;
- border-radius: var(--radius-pill);
- background-color: var(--color-hover-bg);
- overflow: hidden;
-}
-.subject-breakdown-row__bar-fill {
- display: block;
- height: 100%;
- border-radius: var(--radius-pill);
- background-color: var(--color-primary);
- transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.subject-breakdown-row__value {
- width: 44px;
- flex-shrink: 0;
- text-align: right;
- font-size: var(--font-size-small);
- font-weight: var(--font-weight-semibold);
- color: var(--color-text-primary);
-}
-
 @media (max-width: 640px) {
  .stats-overview-grid { display: none; }
  .stats-overview-card + .stats-overview-card::before {
@@ -4964,7 +5072,13 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
 .bcs-prelim-topic-empty { font-size: var(--font-size-small); color: var(--color-text-muted); text-align: center; padding: var(--space-4) 0; }
 
 .bcs-prelim-bar-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-.bcs-prelim-bar-chart { display: flex; flex-direction: column; }
+/* The chart is as wide as its bars (max-content) but never narrower than
+   the visible area (min-width: 100%). The grey baseline is the bar row's
+   own bottom border, so the row (and the label row below it) must be
+   exactly as wide as all the bars — otherwise the baseline stops partway
+   and the remaining bars hang off its end. */
+.bcs-prelim-bar-chart { display: flex; flex-direction: column; width: max-content; min-width: 100%; }
+.bcs-prelim-bar-row, .bcs-prelim-label-row { box-sizing: border-box; width: 100%; }
 .bcs-prelim-bar-row {
  display: flex; align-items: flex-end; gap: var(--space-4);
  min-height: 140px; padding: 0 var(--space-1);
@@ -5309,13 +5423,15 @@ input.no-spinner[type="number"]::-webkit-inner-spin-button {
  /* Practice interest/module popups: keep the normal centered dialog
     style on mobile too, instead of the bottom-sheet default every
     other .modal gets in this breakpoint. */
+ #print-prefs-modal.modal-overlay,
  #practice-interest-modal.modal-overlay,
  #practice-module-modal.modal-overlay {
   align-items: center;
   padding: var(--space-4);
  }
 
- #practice-interest-modal .modal,
+ #print-prefs-modal .modal,
+#practice-interest-modal .modal,
  #practice-module-modal .modal {
   max-width: 480px;
   border-radius: var(--radius-lg);
@@ -6312,7 +6428,8 @@ body[data-page="practice-mode"] {
     in .mcqp-questions-head, so showing it twice up here would be
     redundant clutter on wider screens. */
  .mcqp-toprow__label { display: none; }
- #pa-mcqp-exam-select { height: 44px; }
+ #pa-mcqp-exam-select,
+ #pa-mcqp-subject-select { height: 44px; }
  .mcqp-lang-switch { display: inline-flex; align-items: stretch; height: 44px; box-sizing: border-box; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 3px; background: var(--color-surface-alt); }
  .mcqp-lang-switch__btn {
   border: none; background: transparent; padding: 0 14px; border-radius: var(--radius-sm);
@@ -6345,6 +6462,7 @@ body[data-page="practice-mode"] {
    color: var(--color-text-primary);
    flex-shrink: 0;
   }
+  #pa-mcqp-subject-select,
   #pa-mcqp-exam-select,
   .mcqp-toprow > .select-wrap { order: 2; width: 100% !important; min-width: 0 !important; max-width: 100%; }
   .mcqp-toprow__actions { order: 3; flex: 1 1 auto; flex-wrap: nowrap; gap: var(--space-2); min-width: 0; }
@@ -6809,6 +6927,7 @@ body[data-page="practice-mode"] {
    heading text on narrow phones even though the header itself
    wraps. Let it size to the row instead of forcing a minimum. */
   #mcqp-exam-select,
+  #pa-mcqp-subject-select,
   #pa-mcqp-exam-select {
    min-width: 0 !important;
    width: 100% !important;
@@ -7994,4 +8113,530 @@ body[data-page="practice-mode"] {
 
 @media (max-width: 480px) {
   .agq-embed .modal-sheet { max-height: 92vh; }
+}
+
+/* ==========================================================================
+   PREMIUM.CSS — Webflow-inspired design layer
+   Loads after styles.css. Tokens first (every component inherits them),
+   then buttons, cards and the few surfaces that need explicit treatment.
+   Brand: Webflow blue #146EF5 on white, near-black #080808 ink.
+   Type: Lato (English) + Noto Serif Bengali (Bengali).
+   Grid: 8px. Radii: 4 / 6 / 8. Remove the <link> to revert.
+   ========================================================================== */
+
+:root {
+  /* Brand */
+  --wf-blue: #146ef5;
+  --wf-blue-hover: #0055d4;
+  --wf-blue-active: #0047b3;
+  --wf-ink: #080808;
+  --wf-purple: #7a3dff;
+  --wf-pink: #ed52cb;
+  --wf-orange: #ff6b00;
+  --wf-green: #00d722;
+  --wf-yellow: #ffae13;
+  --wf-red: #ee1d36;
+
+  --color-primary: var(--wf-blue);
+  --color-primary-hover: var(--wf-blue-hover);
+  --color-primary-active: var(--wf-blue-active);
+  --color-primary-light: #eaf2ff;
+  --color-primary-border: #b7d2fc;
+  --color-primary-wash: rgba(20, 110, 245, 0.06);
+
+  --color-success: #00a81c;
+  --color-success-hover: #008a17;
+  --color-danger: var(--wf-red);
+  --color-danger-hover: #c8132b;
+  --color-warning: #e08a00;
+  --color-warning-hover: #b87000;
+  --color-info: var(--wf-blue);
+  --color-info-hover: var(--wf-blue-hover);
+
+  --color-bg: #faf9f6; /* light theme page background: off-white (dark theme unchanged) */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f5f5;
+  --color-text-primary: #080808;
+  --color-text-secondary: #5a5a5a;
+  --color-text-muted: #898989;
+  --color-text-on-primary: #ffffff;
+  --color-border: #d8d8d8;
+  --color-border-strong: #ababab;
+  --color-input-bg: #ffffff;
+  --color-hover-bg: #f5f5f5;
+  --color-focus-ring: rgba(20, 110, 245, 0.35);
+
+  /* Type — Lato for English; Noto Serif Bengali for Bengali. Lato leads
+     every stack so Latin letters/digits always render in Lato; Lato has
+     no Bengali glyphs, so Bengali characters fall through to Noto Serif
+     Bengali. */
+  --font-family-en: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-bn: "Lato", "Noto Serif Bengali", -apple-system, "Segoe UI", sans-serif;
+  --font-family-base: "Lato", "Noto Serif Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-size-h1: clamp(2.25rem, 4.5vw, 3.5rem);
+  --font-size-h2: clamp(1.75rem, 3vw, 2.25rem);
+  --font-size-h3: 1.5rem;
+  --font-size-h4: 1.125rem;
+  --font-size-button: 1rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.1;
+
+  /* Shape and depth: small radii, hairline borders, almost no shadow */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-xs: none;
+  --shadow-sm: 0 1px 2px rgba(8, 8, 8, 0.06);
+  --shadow-md: 0 4px 12px rgba(8, 8, 8, 0.08);
+  --shadow-lg: 0 16px 40px rgba(8, 8, 8, 0.14);
+  --ease-wf: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* No pastel washes: cards are flat white */
+  --gradient-neutral-from: #ffffff;
+  --gradient-neutral-to: #ffffff;
+  --gradient-primary-from: #f5f9ff;
+  --gradient-primary-to: #f5f9ff;
+  --gradient-info-from: #f5f9ff;
+  --gradient-info-to: #f5f9ff;
+  --gradient-success-from: #f3fbf5;
+  --gradient-success-to: #f3fbf5;
+  --gradient-warning-from: #fff9ec;
+  --gradient-warning-to: #fff9ec;
+  --gradient-danger-from: #fff4f5;
+  --gradient-danger-to: #fff4f5;
+  --color-input-glass: #ffffff;
+}
+
+[data-theme="dark"] {
+  --color-primary: #4a90ff;
+  --color-primary-hover: #70a8ff;
+  --color-primary-active: #3a7de6;
+  --color-primary-light: rgba(74, 144, 255, 0.14);
+  --color-primary-border: rgba(74, 144, 255, 0.4);
+  --color-primary-wash: rgba(74, 144, 255, 0.1);
+  --color-text-on-primary: #080808;
+
+  --color-bg: #080808;
+  --color-surface: #121212;
+  --color-surface-alt: #1a1a1a;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #b8b8b8;
+  --color-text-muted: #8a8a8a;
+  --color-border: #2c2c2c;
+  --color-border-strong: #444444;
+  --color-input-bg: #1a1a1a;
+  --color-hover-bg: #1f1f1f;
+  --color-focus-ring: rgba(74, 144, 255, 0.5);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+
+  --gradient-neutral-from: #121212;
+  --gradient-neutral-to: #121212;
+  --gradient-primary-from: #0f1a2e;
+  --gradient-primary-to: #0f1a2e;
+  --color-input-glass: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Base ---------- */
+body {
+  background-image: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings: Inter, tight tracking (Bengali keeps its own rules) */
+html[lang="en"] :is(h1, h2, h3, .text-h1, .text-h2, .text-h3):not(.paper-canvas *) {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+html[lang="en"] :is(h4, .text-h4):not(.paper-canvas *) {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+html[lang="en"] body:not(.paper-canvas *) { letter-spacing: -0.005em; }
+
+/* ---------- Header: white bar, one hairline ---------- */
+.site-header,
+.subpage-header {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: none;
+}
+.site-header__brand { font-weight: 600; letter-spacing: -0.02em; }
+.site-header__nav-link {
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  transition: background-color 160ms var(--ease-wf), color 160ms var(--ease-wf);
+}
+.site-header__nav-link.is-active {
+  background: var(--color-hover-bg);
+  color: var(--color-text-primary);
+  box-shadow: none;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transition: background-color 160ms var(--ease-wf), border-color 160ms var(--ease-wf), color 160ms var(--ease-wf), transform 120ms var(--ease-wf);
+}
+.btn:not(.btn-sm):not(.btn-icon):not(.btn-lg) { padding-block: 12px; padding-inline: 20px; }
+.btn-lg { padding-block: 14px; padding-inline: 24px; }
+.btn:active { transform: scale(0.98); }
+.btn-primary {
+  background-color: var(--wf-blue);
+  background-image: none;
+  color: #ffffff;
+}
+.btn-primary:hover { background-color: var(--wf-blue-hover); background-image: none; box-shadow: none; }
+.btn-primary:active { background-color: var(--wf-blue-active); }
+[data-theme="dark"] .btn-primary { background-color: var(--wf-blue); color: #ffffff; }
+[data-theme="dark"] .btn-primary:hover { background-color: #3a82ff; }
+
+.btn-secondary,
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-text-primary);
+}
+.btn-secondary:hover,
+.btn-outline:hover {
+  background-color: var(--color-text-primary);
+  color: var(--color-bg);
+  border-color: var(--color-text-primary);
+}
+.btn-ghost:hover { background-color: var(--color-hover-bg); }
+
+/* ---------- Cards: flat, bordered, 8px ---------- */
+.card {
+  background-image: none;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+.card--interactive,
+.dashboard-item {
+  transition: border-color 160ms var(--ease-wf), box-shadow 200ms var(--ease-wf), background-color 160ms var(--ease-wf);
+}
+.card--interactive:hover,
+.dashboard-item:hover {
+  border-color: var(--wf-blue);
+  box-shadow: 0 0 0 1px var(--wf-blue);
+}
+.dashboard-item__icon { border-radius: var(--radius-md); box-shadow: none; }
+.dashboard-item__arrow { transition: transform 160ms var(--ease-wf); }
+.dashboard-item:hover .dashboard-item__arrow { transform: translateX(2px); }
+
+/* ---------- AI Mode: follows the theme like every other card ---------- */
+.ai-mode-card {
+  background-image: none;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .ai-mode-card { background-image: none; }
+
+/* ---------- Inputs ---------- */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-radius: var(--radius-sm);
+  border-color: var(--color-border);
+  transition: border-color 160ms var(--ease-wf), box-shadow 160ms var(--ease-wf);
+}
+input:hover:not(:focus):not([type="checkbox"]):not([type="radio"]),
+select:hover:not(:focus),
+textarea:hover:not(:focus) { border-color: var(--color-border-strong); }
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--wf-blue);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* ---------- Segmented, badges, modals ---------- */
+.segmented { border-radius: var(--radius-md); background: var(--color-surface-alt); padding: 2px; }
+.segmented__option { border-radius: var(--radius-sm); font-weight: var(--font-weight-semibold); transition: background-color 160ms var(--ease-wf), color 160ms var(--ease-wf); }
+.segmented__option[aria-pressed="true"] { background: var(--color-bg); color: var(--color-text-primary); box-shadow: var(--shadow-sm); }
+.badge { border-radius: var(--radius-sm); font-weight: var(--font-weight-semibold); }
+
+.modal-overlay { background: rgba(8, 8, 8, 0.55); }
+.modal { border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-lg); }
+
+/* ---------- Details ---------- */
+::selection { background: rgba(20, 110, 245, 0.25); }
+:focus-visible { outline: 2px solid var(--wf-blue); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .card--interactive, .dashboard-item, .dashboard-item__arrow { transition: none; }
+}
+
+/* ==========================================================================
+   MOBILE HOME: two tabs.
+   Dashboard (with Recent Exams joined beneath it) | AI Mode
+   ========================================================================== */
+.home-tabs { display: none; }
+
+@media (max-width: 768px) {
+  .home-tabs {
+    display: flex;
+    grid-column: 1 / -1;
+    order: -10; /* above .homepage-side-col (order -1) so tabs stay on top in both tabs */
+    gap: 0;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: var(--header-height, 72px);
+    z-index: 5;
+    background: var(--color-bg);
+    margin: 0 calc(var(--space-4, 16px) * -1);
+    padding: 0 var(--space-4, 16px);
+  }
+  .home-tabs__tab {
+    flex: 1;
+    appearance: none;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
+    min-height: 48px;
+    font: inherit;
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: color 160ms var(--ease-wf), border-color 160ms var(--ease-wf);
+  }
+  /* No gap between the header and the tab bar */
+  body[data-page="home"] .page-main { padding-top: 0; }
+  body[data-page="home"] .homepage-grid { gap: var(--space-4); }
+
+  .home-tabs__tab svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .home-tabs__tab:hover { color: var(--color-text-primary); }
+  .home-tabs__tab.is-active {
+    color: var(--color-primary); /* icon + text turn brand blue */
+    border-bottom-color: var(--wf-blue);
+  }
+
+  /* The tabs already name each panel, so the in-card title + icon go */
+  .ai-mode-card__heading,
+  .dashboard-card__heading { display: none; }
+
+  /* One panel at a time */
+  .homepage-grid[data-home-tab="dashboard"] .ai-mode-card { display: none; }
+  .homepage-grid[data-home-tab="ai"] .homepage-side-col { display: none; }
+
+  /* Dashboard and Continue/Recent Exam are two separate cards: each
+     keeps its own full border + rounded corners, with a normal gap
+     between them (same spacing as the desktop layout). */
+  .homepage-side-col { gap: var(--space-4); }
+  .homepage-side-col .dashboard-card {
+    margin-bottom: 0;
+  }
+  .homepage-side-col .continue-card {
+    margin-top: 0;
+  }
+}
+
+/* ---------- Swipe between tabs (touch) ----------
+   initSwipeTabs() clicks the neighbouring tab on a horizontal swipe and
+   tags the newly shown panel with one of these classes so it slides in
+   from the side the finger travelled toward. */
+@keyframes tab-swipe-in-from-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes tab-swipe-in-from-left {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.is-swipe-in-next { animation: tab-swipe-in-from-right 240ms cubic-bezier(0.22, 0.8, 0.3, 1); }
+.is-swipe-in-prev { animation: tab-swipe-in-from-left 240ms cubic-bezier(0.22, 0.8, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .is-swipe-in-next, .is-swipe-in-prev { animation: none; }
+}
+
+/* Footer copyright hidden on mobile */
+@media (max-width: 768px) {
+  .site-footer { display: none; }
+}
+
+/* ==========================================================================
+   NOTCHED FIELDS (all inputs, textareas and dropdowns)
+   The label sits ON the top border:  ---Prompt----------
+   Applies to any field group whose label is directly followed by a control.
+   ========================================================================== */
+:root { --field-bg: var(--color-surface); }
+.card--tint-primary, .card--tint-info { --field-bg: var(--gradient-primary-from); }
+.card--tint-success { --field-bg: var(--gradient-success-from); }
+.card--tint-warning { --field-bg: var(--gradient-warning-from); }
+.card--tint-danger { --field-bg: var(--gradient-danger-from); }
+
+:is(.form-group, .settings-field):has(> .form-label:first-child + :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .select-wrap, .input-group, .form-control)) {
+  position: relative;
+  padding-top: 10px;
+}
+:is(.form-group, .settings-field):has(> .form-label:first-child + :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .select-wrap, .input-group, .form-control)) > .form-label:first-child {
+  position: absolute;
+  top: 3px;
+  left: 12px;
+  z-index: 2;
+  margin: 0;
+  padding: 0 6px;
+  line-height: 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lbl, var(--color-text-secondary));
+  background: var(--field-bg);
+  pointer-events: none;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 160ms var(--ease-wf);
+}
+:is(.form-group, .settings-field):focus-within { --lbl: var(--color-primary); }
+
+/* Dark mode: the label's solid patch only needs to hide the border line
+   behind the text. Below that line the label sits INSIDE the field, whose
+   own background is a slightly lighter translucent white, so a solid
+   patch showed up as a darker box under the title. Keep the patch for the
+   top edge (border row) and make everything beneath it transparent. */
+html[data-theme="dark"] :is(.form-group, .settings-field):has(> .form-label:first-child + :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .select-wrap, .input-group, .form-control)) > .form-label:first-child {
+  background: linear-gradient(to bottom, var(--field-bg) 0, var(--field-bg) 8px, transparent 8px);
+}
+
+/* ==========================================================================
+   FOCUS STATE: solid blue only.
+   No translucent halo (it showed the dark surface through it) and no extra
+   outline: a 1px blue border + a 1px solid blue ring = one clean 2px blue edge.
+   ========================================================================== */
+body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .form-control, .mcqp-ai-textarea):focus,
+body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .form-control):focus-visible,
+body .select-wrap.is-open .select-trigger,
+body .select-trigger:focus,
+body .select-trigger:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* ==========================================================================
+   REST STATE: every field has the same neutral border.
+   Blue appears only while a field is focused or its dropdown is open
+   (rules above). Hover no longer turns the border blue either.
+   ========================================================================== */
+body .ai-mode-card :is(.form-control, input, textarea, select):not(:focus):not(:focus-visible),
+body .ai-mode-card .select-wrap:not(.is-open) .select-trigger:not(:focus):not(:focus-visible) {
+  border-color: var(--color-border);
+}
+
+/* ==========================================================================
+   CAPTURE / UPLOAD buttons: clear hover + press feedback.
+   Fills solid blue with white text. Hover only on devices that truly hover,
+   so a tap on a phone doesn't leave the button stuck in the hover look;
+   touch gets the same fill while pressed (:active).
+   ========================================================================== */
+body .capture-upload-row .btn {
+  background-color: var(--color-surface);
+  transition: background-color 120ms var(--ease-wf), color 120ms var(--ease-wf), border-color 120ms var(--ease-wf), transform 120ms var(--ease-wf);
+}
+body .capture-upload-row .btn:active {
+  background-color: var(--wf-blue);
+  border-color: var(--wf-blue);
+  color: #ffffff;
+  transform: scale(0.98);
+}
+@media (hover: hover) {
+  body .capture-upload-row .btn:hover {
+    background-color: var(--wf-blue);
+    border-color: var(--wf-blue);
+    color: #ffffff;
+  }
+}
+@media (hover: none) {
+  body .capture-upload-row .btn:hover {
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    border-color: var(--color-primary-border);
+  }
+  body .capture-upload-row .btn:active {
+    background-color: var(--wf-blue);
+    border-color: var(--wf-blue);
+    color: #ffffff;
+  }
+}
+
+/* ==========================================================================
+   DROPDOWNS: one smooth downward expand, nothing else.
+   The list is revealed with a clip (no fade, no scale, no slide), so the
+   options never squish or move: the panel simply grows out of the field
+   (upward when there is no room below). Applies to every dropdown.
+   ========================================================================== */
+.select-wrap.is-enhanced select.select-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.select-listbox,
+.select-listbox.is-flipped,
+.select-listbox.is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: clip-path;
+}
+.select-listbox {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  clip-path: inset(0 -24px 100% -24px);
+  transition: clip-path 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.select-listbox.is-flipped { clip-path: inset(100% -24px 0 -24px); }
+.select-listbox.is-visible { clip-path: inset(-24px -24px -32px -24px); }
+.select-listbox.is-flipped.is-visible { clip-path: inset(-32px -24px -24px -24px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .select-listbox { transition: none; }
+}
+
+
+/* ---------- Lato weight corrections ----------
+   Lato (Google Fonts) ships 300/400/700/900 only — a requested 500 silently
+   renders as 400 (looks "regular"). Tabs, nav links, segmented controls and
+   row/card titles that were asking for 500 now ask for the semibold token
+   (600 -> real Lato 700; real Noto Serif Bengali 600). Secondary text
+   (emails, chips, captions, toasts) intentionally keeps the lighter weight. */
+.tab,
+.home-tabs__tab,
+.segmented__option,
+.site-header__nav-link,
+.settings-choice,
+.mcqp-lang-switch__btn,
+.mcqp-add-more,
+.live-merit-row__name,
+.pp-topic-row__name,
+.bcs-prelim-legend-row__name,
+.record-row--compact-stats .record-row__title,
+.breadcrumb__current {
+  font-weight: var(--font-weight-semibold);
 }
