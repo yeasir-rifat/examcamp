@@ -8640,3 +8640,80 @@ body .capture-upload-row .btn:active {
 .breadcrumb__current {
   font-weight: var(--font-weight-semibold);
 }
+
+/* ==========================================================================
+   MOBILE HOME: stretch the visible card to fill the screen height.
+   The page shell is already a full-height flex column; the content
+   wrapper and the home grid now take the remaining height, and the
+   grid's stretched row makes the active card (Dashboard or AI Mode)
+   run down to the bottom of the screen instead of ending early.
+   ========================================================================== */
+@media (max-width: 768px) {
+  #view-home .page-main {
+    display: flex;
+    flex-direction: column;
+  }
+  #view-home .page-main > .container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  #view-home .homepage-grid {
+    flex: 1;
+    /* Tabs row stays its natural height; only the panel row takes the
+       extra screen height. Without this, grid spreads the extra space
+       across every auto row, which made the tab strip tall too. */
+    grid-template-rows: auto 1fr;
+  }
+}
+
+/* ==========================================================================
+   MOBILE HOME: the vertical nav cards and the horizontal stats strip
+   share the Dashboard card's height equally, so all four blocks read as
+   one consistent set. The nav list gets 3 shares (one per row) and the
+   stats strip gets 1, so each row and the strip come out the same height.
+   The Continue card below keeps its natural height.
+   ========================================================================== */
+@media (max-width: 768px) {
+  #view-home .homepage-side-col .dashboard-list {
+    flex: 3 1 0;
+  }
+  #view-home .homepage-side-col .quick-stats-grid {
+    /* Slightly under 1 so the strip matches the nav rows, which also
+       lose a few pixels to the gaps between them. */
+    flex: 0.92 1 0;
+    margin-top: var(--space-4);
+  }
+  #view-home .homepage-side-col .quick-stats-grid > .quick-stat-card {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   MOBILE AI MODE: the form fills the card's height. The Prompt box takes
+   the leftover space, so the card has no empty band between the Generate
+   button and its bottom edge, matching the Dashboard card.
+   ========================================================================== */
+@media (max-width: 768px) {
+  #view-home .ai-mode-card #ai-mode-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  #view-home .ai-mode-card #ai-mode-form > .form-group:first-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  #view-home .ai-mode-card #prompt-input {
+    flex: 1;
+    height: auto;
+    min-height: 160px;
+    max-height: none;
+  }
+}
