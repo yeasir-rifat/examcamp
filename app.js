@@ -9271,7 +9271,6 @@ function renderPracticeSubjectList() {
     const topicRow = (topic) => `
           <button type="button" class="pp-topic-row" data-practice-topic data-subject-id="${escapeHtml(subject.id)}" data-topic-id="${escapeHtml(topic.id)}">
             <span class="pp-topic-row__name">${escapeHtml(topic.name)}</span>
-            <svg class="pp-topic-row__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
           </button>`;
     const mainTopics = subject.mainTopics || [];
     const groupsHtml = mainTopics.map((main) => {
@@ -9280,9 +9279,11 @@ function renderPracticeSubjectList() {
         <div class="pp-main">
           <button type="button" class="pp-main__head" data-main-toggle aria-expanded="false">
             <span class="pp-main__name">${escapeHtml(main.name)}</span>
-            <svg class="pp-subject__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            <svg class="pp-main__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <div class="pp-main__topics">${inGroup.map(topicRow).join("") || `<div class="pp-subject__empty">No topics yet</div>`}</div>
+          <div class="pp-main__collapse">
+            <div class="pp-main__topics">${inGroup.map(topicRow).join("") || `<div class="pp-subject__empty">No topics yet</div>`}</div>
+          </div>
         </div>`;
     }).join("");
     const ungrouped = subject.topics.filter((t) => !mainTopics.some((m) => m.id === t.mainTopicId));
@@ -10430,10 +10431,12 @@ function renderPracticeAdminSubjectList() {
 
     const newTopicFormHtml = pracAdminUI.newTopicForSubject === subject.id ? practiceAdminTopicFormHtml(subject, null) : "";
     const newMainFormHtml = pracAdminUI.newMainForSubject === subject.id ? `
-      <div class="card" style="margin: var(--space-3) 0 0;">
-        <label class="form-label" for="pa-admin-main-name">Main topic name</label>
-        <input type="text" class="form-control" id="pa-admin-main-name" placeholder="e.g. প্রাচীন যুগ" />
-        <div class="pa-topic-form-actions">
+      <div class="card pa-main-form">
+        <div class="pa-main-form__field">
+          <label class="form-label" for="pa-admin-main-name">Main topic name</label>
+          <input type="text" class="form-control" id="pa-admin-main-name" placeholder="e.g. প্রাচীন যুগ" />
+        </div>
+        <div class="pa-main-form__actions">
           <button type="button" class="btn btn-primary btn-sm" data-pa-admin-main-save="${escapeHtml(subject.id)}">Save Main Topic</button>
         </div>
       </div>` : "";
