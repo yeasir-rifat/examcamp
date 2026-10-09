@@ -8748,13 +8748,6 @@ body .capture-upload-row .btn:active {
 .pp-main.is-open .pp-main__head .pp-subject__chevron {
   transform: rotate(180deg);
 }
-.pp-main__topics {
-  display: none;
-  padding-left: var(--space-3);
-}
-.pp-main.is-open .pp-main__topics {
-  display: block;
-}
 
 .pa-main-group {
   margin-top: var(--space-3);
@@ -8877,4 +8870,14 @@ body .capture-upload-row .btn:active {
 .pa-main-form__actions {
   display: flex;
   justify-content: flex-start;
+}
+
+/* Clear space between the Topics inside a Main Topic dropdown. */
+.pp-main .pp-main__topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.pp-main .pp-main__topics > .pp-topic-row {
+  margin: 0;
 }
