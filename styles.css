@@ -8717,3 +8717,58 @@ body .capture-upload-row .btn:active {
     max-height: none;
   }
 }
+
+/* ==========================================================================
+   PRACTICE: Main Topic groups (Subject → Main Topic → Topic).
+   Student side: a collapsible Main Topic header with its Topics inside.
+   Admin side: a labelled group inside each Subject card.
+   ========================================================================== */
+.pp-main {
+  border-top: 1px solid var(--color-border);
+}
+.pp-main__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: 0;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+.pp-main__head .pp-subject__chevron {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.pp-main.is-open .pp-main__head .pp-subject__chevron {
+  transform: rotate(180deg);
+}
+.pp-main__topics {
+  display: none;
+  padding-left: var(--space-3);
+}
+.pp-main.is-open .pp-main__topics {
+  display: block;
+}
+
+.pa-main-group {
+  margin-top: var(--space-3);
+}
+.pa-main-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-2);
+}
+.pa-main-group__name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
